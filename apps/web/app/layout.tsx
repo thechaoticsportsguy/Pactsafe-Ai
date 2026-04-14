@@ -11,8 +11,11 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://pactsafe.ai";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://pactsafe.ai"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "PactSafe AI — AI contract review for freelancers",
     template: "%s · PactSafe AI",
@@ -30,12 +33,18 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "PactSafe AI" }],
   creator: "PactSafe AI",
+  applicationName: "PactSafe AI",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
+    url: SITE_URL,
     title: "PactSafe AI — AI contract review for freelancers",
     description:
       "Spot the traps in any contract — before you sign. Built for freelancers, creators, and small businesses.",
     siteName: "PactSafe AI",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
@@ -46,7 +55,15 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+      "max-snippet": -1,
+    },
   },
+  category: "business",
 };
 
 export const viewport: Viewport = {

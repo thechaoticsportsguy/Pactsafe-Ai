@@ -43,6 +43,7 @@ export default function HistoryPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const [riskFilter, setRiskFilter] = React.useState<RiskFilter>("all");
+  const searchRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     listJobs(100)
@@ -50,6 +51,19 @@ export default function HistoryPage() {
       .catch((e) =>
         setError(e instanceof Error ? e.message : String(e)),
       );
+  }, []);
+
+  // ⌘/Ctrl + K focuses the search box
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, []);
 
   // Counts per risk tier for filter chip badges
@@ -117,14 +131,18 @@ export default function HistoryPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="relative w-full md:w-72">
+          <div className="relative w-full md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground-muted pointer-events-none" />
             <Input
+              ref={searchRef}
               placeholder="Search by name, type, or summary…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 pr-16"
             />
+            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none">
+              ⌘K
+            </kbd>
           </div>
           <Link href="/analyze" className="flex-shrink-0">
             <Button>

@@ -102,7 +102,48 @@ export default function PactSafeLanding() {
       </main>
       <Footer />
       <MobileStickyCTA />
+      <BackToTop />
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Back to top — desktop-only floating button, appears after 70% scroll
+// ---------------------------------------------------------------------------
+function BackToTop() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setShow(total > 0 && window.scrollY / total > 0.5);
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  if (!show) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Back to top"
+      className="hidden md:flex fixed bottom-6 right-6 z-20 h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-bg-elevated/95 text-foreground shadow-card-lg backdrop-blur-xl ring-1 ring-accent/20 hover:ring-accent/40 hover:-translate-y-0.5 transition-all animate-fade-in"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
+    </button>
   );
 }
 

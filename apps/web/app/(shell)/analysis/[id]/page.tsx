@@ -16,9 +16,12 @@ import {
   CheckCircle2,
   Info,
   RefreshCw,
+  Link2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/Toast";
 import RiskGauge from "@/components/RiskGauge";
 import FlagList from "@/components/FlagList";
 import GreenFlagList from "@/components/GreenFlagList";
@@ -82,12 +85,33 @@ const ALL_SECTIONS: SectionDef[] = [
 export default function AnalysisPage() {
   const params = useParams<{ id: string }>();
   const jobId = params.id;
+  const { toast } = useToast();
 
   const [job, setJob] = React.useState<JobStatusResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [activeFlag, setActiveFlag] = React.useState<number | null>(null);
   const [activeSection, setActiveSection] =
     React.useState<SectionKey>("summary");
+  const [linkCopied, setLinkCopied] = React.useState(false);
+
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1600);
+      toast({
+        tone: "success",
+        message: "Link copied",
+        description: "Send it to your counterpart or client.",
+      });
+    } catch {
+      toast({
+        tone: "error",
+        message: "Couldn't copy link",
+        description: "Your browser blocked clipboard access.",
+      });
+    }
+  }
 
   const result = job?.result ?? null;
   const hasGreen = !!result?.green_flags && result.green_flags.length > 0;
@@ -250,6 +274,24 @@ export default function AnalysisPage() {
         </div>
 
         <div className="flex flex-shrink-0 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyShareLink}
+            disabled={!result}
+          >
+            {linkCopied ? (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Link2 className="h-3.5 w-3.5" />
+                Copy link
+              </>
+            )}
+          </Button>
           <a href={exportJsonUrl(jobId)} target="_blank" rel="noreferrer">
             <Button variant="outline" size="sm" disabled={!result}>
               <FileJson className="h-3.5 w-3.5" />
