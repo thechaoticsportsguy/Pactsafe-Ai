@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
+import { PricingProductJsonLd } from "@/components/StructuredData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/cn";
@@ -205,8 +206,9 @@ const PRICING_FAQS = [
 export default function PricingPage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <PricingProductJsonLd />
       <TopNav variant="marketing" />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Hero />
         <Tiers />
         <Comparison />

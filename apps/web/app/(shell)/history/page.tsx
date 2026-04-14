@@ -10,6 +10,8 @@ import {
   Clock,
   ArrowRight,
   FolderOpen,
+  Filter,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +21,28 @@ import type { JobStatusResponse } from "@/lib/schemas";
 import { riskBand } from "@/lib/severity";
 import { cn } from "@/lib/cn";
 
+type RiskFilter = "all" | "low" | "medium" | "high" | "critical";
+
+const RISK_FILTERS: { value: RiskFilter; label: string; color: string }[] = [
+  { value: "all", label: "All risks", color: "#8b8fa6" },
+  { value: "low", label: "Low", color: "#10b981" },
+  { value: "medium", label: "Moderate", color: "#eab308" },
+  { value: "high", label: "High", color: "#f97316" },
+  { value: "critical", label: "Critical", color: "#ef4444" },
+];
+
+function riskTier(score: number): Exclude<RiskFilter, "all"> {
+  if (score <= 30) return "low";
+  if (score <= 60) return "medium";
+  if (score <= 80) return "high";
+  return "critical";
+}
+
 export default function HistoryPage() {
   const [jobs, setJobs] = React.useState<JobStatusResponse[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
+  const [riskFilter, setRiskFilter] = React.useState<RiskFilter>("all");
 
   React.useEffect(() => {
     listJobs(100)
@@ -32,17 +52,53 @@ export default function HistoryPage() {
       );
   }, []);
 
+  // Counts per risk tier for filter chip badges
+  const tierCounts = React.useMemo(() => {
+    const counts: Record<RiskFilter, number> = {
+      all: 0,
+      low: 0,
+      medium: 0,
+      high: 0,
+      critical: 0,
+    };
+    if (!jobs) return counts;
+    counts.all = jobs.length;
+    for (const j of jobs) {
+      const score = j.result?.risk_score;
+      if (score == null) continue;
+      counts[riskTier(score)] += 1;
+    }
+    return counts;
+  }, [jobs]);
+
   const filtered = React.useMemo(() => {
     if (!jobs) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return jobs;
     return jobs.filter((j) => {
-      const name = (j.filename ?? "").toLowerCase();
-      const type = (j.result?.contract_type ?? "").toLowerCase();
-      const summary = (j.result?.overall_summary ?? "").toLowerCase();
-      return name.includes(q) || type.includes(q) || summary.includes(q);
+      // Text search
+      if (q) {
+        const name = (j.filename ?? "").toLowerCase();
+        const type = (j.result?.contract_type ?? "").toLowerCase();
+        const summary = (j.result?.overall_summary ?? "").toLowerCase();
+        if (!name.includes(q) && !type.includes(q) && !summary.includes(q)) {
+          return false;
+        }
+      }
+      // Risk filter
+      if (riskFilter !== "all") {
+        const score = j.result?.risk_score;
+        if (score == null || riskTier(score) !== riskFilter) return false;
+      }
+      return true;
     });
-  }, [jobs, query]);
+  }, [jobs, query, riskFilter]);
+
+  const hasActiveFilters = query.trim() !== "" || riskFilter !== "all";
+
+  function clearFilters() {
+    setQuery("");
+    setRiskFilter("all");
+  }
 
   return (
     <div className="space-y-8">
@@ -78,6 +134,55 @@ export default function HistoryPage() {
           </Link>
         </div>
       </div>
+
+      {/* Risk filter chips */}
+      {jobs && jobs.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 text-xs text-foreground-subtle mr-1">
+            <Filter className="h-3 w-3" />
+            Filter
+          </span>
+          {RISK_FILTERS.map((f) => {
+            const active = riskFilter === f.value;
+            const count = tierCounts[f.value];
+            return (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setRiskFilter(f.value)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  active
+                    ? "border-white/20 bg-surface-2 text-foreground"
+                    : "border-border bg-surface/40 text-foreground-muted hover:border-border-strong hover:text-foreground",
+                )}
+              >
+                {f.value !== "all" && (
+                  <span
+                    aria-hidden
+                    className="inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: f.color }}
+                  />
+                )}
+                {f.label}
+                <span className="text-foreground-subtle tabular-nums">
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-surface/40 px-3 py-1 text-xs text-foreground-muted hover:text-foreground"
+            >
+              <X className="h-3 w-3" />
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-4 text-sm text-severity-critical">

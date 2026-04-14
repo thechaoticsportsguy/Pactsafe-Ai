@@ -161,3 +161,58 @@ export function BreadcrumbJsonLd({
     />
   );
 }
+
+/**
+ * Product + Offer schema for the pricing page. Exposes Free/Pro/Team as
+ * a single Product with an AggregateOffer.
+ */
+export function PricingProductJsonLd() {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: "PactSafe AI",
+        description:
+          "AI contract review for freelancers and small businesses. Free forever on your first contracts.",
+        brand: {
+          "@type": "Brand",
+          name: "PactSafe AI",
+        },
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "USD",
+          lowPrice: "0",
+          highPrice: "39",
+          offerCount: "3",
+          offers: [
+            {
+              "@type": "Offer",
+              name: "Free",
+              price: "0",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock",
+              url: `${BASE_URL}/pricing`,
+            },
+            {
+              "@type": "Offer",
+              name: "Pro",
+              price: "15",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock",
+              url: `${BASE_URL}/pricing`,
+            },
+            {
+              "@type": "Offer",
+              name: "Team",
+              price: "39",
+              priceCurrency: "USD",
+              availability: "https://schema.org/InStock",
+              url: `${BASE_URL}/pricing`,
+            },
+          ],
+        },
+      }}
+    />
+  );
+}

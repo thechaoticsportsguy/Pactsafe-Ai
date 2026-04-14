@@ -157,6 +157,9 @@ export default function Footer() {
             consult a licensed attorney.
           </p>
           <div className="flex items-center gap-4 text-xs text-foreground-subtle">
+            <span className="hidden md:inline-flex items-center gap-1.5">
+              Press <kbd>?</kbd> for shortcuts
+            </span>
             <span className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
+import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/StructuredData";
 
 const inter = Inter({
@@ -72,7 +73,10 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          {children}
+          <KeyboardShortcuts />
+        </ToastProvider>
       </body>
     </html>
   );
