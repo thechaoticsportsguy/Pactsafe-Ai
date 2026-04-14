@@ -39,6 +39,7 @@ import {
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
+import AnnouncementBar from "@/components/AnnouncementBar";
 import { FaqJsonLd, SoftwareAppJsonLd } from "@/components/StructuredData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +88,11 @@ export default function PactSafeLanding() {
     <div className="relative flex min-h-screen flex-col">
       <SoftwareAppJsonLd />
       <FaqJsonLd />
+      <AnnouncementBar
+        text="New: changelog, shareable analysis links, and PWA install."
+        ctaLabel="See what's shipped"
+        href="/changelog"
+      />
       <TopNav variant="marketing" />
       <main id="main-content" className="flex-1">
         <Hero />
@@ -1242,7 +1248,7 @@ function FAQ() {
   const faqs = [
     {
       q: "Is this a replacement for a lawyer?",
-      a: "No. PactSafe flags risks and gives you negotiation starting points — but for high-stakes or precedent-setting deals, you should still consult a licensed attorney. Think of it as your first line of defense.",
+      a: "No. PactSafe flags risks and gives you negotiation starting points — but for high-stakes or precedent-setting deals, you should still consult a licensed attorney. Think of it as your first line of defense, not your only line.",
     },
     {
       q: "What kinds of contracts can I analyze?",
@@ -1250,19 +1256,43 @@ function FAQ() {
     },
     {
       q: "How private is my data?",
-      a: "Uploads are TLS-encrypted, stored with AES-256, and never used for model training. You can delete any analysis from your history at any time.",
+      a: "Uploads are TLS 1.3-encrypted in transit and AES-256-encrypted at rest. We set zero-retention flags on all LLM API calls, and your contracts are never used to train any model. You can delete any analysis from your history with one click and the underlying file is purged within 24 hours. See the Security page for the full breakdown.",
     },
     {
       q: "How accurate is the analysis?",
-      a: "PactSafe catches patterns that match 50+ well-known risk categories with high precision. It will not catch everything a domain-specialist lawyer would — we're a screening tool, not a replacement.",
+      a: "PactSafe catches patterns across 50+ well-known risk categories with high precision. It won't catch everything a domain-specialist attorney would — we're a screening tool, not a replacement. On tested freelance contracts, we typically surface the top risks a lawyer would flag in a first-read review.",
     },
     {
       q: "Which file formats are supported?",
-      a: "PDF, DOCX, and TXT files up to 10 MB. You can also paste raw text directly.",
+      a: "PDF, DOCX, and TXT files up to 10 MB on the Free tier (25 MB on Pro, 50 MB on Team). You can also paste raw contract text directly — no upload needed.",
     },
     {
       q: "Do I need an account?",
-      a: "No. You can analyze a contract without signing up. Accounts are optional and let you save history and compare contracts over time.",
+      a: "No. You can analyze a contract without signing up. Accounts are optional and unlock history, search, comparison across analyses, and the negotiation composer.",
+    },
+    {
+      q: "What models do you use?",
+      a: "Primary analysis runs on Groq + Llama 3.3 70B for speed. Anthropic Claude is available as a fallback provider. We pick whichever gives the best precision for the contract type, with zero-retention enforced at the API layer.",
+    },
+    {
+      q: "Can I use this for client contracts I send out?",
+      a: "Yes — running your own outbound contracts through PactSafe is one of the best use cases. You'll catch the language you accidentally made too client-friendly and tighten protections before you send it.",
+    },
+    {
+      q: "What about non-English contracts?",
+      a: "Right now we're tuned for English (US and UK). Contracts in other languages will run, but the analysis quality drops. We plan to add Spanish, French, and German next.",
+    },
+    {
+      q: "What happens if the model gets something wrong?",
+      a: "It will sometimes miss things or raise soft alarms on safe clauses. Every flag shows the exact quoted text so you can judge it yourself. The risk score is a starting point for negotiation, not a verdict.",
+    },
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes. No annual lock-ins. Cancel from your account settings; we'll honor a pro-rata refund for the current month if you're on Pro or Team, and you get a 30-day money-back guarantee on your first paid month.",
+    },
+    {
+      q: "Is this built by a law firm?",
+      a: "No. PactSafe is built by engineers who got tired of signing lopsided contracts. That's why we're very explicit: we're a tool, not a law firm. The risk patterns are grounded in publicly documented legal best practices.",
     },
   ];
   const [open, setOpen] = useState<number | null>(0);

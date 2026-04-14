@@ -8,6 +8,9 @@ import {
   Zap,
   Users,
   Shield,
+  Lock,
+  RefreshCw,
+  CreditCard,
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
@@ -210,6 +213,7 @@ export default function PricingPage() {
       <TopNav variant="marketing" />
       <main id="main-content" className="flex-1">
         <Hero />
+        <TrustStrip />
         <Tiers />
         <Comparison />
         <Guarantees />
@@ -243,6 +247,52 @@ function Hero() {
           Pay only if you sign a lot of deals. No seat minimums on Pro, no
           annual lock-in, no surprise overages.
         </p>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Trust strip — small badges under the hero
+// ---------------------------------------------------------------------------
+function TrustStrip() {
+  const items = [
+    {
+      icon: RefreshCw,
+      title: "30-day refund",
+      body: "No questions asked on your first paid month.",
+    },
+    {
+      icon: CreditCard,
+      title: "Stripe-powered billing",
+      body: "We never touch your card. Cancel anytime.",
+    },
+    {
+      icon: Lock,
+      title: "Private by default",
+      body: "Encrypted end-to-end. Never used for training.",
+    },
+  ];
+  return (
+    <section className="relative pt-2 pb-10">
+      <div className="container-app">
+        <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-2xl border border-border-subtle bg-surface/40 p-5">
+          {items.map((it) => (
+            <div key={it.title} className="flex items-start gap-3">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
+                <it.icon className="h-4 w-4" strokeWidth={2} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {it.title}
+                </p>
+                <p className="mt-0.5 text-xs text-foreground-muted leading-relaxed">
+                  {it.body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -372,7 +422,8 @@ function Comparison() {
           </h2>
         </div>
 
-        <div className="mt-14 overflow-hidden rounded-2xl border border-border bg-surface/40">
+        <div className="mt-14 overflow-x-auto overflow-y-hidden rounded-2xl border border-border bg-surface/40 no-scrollbar">
+          <div className="min-w-[720px]">
           {/* Header row */}
           <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center px-6 py-5 border-b border-border/70">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
@@ -422,7 +473,11 @@ function Comparison() {
               ))}
             </div>
           ))}
+          </div>
         </div>
+        <p className="mt-3 md:hidden text-center text-[11px] text-foreground-subtle">
+          ← Scroll horizontally to compare →
+        </p>
       </div>
     </section>
   );

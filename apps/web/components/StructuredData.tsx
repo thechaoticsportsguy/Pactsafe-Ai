@@ -98,7 +98,7 @@ export function FaqJsonLd() {
   const faqs = [
     {
       q: "Is this a replacement for a lawyer?",
-      a: "No. PactSafe flags risks and gives you negotiation starting points, but for high-stakes or precedent-setting deals you should still consult a licensed attorney. Think of it as your first line of defense.",
+      a: "No. PactSafe flags risks and gives you negotiation starting points — but for high-stakes or precedent-setting deals you should still consult a licensed attorney. Think of it as your first line of defense, not your only one.",
     },
     {
       q: "What kinds of contracts can I analyze?",
@@ -106,19 +106,27 @@ export function FaqJsonLd() {
     },
     {
       q: "How private is my data?",
-      a: "Uploads are TLS-encrypted, stored with AES-256, and never used for model training. You can delete any analysis from your history at any time.",
+      a: "Uploads are TLS 1.3 encrypted in transit and AES-256 encrypted at rest. Zero-retention flags are set on all LLM API calls, and your contracts are never used to train any model. You can delete any analysis with one click.",
     },
     {
       q: "How accurate is the analysis?",
-      a: "PactSafe catches patterns that match 50+ well-known risk categories with high precision. It will not catch everything a domain-specialist lawyer would — we're a screening tool, not a replacement.",
+      a: "PactSafe catches patterns across 50+ well-known risk categories with high precision. It will not catch everything a domain-specialist attorney would — we are a screening tool, not a replacement.",
     },
     {
       q: "Which file formats are supported?",
-      a: "PDF, DOCX, and TXT files up to 10 MB. You can also paste raw text directly.",
+      a: "PDF, DOCX, and TXT files up to 10 MB on the Free tier, 25 MB on Pro, and 50 MB on Team. You can also paste raw contract text directly.",
     },
     {
       q: "Do I need an account?",
-      a: "No. You can analyze a contract without signing up. Accounts are optional and let you save history and compare contracts over time.",
+      a: "No. You can analyze a contract without signing up. Accounts are optional and unlock history, search, contract comparison, and the negotiation composer.",
+    },
+    {
+      q: "What models do you use?",
+      a: "Primary analysis runs on Groq + Llama 3.3 70B for speed. Anthropic Claude is available as a fallback provider. Zero-retention is enforced at the API layer.",
+    },
+    {
+      q: "Can I cancel anytime?",
+      a: "Yes. No annual lock-in. Cancel from your account settings and get a pro-rata refund on the current month plus a 30-day money-back guarantee on your first paid month.",
     },
   ];
 
