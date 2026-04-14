@@ -5,7 +5,7 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
-  LLM_PROVIDER        = "anthropic"
+  LLM_PROVIDER        = "groq"
   ANTHROPIC_MODEL     = "claude-opus-4-5"
   UPLOAD_DIR          = "/data/uploads"
   MAX_UPLOAD_MB       = "10"
