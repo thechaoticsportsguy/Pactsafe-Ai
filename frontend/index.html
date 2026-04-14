@@ -34,7 +34,6 @@
       overflow-x: hidden;
     }
 
-    /* Background grid */
     body::before {
       content: '';
       position: fixed;
@@ -48,16 +47,15 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 860px;
       margin: 0 auto;
       padding: 0 24px;
       position: relative;
       z-index: 1;
     }
 
-    /* Header */
     header {
-      padding: 48px 0 32px;
+      padding: 52px 0 36px;
       text-align: center;
     }
 
@@ -65,16 +63,16 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
     .logo-icon {
-      width: 44px; height: 44px;
+      width: 46px; height: 46px;
       background: linear-gradient(135deg, var(--accent), #a855f7);
-      border-radius: 12px;
+      border-radius: 13px;
       display: flex; align-items: center; justify-content: center;
       font-size: 22px;
-      box-shadow: 0 0 30px var(--accent-glow);
+      box-shadow: 0 0 32px var(--accent-glow);
     }
 
     .logo-text {
@@ -86,7 +84,7 @@
     }
 
     h1 {
-      font-size: clamp(32px, 5vw, 52px);
+      font-size: clamp(30px, 5vw, 50px);
       font-weight: 700;
       line-height: 1.1;
       margin-bottom: 16px;
@@ -96,41 +94,104 @@
     }
 
     .subtitle {
-      font-size: 17px;
+      font-size: 16px;
       color: var(--text-mid);
-      max-width: 500px;
-      margin: 0 auto 12px;
-      line-height: 1.6;
+      max-width: 480px;
+      margin: 0 auto 14px;
+      line-height: 1.7;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 44px;
     }
 
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(124,92,252,0.15);
-      border: 1px solid rgba(124,92,252,0.3);
+      gap: 5px;
+      background: rgba(124,92,252,0.12);
+      border: 1px solid rgba(124,92,252,0.25);
       color: var(--accent2);
-      padding: 4px 12px;
+      padding: 5px 13px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 500;
-      margin-bottom: 40px;
     }
 
-    /* Upload zone */
-    .upload-section {
+    .badge.green {
+      background: rgba(34,197,94,0.1);
+      border-color: rgba(34,197,94,0.25);
+      color: #4ade80;
+    }
+
+    /* Card */
+    .card {
       background: var(--bg2);
       border: 1.5px solid var(--border);
       border-radius: 20px;
-      padding: 40px;
-      margin-bottom: 24px;
+      overflow: hidden;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .upload-section:hover {
-      border-color: rgba(124,92,252,0.4);
-      box-shadow: 0 0 40px rgba(124,92,252,0.08);
+    .card:hover {
+      border-color: rgba(124,92,252,0.3);
+      box-shadow: 0 0 40px rgba(124,92,252,0.06);
     }
+
+    /* Provider selector */
+    .provider-bar {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .provider-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+    }
+
+    .provider-options {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .provider-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      transition: all 0.15s;
+    }
+
+    .provider-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 12px var(--accent-glow);
+    }
+
+    .provider-btn:hover:not(.active) {
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    /* Upload section */
+    .upload-body { padding: 28px; }
 
     .tabs {
       display: flex;
@@ -138,7 +199,7 @@
       background: var(--bg3);
       border-radius: 10px;
       padding: 4px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       width: fit-content;
     }
 
@@ -163,11 +224,10 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Drop zone */
     .dropzone {
       border: 2px dashed var(--border);
       border-radius: 14px;
-      padding: 56px 24px;
+      padding: 52px 24px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
@@ -179,6 +239,11 @@
       background: rgba(124,92,252,0.05);
     }
 
+    .dropzone.has-file {
+      border-color: var(--accent);
+      background: rgba(124,92,252,0.07);
+    }
+
     .dropzone input[type="file"] {
       position: absolute;
       inset: 0;
@@ -188,28 +253,10 @@
       height: 100%;
     }
 
-    .dropzone-icon { font-size: 44px; margin-bottom: 16px; }
+    .dropzone-icon { font-size: 42px; margin-bottom: 14px; }
+    .dropzone-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .dropzone-sub { font-size: 13px; color: var(--text-dim); }
 
-    .dropzone-title {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .dropzone-sub {
-      font-size: 13px;
-      color: var(--text-dim);
-    }
-
-    .dropzone.has-file {
-      border-color: var(--accent);
-      background: rgba(124,92,252,0.08);
-    }
-
-    .dropzone.has-file .dropzone-icon::after { content: '✅'; }
-
-    /* Textarea */
     textarea {
       width: 100%;
       background: var(--bg3);
@@ -221,7 +268,7 @@
       line-height: 1.7;
       padding: 16px;
       resize: vertical;
-      min-height: 180px;
+      min-height: 190px;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -229,24 +276,33 @@
     textarea:focus { border-color: var(--accent); }
     textarea::placeholder { color: var(--text-dim); }
 
-    /* API key row */
     .key-row {
       display: flex;
       gap: 12px;
-      margin-top: 20px;
+      margin-top: 18px;
       align-items: flex-end;
+      flex-wrap: wrap;
     }
 
-    .input-group { flex: 1; }
+    .input-group { flex: 1; min-width: 200px; }
 
     .input-group label {
       display: block;
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 11px;
+      font-weight: 600;
       color: var(--text-dim);
       margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+    }
+
+    .input-group a {
+      color: var(--accent2);
+      text-decoration: none;
+      font-size: 11px;
+      float: right;
+      font-weight: 400;
+      margin-top: 1px;
     }
 
     input[type="password"], input[type="text"] {
@@ -265,10 +321,21 @@
     input:focus { border-color: var(--accent); }
     input::placeholder { color: var(--text-dim); }
 
-    /* Analyze button */
+    .error-box {
+      background: rgba(239,68,68,0.08);
+      border: 1.5px solid rgba(239,68,68,0.3);
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: #fca5a5;
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+    }
+    .error-box.show { display: block; }
+
     .btn-analyze {
       width: 100%;
-      margin-top: 24px;
+      margin-top: 20px;
       padding: 16px;
       background: linear-gradient(135deg, var(--accent), #a855f7);
       color: #fff;
@@ -287,275 +354,35 @@
 
     .btn-analyze:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 8px 32px var(--accent-glow);
+      box-shadow: 0 8px 36px var(--accent-glow);
     }
 
-    .btn-analyze:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn-analyze:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
     /* Loading */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 60px 0;
-    }
-
+    .loading { display: none; text-align: center; padding: 70px 0; }
     .loading.show { display: block; }
 
     .spinner {
-      width: 48px; height: 48px;
+      width: 50px; height: 50px;
       border: 3px solid var(--border);
       border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 20px;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 22px;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .loading-text {
-      font-size: 16px;
-      color: var(--text-mid);
-    }
-
-    .loading-sub {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-top: 6px;
-    }
+    .loading-text { font-size: 16px; color: var(--text-mid); font-weight: 500; }
+    .loading-sub { font-size: 13px; color: var(--text-dim); margin-top: 8px; }
 
     /* Results */
     #results { display: none; }
     #results.show { display: block; }
 
-    .result-header {
-      background: var(--bg2);
-      border: 1.5px solid var(--border);
-      border-radius: 20px;
-      padding: 32px;
-      margin-bottom: 20px;
-    }
-
-    .contract-type {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent2);
-      margin-bottom: 8px;
-    }
-
-    .verdict-text {
-      font-size: 16px;
-      color: var(--text-mid);
-      line-height: 1.7;
-      margin-bottom: 28px;
-    }
-
-    /* Risk score */
-    .risk-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .risk-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      min-width: 80px;
-    }
-
-    .risk-bar-wrap {
-      flex: 1;
-      min-width: 160px;
-      height: 8px;
-      background: var(--bg3);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .risk-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 1s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    .risk-score-num {
-      font-size: 22px;
-      font-weight: 700;
-      min-width: 60px;
-      text-align: right;
-    }
-
-    .risk-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Cards grid */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: var(--bg2);
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .card-header {
-      padding: 20px 24px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card-icon { font-size: 20px; }
-
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .card-count {
-      margin-left: auto;
-      background: var(--bg3);
-      border-radius: 99px;
-      padding: 2px 10px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .card-body { padding: 16px 24px 20px; }
-
-    /* Flag items */
-    .flag-item {
-      padding: 14px 16px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      border-left: 3px solid;
-    }
-
-    .flag-item:last-child { margin-bottom: 0; }
-
-    .flag-item.critical {
-      background: rgba(239,68,68,0.08);
-      border-color: var(--red);
-    }
-
-    .flag-item.high {
-      background: rgba(249,115,22,0.08);
-      border-color: var(--orange);
-    }
-
-    .flag-item.medium {
-      background: rgba(234,179,8,0.08);
-      border-color: var(--yellow);
-    }
-
-    .flag-item.low {
-      background: rgba(34,197,94,0.08);
-      border-color: var(--green);
-    }
-
-    .flag-severity {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .flag-severity.critical { color: var(--red); }
-    .flag-severity.high { color: var(--orange); }
-    .flag-severity.medium { color: var(--yellow); }
-    .flag-severity.low { color: var(--green); }
-
-    .flag-clause {
-      font-size: 12px;
-      color: var(--text-dim);
-      font-style: italic;
-      margin-bottom: 6px;
-      line-height: 1.5;
-    }
-
-    .flag-explanation {
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    /* List items */
-    .list-item {
-      display: flex;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--text-mid);
-    }
-
-    .list-item:last-child { border-bottom: none; padding-bottom: 0; }
-
-    .list-item-num {
-      min-width: 24px;
-      height: 24px;
-      background: var(--bg3);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--accent2);
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    /* Disclaimer */
-    .disclaimer {
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-dim);
-      padding: 20px 0 48px;
-    }
-
-    /* Error */
-    .error-box {
-      background: rgba(239,68,68,0.08);
-      border: 1.5px solid rgba(239,68,68,0.3);
-      border-radius: 12px;
-      padding: 20px;
-      color: var(--red);
-      font-size: 14px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .error-box.show { display: block; }
-
-    /* Reset button */
     .btn-reset {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
       background: var(--bg3);
@@ -566,18 +393,198 @@
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       transition: all 0.15s;
     }
 
-    .btn-reset:hover {
-      border-color: var(--accent);
-      color: var(--accent2);
+    .btn-reset:hover { border-color: var(--accent); color: var(--accent2); }
+
+    .result-header {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 16px;
     }
 
-    @media (max-width: 600px) {
+    .contract-type {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+
+    .verdict-text {
+      font-size: 15px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      margin-bottom: 26px;
+    }
+
+    .risk-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .risk-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .risk-bar-wrap {
+      flex: 1;
+      min-width: 120px;
+      height: 7px;
+      background: var(--bg3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .risk-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .risk-score-num {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .risk-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Result cards */
+    .results-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .result-card {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .result-card-header {
+      padding: 18px 22px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-card-icon { font-size: 18px; }
+    .result-card-title { font-size: 15px; font-weight: 600; }
+
+    .result-card-count {
+      margin-left: auto;
+      background: var(--bg3);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .result-card-body { padding: 14px 22px 20px; }
+
+    .flag-item {
+      padding: 13px 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 3px solid;
+    }
+    .flag-item:last-child { margin-bottom: 0; }
+    .flag-item.critical { background: rgba(239,68,68,0.08); border-color: var(--red); }
+    .flag-item.high { background: rgba(249,115,22,0.08); border-color: var(--orange); }
+    .flag-item.medium { background: rgba(234,179,8,0.07); border-color: var(--yellow); }
+    .flag-item.low { background: rgba(34,197,94,0.07); border-color: var(--green); }
+
+    .flag-sev {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .flag-sev.critical { color: var(--red); }
+    .flag-sev.high { color: var(--orange); }
+    .flag-sev.medium { color: var(--yellow); }
+    .flag-sev.low { color: var(--green); }
+
+    .flag-clause {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-bottom: 5px;
+      line-height: 1.5;
+    }
+
+    .flag-explanation {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .list-item {
+      display: flex;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--text-mid);
+    }
+    .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .list-item:first-child { padding-top: 0; }
+
+    .list-num {
+      min-width: 22px;
+      height: 22px;
+      background: rgba(124,92,252,0.15);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent2);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .disclaimer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      padding: 16px 0 52px;
+    }
+
+    @media (max-width: 580px) {
       .key-row { flex-direction: column; }
-      .upload-section { padding: 24px; }
+      .upload-body { padding: 20px; }
+      .provider-bar { padding: 16px 20px; }
     }
   </style>
 </head>
@@ -590,53 +597,75 @@
       <span class="logo-text">PactSafe AI</span>
     </div>
     <h1>Know what you're signing.</h1>
-    <p class="subtitle">AI-powered contract analysis. Spot red flags, missing protections, and exactly what to negotiate — in seconds.</p>
-    <div class="badge">⚡ Powered by Claude AI</div>
+    <p class="subtitle">AI-powered contract analysis. Spot red flags, missing protections, and exactly what to negotiate — instantly.</p>
+    <div class="badges">
+      <span class="badge">⚡ Llama 3.1 via Groq</span>
+      <span class="badge green">🆓 Free to use</span>
+      <span class="badge">🔒 Runs in your browser</span>
+    </div>
   </header>
 
-  <!-- Upload Section -->
-  <div class="upload-section" id="uploadSection">
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('text')">Paste Text</button>
-      <button class="tab" onclick="switchTab('file')">Upload File</button>
-    </div>
+  <!-- Main input card -->
+  <div class="card" id="uploadSection">
 
-    <!-- Text tab -->
-    <div class="tab-content active" id="tab-text">
-      <textarea id="contractText" placeholder="Paste your contract text here…&#10;&#10;e.g. This agreement allows termination at any time without payment. The client retains full ownership of all work immediately..."></textarea>
-    </div>
-
-    <!-- File tab -->
-    <div class="tab-content" id="tab-file">
-      <div class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" onchange="handleFile(this)" />
-        <div class="dropzone-icon" id="dropzoneIcon">📄</div>
-        <div class="dropzone-title" id="dropzoneTitle">Drop your contract here</div>
-        <div class="dropzone-sub" id="dropzoneSub">PDF, DOCX, or TXT · Click to browse</div>
+    <!-- Provider selector -->
+    <div class="provider-bar">
+      <span class="provider-label">AI Model</span>
+      <div class="provider-options">
+        <button class="provider-btn active" onclick="setProvider('groq')">🦙 Llama 3.1 (Groq · Free)</button>
+        <button class="provider-btn" onclick="setProvider('claude')">✦ Claude (Anthropic)</button>
+        <button class="provider-btn" onclick="setProvider('openrouter')">🌐 OpenRouter</button>
       </div>
     </div>
 
-    <!-- API Key -->
-    <div class="key-row">
-      <div class="input-group">
-        <label>Anthropic API Key</label>
-        <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" />
+    <div class="upload-body">
+      <!-- Input tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('text')">Paste Text</button>
+        <button class="tab" onclick="switchTab('file')">Upload File</button>
       </div>
+
+      <div class="tab-content active" id="tab-text">
+        <textarea id="contractText" placeholder="Paste your contract text here…&#10;&#10;Example: This agreement allows termination at any time without payment. The client retains full ownership of all work immediately upon creation. Unlimited revisions required..."></textarea>
+      </div>
+
+      <div class="tab-content" id="tab-file">
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".pdf,.docx,.txt" onchange="handleFile(this)" />
+          <div class="dropzone-icon" id="dropzoneIcon">📄</div>
+          <div class="dropzone-title" id="dropzoneTitle">Drop your contract here</div>
+          <div class="dropzone-sub" id="dropzoneSub">PDF, DOCX, or TXT · Click to browse</div>
+        </div>
+      </div>
+
+      <!-- API Key -->
+      <div class="key-row">
+        <div class="input-group" id="keyGroup">
+          <label>
+            <span id="keyLabel">Groq API Key</span>
+            <a href="https://console.groq.com" target="_blank" id="keyLink">Get free key →</a>
+          </label>
+          <input type="password" id="apiKey" placeholder="gsk_..." autocomplete="off" />
+        </div>
+        <div class="input-group" id="modelGroup" style="display:none; max-width: 260px;">
+          <label>Model</label>
+          <input type="text" id="modelInput" value="meta-llama/llama-4-scout-17b-16e-instruct" />
+        </div>
+      </div>
+
+      <div class="error-box" id="errorBox"></div>
+
+      <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
+        🔍 Analyze Contract
+      </button>
     </div>
-
-    <!-- Error -->
-    <div class="error-box" id="errorBox"></div>
-
-    <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
-      🔍 Analyze Contract
-    </button>
   </div>
 
   <!-- Loading -->
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div class="loading-text">Analyzing your contract…</div>
-    <div class="loading-sub">Claude is reviewing every clause. This takes 10–30 seconds.</div>
+    <div class="loading-text" id="loadingText">Analyzing your contract…</div>
+    <div class="loading-sub">Reading every clause. Usually takes 5–15 seconds.</div>
   </div>
 
   <!-- Results -->
@@ -647,7 +676,7 @@
       <div class="contract-type" id="contractType"></div>
       <div class="verdict-text" id="verdictText"></div>
       <div class="risk-row">
-        <span class="risk-label">Risk Score</span>
+        <span class="risk-label">Risk</span>
         <div class="risk-bar-wrap">
           <div class="risk-bar-fill" id="riskBarFill"></div>
         </div>
@@ -656,47 +685,97 @@
       </div>
     </div>
 
-    <div class="cards-grid">
-      <!-- Red Flags -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-icon">🚩</span>
-          <span class="card-title">Red Flags</span>
-          <span class="card-count" id="flagCount"></span>
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-card-header">
+          <span class="result-card-icon">🚩</span>
+          <span class="result-card-title">Red Flags</span>
+          <span class="result-card-count" id="flagCount">0</span>
         </div>
-        <div class="card-body" id="redFlagsBody"></div>
+        <div class="result-card-body" id="redFlagsBody"></div>
       </div>
 
-      <!-- Missing Protections -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-icon">🛡️</span>
-          <span class="card-title">Missing Protections</span>
-          <span class="card-count" id="missingCount"></span>
+      <div class="result-card">
+        <div class="result-card-header">
+          <span class="result-card-icon">🛡️</span>
+          <span class="result-card-title">Missing Protections</span>
+          <span class="result-card-count" id="missingCount">0</span>
         </div>
-        <div class="card-body" id="missingBody"></div>
+        <div class="result-card-body" id="missingBody"></div>
       </div>
 
-      <!-- Negotiation -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-icon">💬</span>
-          <span class="card-title">Negotiation Suggestions</span>
-          <span class="card-count" id="negoCount"></span>
+      <div class="result-card">
+        <div class="result-card-header">
+          <span class="result-card-icon">💬</span>
+          <span class="result-card-title">Negotiation Suggestions</span>
+          <span class="result-card-count" id="negoCount">0</span>
         </div>
-        <div class="card-body" id="negoBody"></div>
+        <div class="result-card-body" id="negoBody"></div>
       </div>
     </div>
 
-    <div class="disclaimer">⚖️ Not legal advice. For high-stakes contracts, always consult a licensed attorney.</div>
+    <div class="disclaimer">⚖️ Not legal advice. For high-stakes contracts, consult a licensed attorney.</div>
   </div>
 
 </div>
 
 <script>
+  // ─── State ───────────────────────────────────────────────────────────────
   let activeTab = 'text';
   let selectedFile = null;
+  let provider = 'groq';
 
+  // ─── Provider config ─────────────────────────────────────────────────────
+  const PROVIDERS = {
+    groq: {
+      name: 'Groq (Llama 3.1)',
+      keyPlaceholder: 'gsk_...',
+      keyLabel: 'Groq API Key',
+      keyLink: 'https://console.groq.com',
+      keyLinkText: 'Get free key →',
+      defaultModel: 'llama-3.1-8b-instant',
+      showModel: false,
+    },
+    claude: {
+      name: 'Claude',
+      keyPlaceholder: 'sk-ant-...',
+      keyLabel: 'Anthropic API Key',
+      keyLink: 'https://console.anthropic.com',
+      keyLinkText: 'Get key →',
+      defaultModel: 'claude-opus-4-5',
+      showModel: false,
+    },
+    openrouter: {
+      name: 'OpenRouter',
+      keyPlaceholder: 'sk-or-...',
+      keyLabel: 'OpenRouter API Key',
+      keyLink: 'https://openrouter.ai',
+      keyLinkText: 'Get free key →',
+      defaultModel: 'meta-llama/llama-3.1-8b-instruct:free',
+      showModel: true,
+    },
+  };
+
+  function setProvider(p) {
+    provider = p;
+    document.querySelectorAll('.provider-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', ['groq','claude','openrouter'][i] === p);
+    });
+    const cfg = PROVIDERS[p];
+    document.getElementById('apiKey').placeholder = cfg.keyPlaceholder;
+    document.getElementById('apiKey').value = '';
+    document.getElementById('keyLabel').textContent = cfg.keyLabel;
+    document.getElementById('keyLink').href = cfg.keyLink;
+    document.getElementById('keyLink').textContent = cfg.keyLinkText;
+    document.getElementById('modelGroup').style.display = cfg.showModel ? 'block' : 'none';
+    document.getElementById('modelInput').value = cfg.defaultModel;
+    document.getElementById('loadingText').textContent =
+      p === 'groq' ? 'Llama 3.1 is analyzing your contract…' :
+      p === 'claude' ? 'Claude is reviewing every clause…' :
+      'AI is analyzing your contract…';
+  }
+
+  // ─── Tabs ─────────────────────────────────────────────────────────────────
   function switchTab(tab) {
     activeTab = tab;
     document.querySelectorAll('.tab').forEach((t, i) => {
@@ -706,97 +785,67 @@
     document.getElementById(`tab-${tab}`).classList.add('active');
   }
 
+  // ─── File handling ────────────────────────────────────────────────────────
   function handleFile(input) {
     const file = input.files[0];
     if (!file) return;
     selectedFile = file;
-    const dz = document.getElementById('dropzone');
-    dz.classList.add('has-file');
+    document.getElementById('dropzone').classList.add('has-file');
     document.getElementById('dropzoneIcon').textContent = '✅';
     document.getElementById('dropzoneTitle').textContent = file.name;
-    document.getElementById('dropzoneSub').textContent = `${(file.size / 1024).toFixed(1)} KB · Click to change`;
+    document.getElementById('dropzoneSub').textContent = `${(file.size/1024).toFixed(1)} KB · Click to change`;
   }
 
-  // Drag and drop
   const dz = document.getElementById('dropzone');
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
   dz.addEventListener('drop', e => {
-    e.preventDefault();
-    dz.classList.remove('drag-over');
+    e.preventDefault(); dz.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
-    if (file) {
-      document.getElementById('fileInput').files = e.dataTransfer.files;
-      handleFile(document.getElementById('fileInput'));
-    }
+    if (file) { document.getElementById('fileInput').files = e.dataTransfer.files; handleFile(document.getElementById('fileInput')); }
   });
 
+  // ─── Error ────────────────────────────────────────────────────────────────
   function showError(msg) {
-    const box = document.getElementById('errorBox');
-    box.textContent = '⚠️ ' + msg;
-    box.classList.add('show');
+    const b = document.getElementById('errorBox');
+    b.innerHTML = '⚠️ ' + esc(msg);
+    b.classList.add('show');
   }
+  function hideError() { document.getElementById('errorBox').classList.remove('show'); }
 
-  function hideError() {
-    document.getElementById('errorBox').classList.remove('show');
-  }
-
-  async function readFileAsText(file) {
-    // For TXT files
-    if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-      return new Promise((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = e => res(e.target.result);
-        reader.onerror = rej;
-        reader.readAsText(file);
-      });
-    }
-    // For PDF/DOCX — send to backend
-    return null;
-  }
-
+  // ─── Main analysis ───────────────────────────────────────────────────────
   async function runAnalysis() {
     hideError();
     const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) { showError('Enter your Anthropic API key above.'); return; }
+    if (!apiKey) { showError(`Enter your ${PROVIDERS[provider].keyLabel} above. ${PROVIDERS[provider].keyLinkText}`); return; }
 
     let contractText = '';
-    let fileToSend = null;
 
     if (activeTab === 'text') {
       contractText = document.getElementById('contractText').value.trim();
       if (!contractText) { showError('Paste your contract text first.'); return; }
-      if (contractText.length < 50) { showError('Contract text is too short.'); return; }
+      if (contractText.length < 50) { showError('Contract text is too short — paste the full contract.'); return; }
     } else {
-      if (!selectedFile) { showError('Please select a contract file.'); return; }
+      if (!selectedFile) { showError('Select a contract file first.'); return; }
       if (selectedFile.name.endsWith('.txt')) {
-        contractText = await readFileAsText(selectedFile);
+        contractText = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = e => res(e.target.result);
+          r.onerror = rej;
+          r.readAsText(selectedFile);
+        });
       } else {
-        fileToSend = selectedFile;
+        showError('PDF/DOCX parsing requires a backend. For now, copy-paste the text instead.');
+        return;
       }
     }
 
-    // Show loading
     document.getElementById('uploadSection').style.display = 'none';
     document.getElementById('loading').classList.add('show');
     document.getElementById('results').classList.remove('show');
 
     try {
-      let result;
-
-      if (fileToSend) {
-        // Send file to backend
-        const formData = new FormData();
-        formData.append('file', fileToSend);
-        formData.append('api_key', apiKey);
-        const resp = await fetch('/analyze', { method: 'POST', body: formData });
-        if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-        result = await resp.json();
-      } else {
-        // Send text directly to Claude API
-        result = await analyzeWithClaude(contractText, apiKey);
-      }
-
+      const result = await callAI(contractText.slice(0, 60000), apiKey);
       renderResults(result);
     } catch (err) {
       document.getElementById('uploadSection').style.display = 'block';
@@ -805,26 +854,61 @@
     }
   }
 
-  async function analyzeWithClaude(contractText, apiKey) {
-    const prompt = `Analyze this contract and return ONLY a JSON object — no markdown, no text outside JSON.
+  // ─── AI Calls ────────────────────────────────────────────────────────────
+  const SYSTEM = 'You are a senior contract attorney protecting freelancers from exploitative agreements. Be direct. Use plain English. No legal jargon. Output ONLY valid JSON, nothing else.';
+
+  function buildPrompt(text) {
+    return `Analyze this contract. Return ONLY a JSON object — no markdown, no text outside JSON.
 
 CONTRACT:
 ---
-${contractText.slice(0, 60000)}
+${text}
 ---
 
-Return EXACTLY this JSON:
+Return EXACTLY this JSON structure:
 {
   "contract_type": "type of contract",
-  "risk_score": <integer 0-100>,
-  "overall_summary": "2-3 plain-English sentences",
-  "red_flags": [{"clause": "quote", "explanation": "why dangerous", "severity": "CRITICAL|HIGH|MEDIUM|LOW"}],
-  "missing_protections": ["what's missing and why it matters"],
-  "negotiation_suggestions": ["specific actionable suggestion"]
+  "risk_score": <integer 0-100, where 0=perfectly safe and 100=do not sign>,
+  "overall_summary": "2-3 plain English sentences summarizing how fair this contract is",
+  "red_flags": [
+    {"clause": "exact quote or paraphrase from contract", "explanation": "why this is dangerous", "severity": "CRITICAL or HIGH or MEDIUM or LOW"}
+  ],
+  "missing_protections": ["description of what's missing and why it matters"],
+  "negotiation_suggestions": ["specific actionable suggestion with example language if possible"]
 }
 
-Rules: 3-7 red flags ordered CRITICAL first. 3-5 missing protections. 3-5 negotiation suggestions. risk_score: 0=safe, 100=do not sign.`;
+Rules: 3-7 red_flags ordered CRITICAL first. 3-5 missing_protections. 3-5 negotiation_suggestions.`;
+  }
 
+  async function callAI(text, apiKey) {
+    if (provider === 'groq') return callGroq(text, apiKey);
+    if (provider === 'claude') return callClaude(text, apiKey);
+    if (provider === 'openrouter') return callOpenRouter(text, apiKey);
+  }
+
+  async function callGroq(text, apiKey) {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user', content: buildPrompt(text) },
+        ],
+        temperature: 0.1,
+        max_tokens: 2048,
+      }),
+    });
+    if (!resp.ok) {
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `Groq API error ${resp.status}. Check your key at console.groq.com`);
+    }
+    const data = await resp.json();
+    return parseJSON(data.choices?.[0]?.message?.content || '');
+  }
+
+  async function callClaude(text, apiKey) {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -836,43 +920,63 @@ Rules: 3-7 red flags ordered CRITICAL first. 3-5 missing protections. 3-5 negoti
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: 2048,
-        system: 'You are a senior contract attorney protecting freelancers. Be direct. Plain English. No jargon. Output only valid JSON.',
-        messages: [{ role: 'user', content: prompt }],
+        system: SYSTEM,
+        messages: [{ role: 'user', content: buildPrompt(text) }],
       }),
     });
-
     if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `Claude API error ${resp.status}`);
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `Claude API error ${resp.status}`);
     }
-
     const data = await resp.json();
-    const raw = data.content?.[0]?.text || '';
-
-    // Parse JSON from response
-    let cleaned = raw.trim();
-    const fence = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (fence) cleaned = fence[1].trim();
-
-    try {
-      return JSON.parse(cleaned);
-    } catch {
-      const match = cleaned.match(/\{[\s\S]*\}/);
-      if (match) return JSON.parse(match[0]);
-      throw new Error('Could not parse AI response. Try again.');
-    }
+    return parseJSON(data.content?.[0]?.text || '');
   }
 
+  async function callOpenRouter(text, apiKey) {
+    const model = document.getElementById('modelInput').value.trim() || 'meta-llama/llama-3.1-8b-instruct:free';
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://pactsafe.ai',
+        'X-Title': 'PactSafe AI',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user', content: buildPrompt(text) },
+        ],
+        temperature: 0.1,
+      }),
+    });
+    if (!resp.ok) {
+      const e = await resp.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `OpenRouter error ${resp.status}`);
+    }
+    const data = await resp.json();
+    return parseJSON(data.choices?.[0]?.message?.content || '');
+  }
+
+  function parseJSON(raw) {
+    let s = raw.trim();
+    const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fence) s = fence[1].trim();
+    try { return JSON.parse(s); } catch {}
+    const m = s.match(/\{[\s\S]*\}/);
+    if (m) { try { return JSON.parse(m[0]); } catch {} }
+    throw new Error('Could not parse AI response. Try again.');
+  }
+
+  // ─── Render results ───────────────────────────────────────────────────────
   function renderResults(data) {
     document.getElementById('loading').classList.remove('show');
-
     if (data.error) throw new Error(data.error);
 
-    // Header
     document.getElementById('contractType').textContent = data.contract_type || 'Contract Analysis';
     document.getElementById('verdictText').textContent = data.overall_summary || '';
 
-    // Risk score
     const score = Math.max(0, Math.min(100, parseInt(data.risk_score) || 50));
     let color, label;
     if (score <= 30) { color = '#22c55e'; label = 'Low Risk'; }
@@ -880,74 +984,65 @@ Rules: 3-7 red flags ordered CRITICAL first. 3-5 missing protections. 3-5 negoti
     else if (score <= 80) { color = '#f97316'; label = 'High Risk'; }
     else { color = '#ef4444'; label = 'Critical Risk'; }
 
-    document.getElementById('riskBarFill').style.width = score + '%';
-    document.getElementById('riskBarFill').style.background = `linear-gradient(90deg, ${color}aa, ${color})`;
     document.getElementById('riskScoreNum').textContent = score + '/100';
     document.getElementById('riskScoreNum').style.color = color;
     const badge = document.getElementById('riskBadge');
     badge.textContent = label;
-    badge.style.background = color + '22';
-    badge.style.color = color;
-    badge.style.border = `1px solid ${color}44`;
+    badge.style.cssText = `background:${color}22; color:${color}; border:1px solid ${color}44`;
+    document.getElementById('riskBarFill').style.background = `linear-gradient(90deg, ${color}88, ${color})`;
+    setTimeout(() => { document.getElementById('riskBarFill').style.width = score + '%'; }, 80);
 
     // Red flags
-    const flags = data.red_flags || [];
+    const flags = (data.red_flags || []).slice(0, 8);
     document.getElementById('flagCount').textContent = flags.length;
-    const flagsHtml = flags.map(f => {
-      const sev = (f.severity || 'medium').toLowerCase();
-      return `<div class="flag-item ${sev}">
-        <div class="flag-severity ${sev}">${severityEmoji(sev)} ${sev.toUpperCase()}</div>
-        ${f.clause ? `<div class="flag-clause">"${escHtml(f.clause)}"</div>` : ''}
-        <div class="flag-explanation">${escHtml(f.explanation)}</div>
+    document.getElementById('redFlagsBody').innerHTML = flags.length ? flags.map(f => {
+      const s = (f.severity || 'medium').toLowerCase();
+      return `<div class="flag-item ${s}">
+        <div class="flag-sev ${s}">${sevEmoji(s)} ${s.toUpperCase()}</div>
+        ${f.clause ? `<div class="flag-clause">"${esc(f.clause)}"</div>` : ''}
+        <div class="flag-explanation">${esc(f.explanation)}</div>
       </div>`;
-    }).join('');
-    document.getElementById('redFlagsBody').innerHTML = flagsHtml || '<div style="color:var(--text-dim);font-size:14px">No red flags detected.</div>';
+    }).join('') : noData('No red flags detected.');
 
-    // Missing protections
-    const missing = data.missing_protections || [];
+    // Missing
+    const missing = (data.missing_protections || []).slice(0, 6);
     document.getElementById('missingCount').textContent = missing.length;
-    document.getElementById('missingBody').innerHTML = missing.map((m, i) =>
-      `<div class="list-item"><span class="list-item-num">${i+1}</span><span>${escHtml(m)}</span></div>`
-    ).join('') || '<div style="color:var(--text-dim);font-size:14px">No issues found.</div>';
+    document.getElementById('missingBody').innerHTML = missing.length
+      ? missing.map((m, i) => listItem(i+1, m)).join('')
+      : noData('No missing protections identified.');
 
-    // Negotiation
-    const nego = data.negotiation_suggestions || [];
+    // Nego
+    const nego = (data.negotiation_suggestions || []).slice(0, 6);
     document.getElementById('negoCount').textContent = nego.length;
-    document.getElementById('negoBody').innerHTML = nego.map((n, i) =>
-      `<div class="list-item"><span class="list-item-num">${i+1}</span><span>${escHtml(n)}</span></div>`
-    ).join('') || '<div style="color:var(--text-dim);font-size:14px">No suggestions.</div>';
-
-    // Animate risk bar
-    setTimeout(() => {
-      document.getElementById('riskBarFill').style.width = score + '%';
-    }, 100);
+    document.getElementById('negoBody').innerHTML = nego.length
+      ? nego.map((n, i) => listItem(i+1, n)).join('')
+      : noData('No suggestions available.');
 
     document.getElementById('results').classList.add('show');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ─── Reset ────────────────────────────────────────────────────────────────
   function resetUI() {
     document.getElementById('results').classList.remove('show');
     document.getElementById('uploadSection').style.display = 'block';
     document.getElementById('loading').classList.remove('show');
     document.getElementById('contractText').value = '';
-    document.getElementById('errorBox').classList.remove('show');
+    hideError();
     selectedFile = null;
-    const dz = document.getElementById('dropzone');
-    dz.classList.remove('has-file');
+    document.getElementById('dropzone').classList.remove('has-file');
     document.getElementById('dropzoneIcon').textContent = '📄';
     document.getElementById('dropzoneTitle').textContent = 'Drop your contract here';
     document.getElementById('dropzoneSub').textContent = 'PDF, DOCX, or TXT · Click to browse';
+    document.getElementById('riskBarFill').style.width = '0%';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function severityEmoji(sev) {
-    return { critical: '💀', high: '🔴', medium: '🟡', low: '🟢' }[sev] || '⚠️';
-  }
-
-  function escHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function sevEmoji(s) { return {critical:'💀',high:'🔴',medium:'🟡',low:'🟢'}[s]||'⚠️'; }
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function listItem(n, text) { return `<div class="list-item"><span class="list-num">${n}</span><span>${esc(text)}</span></div>`; }
+  function noData(msg) { return `<div style="color:var(--text-dim);font-size:14px;padding:8px 0">${msg}</div>`; }
 </script>
 </body>
 </html>
