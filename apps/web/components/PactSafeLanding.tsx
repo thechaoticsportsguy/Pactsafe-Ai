@@ -39,6 +39,7 @@ import {
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
+import { FaqJsonLd, SoftwareAppJsonLd } from "@/components/StructuredData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -84,8 +85,10 @@ const QUICK_ACTIONS: QuickAction[] = [
 export default function PactSafeLanding() {
   return (
     <div className="relative flex min-h-screen flex-col">
+      <SoftwareAppJsonLd />
+      <FaqJsonLd />
       <TopNav variant="marketing" />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Hero />
         <TrustBar />
         <HowItWorks />
@@ -299,6 +302,26 @@ function Hero() {
             risk score, plain-English red flags, and ready-to-send negotiation
             edits.
           </p>
+
+          {/* Reassurance row */}
+          <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-foreground-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              No signup required
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              No credit card
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              Free on your first few
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+              Private by default
+            </span>
+          </div>
         </div>
 
         {/* Input card */}

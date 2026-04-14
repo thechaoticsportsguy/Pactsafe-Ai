@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/StructuredData";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -60,7 +61,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} dark`}>
+      <head>
+        <OrganizationJsonLd />
+        <WebSiteJsonLd />
+      </head>
       <body className="bg-background text-foreground min-h-screen antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:inline-flex focus:items-center focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-glow"
+        >
+          Skip to content
+        </a>
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

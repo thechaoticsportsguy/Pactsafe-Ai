@@ -9,7 +9,12 @@ export default function ShellLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav variant="app" />
-      <main className="container-app flex-1 py-10 md:py-14">{children}</main>
+      <main
+        id="main-content"
+        className="container-app flex-1 py-10 md:py-14"
+      >
+        {children}
+      </main>
       <Footer />
     </div>
   );

@@ -12,12 +12,15 @@ import {
   AlertOctagon,
   RefreshCw,
   ArrowRight,
+  ClipboardPaste,
+  CheckCircle2,
 } from "lucide-react";
 import Dropzone from "@/components/Dropzone";
 import UploadProgress from "@/components/UploadProgress";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/Toast";
 import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus } from "@/lib/schemas";
 import { cn } from "@/lib/cn";
@@ -26,6 +29,7 @@ type Mode = "file" | "text";
 
 export default function AnalyzePage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [mode, setMode] = React.useState<Mode>("file");
   const [text, setText] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -115,6 +119,50 @@ export default function AnalyzePage() {
     start(createJobFromText(trimmed));
   }
 
+  async function pasteFromClipboard() {
+    try {
+      const clipText = await navigator.clipboard.readText();
+      if (!clipText || clipText.trim().length === 0) {
+        toast({
+          tone: "error",
+          message: "Clipboard is empty",
+          description: "Copy your contract text first, then try again.",
+        });
+        return;
+      }
+      setMode("text");
+      setText(clipText);
+      setError(null);
+      toast({
+        tone: "success",
+        message: "Pasted from clipboard",
+        description: `${clipText.length.toLocaleString()} characters loaded.`,
+      });
+    } catch {
+      toast({
+        tone: "error",
+        message: "Couldn't read clipboard",
+        description: "Your browser blocked access — paste with ⌘V instead.",
+      });
+    }
+  }
+
+  // ⌘/Ctrl + Enter submits from either mode
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (busy) return;
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        if (mode === "text" && text.trim().length >= 50) {
+          e.preventDefault();
+          onAnalyzeText();
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busy, mode, text]);
+
   function reset() {
     setError(null);
     setBusy(false);
@@ -143,28 +191,39 @@ export default function AnalyzePage() {
 
         {!busy && (
           <>
-            <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface/60 p-1">
-              {(
-                [
-                  ["file", "Upload file", Upload],
-                  ["text", "Paste text", Type],
-                ] as [Mode, string, React.ElementType][]
-              ).map(([m, label, Icon]) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
-                    mode === m
-                      ? "bg-accent text-white shadow-glow"
-                      : "text-foreground-muted hover:text-foreground",
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface/60 p-1">
+                {(
+                  [
+                    ["file", "Upload file", Upload],
+                    ["text", "Paste text", Type],
+                  ] as [Mode, string, React.ElementType][]
+                ).map(([m, label, Icon]) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMode(m)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
+                      mode === m
+                        ? "bg-accent text-white shadow-glow"
+                        : "text-foreground-muted hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={pasteFromClipboard}
+                disabled={busy}
+              >
+                <ClipboardPaste className="h-3.5 w-3.5" />
+                Paste from clipboard
+              </Button>
             </div>
 
             {mode === "file" && <Dropzone onFile={onFile} disabled={busy} />}
@@ -175,17 +234,39 @@ export default function AnalyzePage() {
                   placeholder="Paste your contract text here (at least 50 characters)…"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                      e.preventDefault();
+                      if (text.trim().length >= 50) onAnalyzeText();
+                    }
+                  }}
                   rows={14}
                   disabled={busy}
                 />
-                <div className="mt-3 flex items-center justify-between">
-                  <p className="text-xs text-foreground-muted tabular-nums">
-                    {text.trim().length} characters
-                  </p>
-                  <Button onClick={onAnalyzeText} disabled={busy}>
-                    Analyze text
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 text-xs text-foreground-muted">
+                    <span className="tabular-nums">
+                      {text.trim().length.toLocaleString()} characters
+                    </span>
+                    {text.trim().length >= 50 && (
+                      <span className="inline-flex items-center gap-1 text-success">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Ready
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="hidden sm:inline text-xs text-foreground-subtle">
+                      <kbd>⌘</kbd> <kbd>Enter</kbd>
+                    </span>
+                    <Button
+                      onClick={onAnalyzeText}
+                      disabled={busy || text.trim().length < 50}
+                    >
+                      Analyze text
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
