@@ -1,11 +1,36 @@
+# --- Python ---
 __pycache__/
 *.pyc
 *.pyo
-.env
 *.egg-info/
-dist/
-build/
 .venv/
 venv/
-*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# --- Env / secrets ---
+.env
+.env.local
+.env.*.local
+
+# --- App artifacts ---
+uploads/
+*.db
+*.sqlite
+*.sqlite3
+pactsafe.db*
+
+# --- OS / Editors ---
 .DS_Store
+.idea/
+.vscode/
+*.log

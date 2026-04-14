@@ -1,127 +1,77 @@
-# PactSafe AI 🔍
+# PactSafe AI
 
-**AI-powered contract analyzer for freelancers.** Upload any contract and get instant, plain-English analysis — no lawyer required.
+AI-powered contract analyzer for freelancers. Drop a contract PDF/DOCX/TXT and
+get plain-English red flags, missing protections, and negotiation suggestions.
 
-Built with Python + Anthropic Claude.
+This repo is a **monorepo** with the refactored production SaaS:
 
----
+```
+.
+├── apps
+│   ├── api      # FastAPI backend (Python)    ← this phase
+│   └── web      # Next.js 14 frontend         ← next phase
+├── packages
+│   └── schemas  # Shared AnalysisResult (Python + TS)
+├── docker-compose.yml
+├── contract_analyzer.py     # original CLI (kept for reference)
+└── contractAnalyzer.js      # original JS (kept for reference)
+```
 
-## Features
+## Status
 
-- 📄 **PDF, DOCX & TXT support** — drop in any contract file
-- 💀 **Severity-scored red flags** — CRITICAL / HIGH / MEDIUM / LOW with exact contract quotes
-- 📊 **Risk score (0–100)** — calibrated overall danger rating
-- 🔍 **Contract type detection** — auto-identifies agreement type
-- 🛡️ **Missing protections** — what should be there but isn't
-- 💬 **Negotiation suggestions** — specific language to propose
-- 🎨 **Rich color CLI** — beautiful terminal output
-- 🔁 **Retry + backoff** — handles rate limits gracefully
-- 🔐 **.env support** — keep your API key safe
+- Phase 1 — **Backend + Docker (this PR)**: FastAPI, SQLModel + Postgres,
+  Alembic migrations, ingestion with OCR fallback, LLM router (Ollama /
+  Anthropic / Groq), jobs + WebSocket progress, export (JSON/PDF), tests,
+  Docker Compose.
+- Phase 2 — **Next.js frontend**: upload → WebSocket progress → result view,
+  history, compare, PDF export.
 
----
-
-## Quick Start
+## Quick start (Docker, recommended)
 
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Set your API key
 cp .env.example .env
-# Edit .env and add your Anthropic API key
-
-# 3. Analyze a contract file
-python contract_analyzer.py my_contract.pdf
-
-# 4. Or paste raw text
-python contract_analyzer.py --text "This agreement allows termination at any time..."
-
-# 5. Get JSON output
-python contract_analyzer.py my_contract.pdf --json
+# optionally edit .env to add ANTHROPIC_API_KEY / GROQ_API_KEY
+docker compose up --build
 ```
 
----
+Then:
 
-## CLI Usage
+- API:  <http://localhost:8000/docs>
+- Web:  <http://localhost:3000> (once phase 2 lands)
+- Ollama: <http://localhost:11434>
 
-```
-Usage: contract_analyzer.py [OPTIONS] [FILE]
+After containers are up, pull a small model once:
 
-Arguments:
-  FILE  Path to contract file (PDF, DOCX, TXT)
-
-Options:
-  --text   -t  Raw contract text (use quotes)
-  --api-key -k  Anthropic API key (or set in .env)
-  --json   -j  Output raw JSON instead of rich display
-  --help       Show this message and exit.
+```bash
+docker compose exec ollama ollama pull qwen2.5:0.5b
 ```
 
----
+## Security principles
 
-## Programmatic Usage
+- **All secrets live server-side only** (`os.getenv` inside the API).
+- The frontend **never** calls `api.anthropic.com`, `api.groq.com`, or
+  `openrouter.ai`. No API-key input fields in the UI.
+- File uploads are size-checked (10 MB max) and extension-gated.
 
-```python
-from contract_analyzer import ContractAnalyzer
+## Local dev without Docker
 
-analyzer = ContractAnalyzer()  # reads ANTHROPIC_API_KEY from .env
+```bash
+# Backend
+cd apps/api
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+export DATABASE_URL=sqlite:///./pactsafe.db
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
 
-# From file
-result = analyzer.analyze_file("contract.pdf")
-
-# From text
-result = analyzer.analyze_text("This agreement states...")
-
-# Async
-result = await analyzer.analyze_text_async("This agreement states...")
-
-print(f"Risk Score: {result.risk_score}/100")
-print(f"Contract Type: {result.contract_type}")
-
-for flag in result.red_flags:
-    print(f"[{flag.severity}] {flag.explanation}")
+# Run tests
+pytest
 ```
 
----
+## Not legal advice
 
-## Output Structure
-
-```python
-AnalysisResult(
-    contract_type = "Freelance Web Development Agreement",
-    risk_score    = 78,          # 0-100
-    overall_summary = "...",
-    red_flags = [
-        RedFlag(
-            clause      = "exact quote from contract",
-            explanation = "why this is dangerous",
-            severity    = Severity.CRITICAL  # LOW / MEDIUM / HIGH / CRITICAL
-        ),
-        ...
-    ],
-    missing_protections    = ["...", "..."],
-    negotiation_suggestions = ["...", "..."],
-)
-```
-
----
-
-## Stack
-
-- **Python 3.11+**
-- **Anthropic SDK** (`claude-opus-4-5`)
-- **Rich** — terminal UI
-- **Typer** — CLI framework
-- **pypdf** — PDF parsing
-- **python-docx** — DOCX parsing
-- **python-dotenv** — env management
-
----
+For high-stakes contracts, always consult a licensed attorney.
 
 ## License
 
 MIT
-
----
-
-*Not legal advice. For high-stakes contracts, always consult a licensed attorney.*

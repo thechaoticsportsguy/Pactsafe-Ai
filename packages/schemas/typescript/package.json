@@ -1,0 +1,8 @@
+{
+  "name": "@pactsafe/schemas",
+  "version": "0.2.0",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "MIT"
+}

@@ -1,14 +1,17 @@
 {
-  "name": "pactsafe-ai",
-  "version": "1.0.0",
-  "description": "AI-powered freelance contract analyzer — identifies red flags, missing protections, and negotiation suggestions.",
-  "type": "module",
-  "main": "contractAnalyzer.js",
+  "name": "pactsafe-ai-monorepo",
+  "version": "0.2.0",
+  "private": true,
+  "description": "PactSafe AI — contract analysis SaaS (Next.js web + FastAPI api).",
+  "workspaces": [
+    "apps/web",
+    "packages/schemas/typescript"
+  ],
   "scripts": {
-    "start": "node contractAnalyzer.js"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.0"
+    "api:dev": "cd apps/api && uvicorn app.main:app --reload --port 8000",
+    "web:dev": "cd apps/web && npm run dev",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "author": "Thechaoticsportsguy",
   "license": "MIT"
