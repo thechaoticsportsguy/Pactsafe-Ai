@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     anthropic_model: str = "claude-opus-4-5"
 
     groq_api_key: str = ""
-    groq_model: str = "llama-3.1-70b-versatile"
+    groq_model: str = "llama-3.3-70b-versatile"
 
     # --- Database ---
     database_url: str = "sqlite:///./pactsafe.db"

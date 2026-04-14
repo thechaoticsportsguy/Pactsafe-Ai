@@ -6,6 +6,7 @@ primary_region = "iad"
 
 [env]
   LLM_PROVIDER        = "groq"
+  GROQ_MODEL          = "llama-3.3-70b-versatile"
   ANTHROPIC_MODEL     = "claude-opus-4-5"
   UPLOAD_DIR          = "/data/uploads"
   MAX_UPLOAD_MB       = "10"
