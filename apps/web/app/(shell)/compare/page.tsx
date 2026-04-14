@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { GitCompare, FileText, ArrowRight, Layers } from "lucide-react";
+import {
+  GitCompare,
+  FileText,
+  ArrowRight,
+  Layers,
+  TrendingUp,
+  TrendingDown,
+  Equal,
+  Trophy,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { listJobs } from "@/lib/api";
@@ -100,10 +109,21 @@ export default function ComparePage() {
       )}
 
       {left && right && left.result && right.result && (
-        <div className="grid gap-4 md:grid-cols-2">
-          <ComparePanel job={left} />
-          <ComparePanel job={right} />
-        </div>
+        <>
+          <DeltaSummary left={left} right={right} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <ComparePanel job={left} highlight={
+              (left.result?.risk_score ?? 100) < (right.result?.risk_score ?? 100)
+                ? "safer"
+                : undefined
+            } />
+            <ComparePanel job={right} highlight={
+              (right.result?.risk_score ?? 100) < (left.result?.risk_score ?? 100)
+                ? "safer"
+                : undefined
+            } />
+          </div>
+        </>
       )}
 
       {(leftId || rightId) && !(left && right) && jobs.length >= 2 && (
@@ -111,6 +131,130 @@ export default function ComparePage() {
           Pick both contracts to see the comparison.
         </p>
       )}
+    </div>
+  );
+}
+
+function DeltaSummary({
+  left,
+  right,
+}: {
+  left: JobStatusResponse;
+  right: JobStatusResponse;
+}) {
+  const l = left.result!;
+  const r = right.result!;
+  const delta = l.risk_score - r.risk_score;
+  const absDelta = Math.abs(delta);
+  const winner = delta === 0 ? null : delta < 0 ? "A" : "B";
+  const winnerJob = winner === "A" ? left : winner === "B" ? right : null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-surface/60 p-6">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+        Verdict
+      </p>
+      {winnerJob && l && r ? (
+        <div className="mt-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-success" />
+            Contract {winner} is the safer bet
+          </h2>
+          <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
+            {winnerJob.filename ?? "Pasted contract"} scores{" "}
+            <strong className="text-foreground">{absDelta} points</strong>{" "}
+            lower on overall risk.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+            <Equal className="h-5 w-5 text-foreground-muted" />
+            These contracts are comparable
+          </h2>
+          <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
+            Risk scores are identical. Compare the flag breakdowns below.
+          </p>
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <DeltaStat
+          label="Risk score"
+          a={l.risk_score}
+          b={r.risk_score}
+          lowerIsBetter
+        />
+        <DeltaStat
+          label="Red flags"
+          a={l.red_flags.length}
+          b={r.red_flags.length}
+          lowerIsBetter
+        />
+        <DeltaStat
+          label="Missing"
+          a={l.missing_protections.length}
+          b={r.missing_protections.length}
+          lowerIsBetter
+        />
+      </div>
+    </div>
+  );
+}
+
+function DeltaStat({
+  label,
+  a,
+  b,
+  lowerIsBetter,
+}: {
+  label: string;
+  a: number;
+  b: number;
+  lowerIsBetter: boolean;
+}) {
+  const diff = a - b;
+  const aBetter = lowerIsBetter ? diff < 0 : diff > 0;
+  const bBetter = lowerIsBetter ? diff > 0 : diff < 0;
+
+  return (
+    <div className="rounded-lg border border-border-subtle bg-bg-elevated/40 p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-subtle">
+        {label}
+      </p>
+      <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+        <div
+          className={cn(
+            "flex-1 text-left",
+            aBetter && "font-semibold text-success",
+          )}
+        >
+          <p className="text-[10px] text-foreground-subtle uppercase tracking-wider">
+            A
+          </p>
+          <p className="mt-0.5 tabular-nums text-base">{a}</p>
+        </div>
+        <div className="flex-shrink-0">
+          {diff === 0 ? (
+            <Equal className="h-4 w-4 text-foreground-subtle" />
+          ) : aBetter ? (
+            <TrendingDown className="h-4 w-4 text-success" />
+          ) : (
+            <TrendingUp className="h-4 w-4 text-severity-high" />
+          )}
+        </div>
+        <div
+          className={cn(
+            "flex-1 text-right",
+            bBetter && "font-semibold text-success",
+          )}
+        >
+          <p className="text-[10px] text-foreground-subtle uppercase tracking-wider">
+            B
+          </p>
+          <p className="mt-0.5 tabular-nums text-base">{b}</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -160,7 +304,13 @@ function JobPicker({
   );
 }
 
-function ComparePanel({ job }: { job: JobStatusResponse }) {
+function ComparePanel({
+  job,
+  highlight,
+}: {
+  job: JobStatusResponse;
+  highlight?: "safer";
+}) {
   const result = job.result as AnalysisResult;
   const band = riskBand(result.risk_score);
   const countsBySeverity: Record<Severity, number> = {
@@ -172,7 +322,22 @@ function ComparePanel({ job }: { job: JobStatusResponse }) {
   for (const f of result.red_flags) countsBySeverity[f.severity] += 1;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface/70 p-6">
+    <div
+      className={cn(
+        "relative rounded-2xl border bg-surface/70 p-6 transition-all",
+        highlight === "safer"
+          ? "border-success/40 ring-2 ring-success/20"
+          : "border-border",
+      )}
+    >
+      {highlight === "safer" && (
+        <div className="absolute -top-3 left-6">
+          <Badge tone="success" size="xs">
+            <Trophy className="h-3 w-3" />
+            Safer choice
+          </Badge>
+        </div>
+      )}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted truncate">

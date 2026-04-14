@@ -16,6 +16,24 @@
   --accent: #7c5cfc;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 html,
 body {
   background-color: var(--bg);
@@ -345,6 +363,87 @@ kbd {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ----- Print styles (analysis results page) --------------------- */
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+  /* Hide chrome: nav, footer, sticky bars, back-to-top, mobile CTA */
+  header,
+  footer,
+  nav,
+  .no-print,
+  [role="dialog"] {
+    display: none !important;
+  }
+  /* Force full width for content */
+  .container-app {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  /* Hide decorative backgrounds */
+  .bg-hero,
+  .bg-section,
+  .bg-grid-dot,
+  [aria-hidden="true"] {
+    background: none !important;
+  }
+  /* Keep cards legible on paper */
+  .surface-card,
+  .surface-card-lg,
+  [class*="bg-surface"],
+  [class*="border-border"] {
+    background: #ffffff !important;
+    border: 1px solid #dddddd !important;
+    box-shadow: none !important;
+  }
+  /* Keep severity colors readable */
+  .text-severity-critical {
+    color: #b91c1c !important;
+  }
+  .text-severity-high {
+    color: #c2410c !important;
+  }
+  .text-severity-medium {
+    color: #a16207 !important;
+  }
+  .text-severity-low,
+  .text-success {
+    color: #047857 !important;
+  }
+  .text-foreground,
+  .text-foreground\/90,
+  .text-foreground\/80 {
+    color: #111 !important;
+  }
+  .text-foreground-muted,
+  .text-foreground-subtle {
+    color: #555 !important;
+  }
+  /* Let long text wrap across pages cleanly */
+  article,
+  section,
+  pre,
+  code,
+  .prose-contract {
+    page-break-inside: auto;
+  }
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
 }
 
 /* ----- Dots flow loader ------------------------------------------ */
