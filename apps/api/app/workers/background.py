@@ -10,6 +10,7 @@ the same events.
 from __future__ import annotations
 
 import logging
+import os
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -64,6 +65,8 @@ async def run_job(job_id: UUID) -> None:
 
         # ---- analyzing ----
         llm = await get_llm_client()
+        logger.info("run_job using provider=%s model=%s job=%s",
+                    os.getenv("LLM_PROVIDER", "unknown"), getattr(llm, "model", "?"), job_id)
         analyzer = ContractAnalyzer(llm)
         result = await analyzer.analyze(text, page_map=page_map)
 
