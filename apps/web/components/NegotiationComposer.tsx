@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Copy, Check, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
@@ -12,12 +13,20 @@ interface NegotiationComposerProps {
 }
 
 const INTROS: Record<string, string> = {
-  friendly: "Hi team,\n\nThanks for sending this over. I reviewed the draft and wanted to share a few thoughts before we proceed.",
-  formal: "Dear Counsel,\n\nThank you for circulating the draft agreement. After review, I would like to propose the following revisions prior to execution.",
+  friendly:
+    "Hi team,\n\nThanks for sending this over. I reviewed the draft and wanted to share a few thoughts before we proceed.",
+  formal:
+    "Dear Counsel,\n\nThank you for circulating the draft agreement. After review, I would like to propose the following revisions prior to execution.",
   firm: "Hi,\n\nBefore we can move forward on this agreement, the following points need to be addressed.",
 };
 
 type Tone = keyof typeof INTROS;
+
+const TONE_DESCRIPTION: Record<Tone, string> = {
+  friendly: "Warm, collaborative, keeps the tone light.",
+  formal: "Professional, polished, for legal counterparts.",
+  firm: "Direct, non-negotiable — use sparingly.",
+};
 
 export default function NegotiationComposer({
   suggestions,
@@ -65,33 +74,46 @@ export default function NegotiationComposer({
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      // ignore
+      /* ignore */
     }
   }
 
   if (suggestions.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-muted">
+      <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-foreground-muted">
         No negotiation suggestions were generated.
       </div>
     );
   }
 
   return (
-    <div className={cn("rounded-xl border border-border bg-surface/70 p-5", className)}>
-      <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
-        <h3 className="text-sm font-semibold">Draft negotiation email</h3>
-        <div className="flex items-center gap-1 rounded-md border border-border bg-surface p-0.5 text-xs">
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-surface/70 overflow-hidden",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/70">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5 text-accent" />
+            Draft negotiation email
+          </p>
+          <p className="mt-0.5 text-xs text-foreground-muted">
+            {TONE_DESCRIPTION[tone]}
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-0.5 rounded-lg border border-border bg-surface p-0.5">
           {(["friendly", "formal", "firm"] as Tone[]).map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => setTone(t)}
               className={cn(
-                "px-2 py-1 rounded capitalize",
+                "px-2.5 py-1 rounded-md text-xs font-medium capitalize transition-colors",
                 tone === t
-                  ? "bg-accent text-white"
-                  : "text-muted hover:text-foreground",
+                  ? "bg-accent text-white shadow-glow"
+                  : "text-foreground-muted hover:text-foreground",
               )}
             >
               {t}
@@ -100,33 +122,53 @@ export default function NegotiationComposer({
         </div>
       </div>
 
-      <div className="mb-4">
-        <p className="mb-2 text-xs uppercase tracking-wide text-muted">
-          Include points
-        </p>
-        <ul className="space-y-1">
-          {suggestions.map((s, i) => (
-            <li key={i}>
-              <label className="flex items-start gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selected.has(i)}
-                  onChange={() => toggle(i)}
-                  className="mt-0.5 accent-accent"
-                />
-                <span>{s}</span>
-              </label>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <div className="grid gap-5 p-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
+            Include points
+          </p>
+          <ul className="mt-3 space-y-2">
+            {suggestions.map((s, i) => (
+              <li key={i}>
+                <label className="flex items-start gap-2.5 text-xs cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(i)}
+                    onChange={() => toggle(i)}
+                    className="mt-0.5 accent-accent"
+                  />
+                  <span className="text-foreground/85 group-hover:text-foreground leading-relaxed">
+                    {s}
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <TextArea value={draft} readOnly rows={14} className="font-mono text-xs" />
-
-      <div className="mt-3 flex justify-end gap-2">
-        <Button variant="subtle" onClick={copyToClipboard}>
-          {copied ? "Copied!" : "Copy"}
-        </Button>
+        <div>
+          <TextArea
+            value={draft}
+            readOnly
+            rows={14}
+            className="font-mono text-xs bg-bg-elevated/60"
+          />
+          <div className="mt-3 flex justify-end">
+            <Button variant="secondary" size="sm" onClick={copyToClipboard}>
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  Copy email
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

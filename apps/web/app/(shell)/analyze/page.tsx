@@ -2,12 +2,25 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Upload,
+  Type,
+  Lock,
+  ShieldCheck,
+  Zap,
+  AlertOctagon,
+  RefreshCw,
+  ArrowRight,
+} from "lucide-react";
 import Dropzone from "@/components/Dropzone";
 import UploadProgress from "@/components/UploadProgress";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus } from "@/lib/schemas";
+import { cn } from "@/lib/cn";
 
 type Mode = "file" | "text";
 
@@ -31,10 +44,11 @@ export default function AnalyzePage() {
     }
   }
 
-  // Clean up interval if the component unmounts mid-analysis
   React.useEffect(() => () => stopPolling(), []);
 
-  async function start(promise: Promise<{ job_id: string; status: JobStatus }>) {
+  async function start(
+    promise: Promise<{ job_id: string; status: JobStatus }>,
+  ) {
     setError(null);
     setBusy(true);
     setStatus("queued");
@@ -56,7 +70,6 @@ export default function AnalyzePage() {
     setMessage("Queued for processing…");
     setProgress(0.12);
 
-    // Poll GET /api/jobs/{id} every 2 s instead of using WebSocket
     pollRef.current = setInterval(async () => {
       try {
         const job = await getJob(job_id);
@@ -102,77 +115,178 @@ export default function AnalyzePage() {
     start(createJobFromText(trimmed));
   }
 
+  function reset() {
+    setError(null);
+    setBusy(false);
+    setProgress(0);
+    setJobId(null);
+    setText("");
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+      {/* Main */}
+      <div className="min-w-0 space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold">Analyze a contract</h1>
-          <p className="mt-1 text-sm text-muted">
-            Upload a file or paste text. We'll extract, analyze, and highlight
-            risks.
+          <Badge tone="accent" size="xs" className="mb-3">
+            <Zap className="h-3 w-3" />
+            New analysis
+          </Badge>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Analyze a contract
+          </h1>
+          <p className="mt-2 text-sm text-foreground-muted max-w-xl leading-relaxed">
+            Upload a PDF, DOCX, or TXT — or paste raw text. We’ll extract it,
+            flag risks, and give you ready-to-send negotiation language.
           </p>
         </div>
-        <div className="flex items-center gap-1 rounded-md border border-border bg-surface p-0.5 text-xs">
-          {(["file", "text"] as Mode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              disabled={busy}
-              onClick={() => setMode(m)}
-              className={
-                "px-3 py-1.5 rounded capitalize " +
-                (mode === m
-                  ? "bg-accent text-white"
-                  : "text-muted hover:text-foreground")
-              }
-            >
-              {m === "file" ? "Upload file" : "Paste text"}
-            </button>
-          ))}
-        </div>
+
+        {!busy && (
+          <>
+            <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface/60 p-1">
+              {(
+                [
+                  ["file", "Upload file", Upload],
+                  ["text", "Paste text", Type],
+                ] as [Mode, string, React.ElementType][]
+              ).map(([m, label, Icon]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
+                    mode === m
+                      ? "bg-accent text-white shadow-glow"
+                      : "text-foreground-muted hover:text-foreground",
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {mode === "file" && <Dropzone onFile={onFile} disabled={busy} />}
+
+            {mode === "text" && (
+              <div className="rounded-xl border border-border bg-surface/60 p-5">
+                <TextArea
+                  placeholder="Paste your contract text here (at least 50 characters)…"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={14}
+                  disabled={busy}
+                />
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-xs text-foreground-muted tabular-nums">
+                    {text.trim().length} characters
+                  </p>
+                  <Button onClick={onAnalyzeText} disabled={busy}>
+                    Analyze text
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {busy && (
+          <UploadProgress
+            status={status}
+            message={message}
+            progress={progress}
+          />
+        )}
+
+        {error && (
+          <div
+            role="alert"
+            className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-5"
+          >
+            <div className="flex items-start gap-3">
+              <AlertOctagon className="h-5 w-5 text-severity-critical mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-severity-critical">
+                  Something went wrong
+                </p>
+                <p className="mt-1 text-xs text-foreground/85">{error}</p>
+                <div className="mt-3">
+                  <Button variant="outline" size="sm" onClick={reset}>
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Start over
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {jobId && !busy && !error && (
+          <p className="text-xs text-foreground-muted">
+            Job ID: <span className="font-mono">{jobId}</span>
+          </p>
+        )}
       </div>
 
-      {!busy && mode === "file" && <Dropzone onFile={onFile} disabled={busy} />}
-
-      {!busy && mode === "text" && (
+      {/* Side reassurance panel */}
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-xl border border-border bg-surface/60 p-5">
-          <TextArea
-            placeholder="Paste contract text here (at least 50 characters)…"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={14}
-            disabled={busy}
-          />
-          <div className="mt-3 flex justify-end">
-            <Button onClick={onAnalyzeText} disabled={busy}>
-              Analyze text
-            </Button>
-          </div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-accent flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Private by default
+          </p>
+          <ul className="mt-4 space-y-3 text-xs text-foreground-muted leading-relaxed">
+            <li className="flex items-start gap-2">
+              <Lock className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <span>Uploads are encrypted in transit and at rest.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Lock className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <span>We never train on your contracts.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Lock className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <span>Delete any analysis anytime from history.</span>
+            </li>
+          </ul>
         </div>
-      )}
 
-      {busy && (
-        <UploadProgress
-          status={status}
-          message={message}
-          progress={progress}
-        />
-      )}
-
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-severity-critical/50 bg-severity-critical/10 p-3 text-sm text-severity-critical"
-        >
-          {error}
+        <div className="rounded-xl border border-border bg-surface/60 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+            Quick facts
+          </p>
+          <dl className="mt-3 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <dt className="text-foreground-muted">Typical review</dt>
+              <dd className="text-foreground font-medium">&lt; 60 s</dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-foreground-muted">File size</dt>
+              <dd className="text-foreground font-medium">up to 10 MB</dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-foreground-muted">Formats</dt>
+              <dd className="text-foreground font-medium">PDF · DOCX · TXT</dd>
+            </div>
+          </dl>
         </div>
-      )}
 
-      {jobId && !busy && !error && (
-        <p className="text-xs text-muted">
-          Job ID: <span className="font-mono">{jobId}</span>
-        </p>
-      )}
+        <div className="rounded-xl border border-border-subtle bg-surface/30 p-5">
+          <p className="text-xs text-foreground-subtle leading-relaxed">
+            PactSafe AI is a screening tool, not a law firm. For high-stakes
+            deals, consult a licensed attorney.{" "}
+            <Link
+              href="/#faq"
+              className="text-accent hover:underline underline-offset-2"
+            >
+              Learn more
+            </Link>
+            .
+          </p>
+        </div>
+      </aside>
     </div>
   );
 }

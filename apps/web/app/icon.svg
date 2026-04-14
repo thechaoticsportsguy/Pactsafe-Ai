@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="pactsafe-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cfc"/>
+      <stop offset="1" stop-color="#5b3fe0"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#pactsafe-bg)"/>
+  <path d="M32 14 L47 20 V32 C47 41 40.5 48.5 32 51 C23.5 48.5 17 41 17 32 V20 Z"
+        fill="none" stroke="#ffffff" stroke-width="4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25 32 L30 37 L40 26"
+        fill="none" stroke="#ffffff" stroke-width="4.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

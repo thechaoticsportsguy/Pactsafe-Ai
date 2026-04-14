@@ -1,9 +1,17 @@
 "use client";
 
 import * as React from "react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  AlertCircle,
+  Info,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
-import { severityBg, severityColor, severityEmoji } from "@/lib/severity";
+import { severityBg, severityColor, severityLabel } from "@/lib/severity";
 import { SEVERITY_ORDER, type RedFlag, type Severity } from "@/lib/schemas";
+import { Badge } from "@/components/ui/badge";
 
 interface FlagListProps {
   flags: RedFlag[];
@@ -13,11 +21,32 @@ interface FlagListProps {
 
 const SEVERITIES: Severity[] = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
 
-export default function FlagList({ flags, onSelect, activeIndex }: FlagListProps) {
-  // Sort by severity (CRITICAL first), preserving original index for callbacks.
+const SEVERITY_ICON: Record<Severity, React.ElementType> = {
+  CRITICAL: AlertOctagon,
+  HIGH: AlertTriangle,
+  MEDIUM: AlertCircle,
+  LOW: Info,
+};
+
+const SEVERITY_TONE: Record<
+  Severity,
+  "critical" | "high" | "medium" | "low"
+> = {
+  CRITICAL: "critical",
+  HIGH: "high",
+  MEDIUM: "medium",
+  LOW: "low",
+};
+
+export default function FlagList({
+  flags,
+  onSelect,
+  activeIndex,
+}: FlagListProps) {
   const indexed = flags.map((f, i) => ({ flag: f, originalIndex: i }));
   indexed.sort(
-    (a, b) => SEVERITY_ORDER[a.flag.severity] - SEVERITY_ORDER[b.flag.severity],
+    (a, b) =>
+      SEVERITY_ORDER[a.flag.severity] - SEVERITY_ORDER[b.flag.severity],
   );
 
   const grouped: Record<Severity, typeof indexed> = {
@@ -32,8 +61,16 @@ export default function FlagList({ flags, onSelect, activeIndex }: FlagListProps
 
   if (flags.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-muted">
-        No red flags detected in this contract. 🎉
+      <div className="rounded-xl border border-success/30 bg-success/10 p-8 text-center">
+        <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-success/15 text-success">
+          <AlertCircle className="h-5 w-5" />
+        </div>
+        <p className="mt-4 text-sm font-medium text-foreground">
+          No red flags detected
+        </p>
+        <p className="mt-1 text-xs text-foreground-muted">
+          This contract is in the clear on our known risk patterns.
+        </p>
       </div>
     );
   }
@@ -43,21 +80,24 @@ export default function FlagList({ flags, onSelect, activeIndex }: FlagListProps
       {SEVERITIES.map((sev) => {
         const items = grouped[sev];
         if (items.length === 0) return null;
+        const Icon = SEVERITY_ICON[sev];
         return (
           <section key={sev}>
-            <h3
-              className={cn(
-                "mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider",
-                severityColor[sev],
-              )}
-            >
-              <span aria-hidden>{severityEmoji[sev]}</span>
-              {sev}
-              <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-muted">
+            <div className="mb-3 flex items-center gap-2">
+              <Icon className={cn("h-3.5 w-3.5", severityColor[sev])} />
+              <h3
+                className={cn(
+                  "text-xs font-semibold uppercase tracking-wider",
+                  severityColor[sev],
+                )}
+              >
+                {severityLabel[sev]}
+              </h3>
+              <Badge tone={SEVERITY_TONE[sev]} size="xs">
                 {items.length}
-              </span>
-            </h3>
-            <ul className="space-y-2">
+              </Badge>
+            </div>
+            <ul className="space-y-2.5">
               {items.map(({ flag, originalIndex }) => {
                 const isActive = activeIndex === originalIndex;
                 return (
@@ -66,23 +106,55 @@ export default function FlagList({ flags, onSelect, activeIndex }: FlagListProps
                       type="button"
                       onClick={() => onSelect?.(flag, originalIndex)}
                       className={cn(
-                        "w-full text-left rounded-lg border p-3 transition-colors",
+                        "group w-full text-left rounded-xl border p-4 transition-all",
                         severityBg[sev],
-                        "hover:bg-surface-hi/60",
-                        isActive && "ring-2 ring-accent",
+                        "hover:bg-surface-2/60 hover:-translate-y-px",
+                        isActive && "ring-2 ring-accent/60 ring-offset-2 ring-offset-background",
                       )}
                     >
-                      <p className="text-sm font-medium leading-snug">
-                        “{truncate(flag.clause, 140)}”
-                      </p>
-                      <p className="mt-1 text-xs text-muted">
-                        {flag.explanation}
-                      </p>
-                      {flag.page != null && (
-                        <p className="mt-1 text-[10px] uppercase tracking-wide text-muted">
-                          Page {flag.page}
-                        </p>
-                      )}
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={cn(
+                            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg",
+                            severityBg[sev],
+                          )}
+                        >
+                          <Icon
+                            className={cn("h-4 w-4", severityColor[sev])}
+                          />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium leading-snug text-foreground">
+                            <span
+                              className={cn(
+                                "mr-1.5 text-[10px] font-bold uppercase tracking-wider",
+                                severityColor[sev],
+                              )}
+                            >
+                              {severityLabel[sev]}
+                            </span>
+                            <span className="text-foreground-muted">·</span>{" "}
+                            <span className="text-foreground/95">
+                              “{truncate(flag.clause, 160)}”
+                            </span>
+                          </p>
+                          <p className="mt-1.5 text-xs text-foreground-muted leading-relaxed">
+                            {flag.explanation}
+                          </p>
+                          {flag.page != null && (
+                            <p className="mt-2 text-[10px] uppercase tracking-wider text-foreground-subtle">
+                              Page {flag.page}
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight
+                          className={cn(
+                            "h-4 w-4 flex-shrink-0 text-foreground-subtle transition-all",
+                            "group-hover:text-foreground group-hover:translate-x-0.5",
+                            isActive && "text-accent",
+                          )}
+                        />
+                      </div>
                     </button>
                   </li>
                 );

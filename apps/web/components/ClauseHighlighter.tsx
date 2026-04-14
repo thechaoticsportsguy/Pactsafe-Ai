@@ -18,13 +18,24 @@ interface Segment {
   flagIndex: number | null;
 }
 
+const SEVERITY_HL: Record<string, string> = {
+  CRITICAL: "bg-severity-critical/25 text-severity-critical",
+  HIGH: "bg-severity-high/25 text-severity-high",
+  MEDIUM: "bg-severity-medium/25 text-severity-medium",
+  LOW: "bg-severity-low/25 text-severity-low",
+};
+
 /**
  * Builds non-overlapping segments from offsets. If offsets are missing or
  * overlap, higher-severity flags win.
  */
 function buildSegments(text: string, flags: RedFlag[]): Segment[] {
-  const spans: Array<{ start: number; end: number; flagIndex: number; sev: number }> =
-    [];
+  const spans: Array<{
+    start: number;
+    end: number;
+    flagIndex: number;
+    sev: number;
+  }> = [];
   flags.forEach((f, i) => {
     if (
       f.start_offset != null &&
@@ -42,17 +53,14 @@ function buildSegments(text: string, flags: RedFlag[]): Segment[] {
     }
   });
 
-  // Sort by start, then by severity (lower ordinal = more critical = wins).
   spans.sort((a, b) => a.start - b.start || a.sev - b.sev);
 
-  // Deoverlap by severity priority
   const kept: typeof spans = [];
   for (const span of spans) {
     const overlaps = kept.find(
       (k) => !(span.end <= k.start || span.start >= k.end),
     );
     if (!overlaps) kept.push(span);
-    // else drop (kept earlier more-critical wins due to sort)
   }
   kept.sort((a, b) => a.start - b.start);
 
@@ -62,7 +70,11 @@ function buildSegments(text: string, flags: RedFlag[]): Segment[] {
     if (s.start > cursor) {
       segments.push({ start: cursor, end: s.start, flagIndex: null });
     }
-    segments.push({ start: s.start, end: s.end, flagIndex: s.flagIndex });
+    segments.push({
+      start: s.start,
+      end: s.end,
+      flagIndex: s.flagIndex,
+    });
     cursor = s.end;
   }
   if (cursor < text.length) {
@@ -77,10 +89,12 @@ export default function ClauseHighlighter({
   activeIndex,
   className,
 }: ClauseHighlighterProps) {
-  const segments = React.useMemo(() => buildSegments(text, flags), [text, flags]);
+  const segments = React.useMemo(() => buildSegments(text, flags), [
+    text,
+    flags,
+  ]);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Scroll active flag into view
   React.useEffect(() => {
     if (activeIndex == null || !containerRef.current) return;
     const el = containerRef.current.querySelector<HTMLElement>(
@@ -90,38 +104,62 @@ export default function ClauseHighlighter({
   }, [activeIndex]);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "rounded-xl border border-border bg-surface/70 p-5",
-        "max-h-[600px] overflow-y-auto",
-        "font-mono text-sm leading-relaxed whitespace-pre-wrap",
-        className,
-      )}
-    >
-      {segments.map((seg, idx) => {
-        const chunk = text.slice(seg.start, seg.end);
-        if (seg.flagIndex == null) {
-          return <span key={idx}>{chunk}</span>;
-        }
-        const flag = flags[seg.flagIndex];
-        const isActive = activeIndex === seg.flagIndex;
-        return (
-          <mark
-            key={idx}
-            data-flag-index={seg.flagIndex}
-            title={flag.explanation}
-            className={cn(
-              "rounded px-0.5 cursor-help transition-colors",
-              severityColor[flag.severity],
-              "bg-surface-hi/60",
-              isActive && "ring-2 ring-accent bg-accent/10",
-            )}
-          >
-            {chunk}
-          </mark>
-        );
-      })}
+    <div className="rounded-xl border border-border bg-surface/70 overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 text-xs text-foreground-muted">
+        <span className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-severity-critical" />
+            Critical
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-severity-high" />
+            High
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-severity-medium" />
+            Medium
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-severity-low" />
+            Low
+          </span>
+        </span>
+        <span className="tabular-nums">
+          {text.length.toLocaleString()} characters
+        </span>
+      </div>
+      <div
+        ref={containerRef}
+        className={cn(
+          "max-h-[600px] overflow-y-auto px-6 py-5",
+          "prose-contract whitespace-pre-wrap",
+          className,
+        )}
+      >
+        {segments.map((seg, idx) => {
+          const chunk = text.slice(seg.start, seg.end);
+          if (seg.flagIndex == null) {
+            return <span key={idx}>{chunk}</span>;
+          }
+          const flag = flags[seg.flagIndex];
+          const isActive = activeIndex === seg.flagIndex;
+          return (
+            <mark
+              key={idx}
+              data-flag-index={seg.flagIndex}
+              title={flag.explanation}
+              className={cn(
+                "rounded px-0.5 cursor-help transition-all",
+                SEVERITY_HL[flag.severity],
+                isActive &&
+                  "ring-2 ring-accent ring-offset-1 ring-offset-background",
+              )}
+            >
+              {chunk}
+            </mark>
+          );
+        })}
+      </div>
     </div>
   );
 }

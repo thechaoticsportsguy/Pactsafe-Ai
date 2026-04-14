@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 import { riskBand } from "@/lib/severity";
+import { Badge } from "@/components/ui/badge";
 
 interface RiskGaugeProps {
   score: number; // 0..100
@@ -12,11 +13,9 @@ interface RiskGaugeProps {
 export default function RiskGauge({ score, className }: RiskGaugeProps) {
   const clamped = Math.min(100, Math.max(0, Math.round(score)));
   const band = riskBand(clamped);
-
   const [displayed, setDisplayed] = React.useState(0);
 
   React.useEffect(() => {
-    // animate from 0 up to the clamped score
     let raf = 0;
     const start = performance.now();
     const duration = 900;
@@ -33,54 +32,89 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
     return () => cancelAnimationFrame(raf);
   }, [clamped]);
 
+  const toneMap = {
+    "#10b981": "low",
+    "#eab308": "medium",
+    "#f97316": "high",
+    "#ef4444": "critical",
+  } as const;
+  const tone =
+    (toneMap[band.color as keyof typeof toneMap] as
+      | "low"
+      | "medium"
+      | "high"
+      | "critical") ?? "low";
+
   return (
-    <div className={cn("rounded-xl border border-border bg-surface/70 p-5", className)}>
-      <div className="flex items-end justify-between mb-3">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-muted">
-            Overall risk
-          </p>
-          <p className="text-3xl font-semibold tabular-nums mt-1">
-            {displayed}
-            <span className="text-base font-normal text-muted"> / 100</span>
-          </p>
-        </div>
-        <span
-          className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
-          style={{
-            color: band.color,
-            borderColor: band.color,
-            backgroundColor: `${band.color}1f`, // ~12% alpha
-          }}
-        >
-          {band.label}
-        </span>
-      </div>
-
+    <div
+      className={cn(
+        "relative rounded-xl border border-border bg-surface/70 p-6 overflow-hidden",
+        className,
+      )}
+    >
       <div
-        className="relative h-3 w-full overflow-hidden rounded-full bg-surface-hi"
-        aria-label={`Risk score ${clamped} of 100`}
-        role="progressbar"
-        aria-valuenow={clamped}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
-          style={{
-            width: `${displayed}%`,
-            backgroundColor: band.color,
-            boxShadow: `0 0 18px ${band.color}8c`,
-          }}
-        />
-      </div>
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-50"
+        style={{
+          background: `radial-gradient(60% 80% at 0% 100%, ${band.color}22 0%, transparent 55%)`,
+        }}
+      />
+      <div className="relative">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+            Overall risk score
+          </p>
+          <Badge
+            tone={tone === "low" ? "success" : tone}
+            size="sm"
+          >
+            {band.label}
+          </Badge>
+        </div>
 
-      <div className="mt-2 flex justify-between text-[10px] uppercase tracking-wide text-muted">
-        <span>0</span>
-        <span>30</span>
-        <span>60</span>
-        <span>80</span>
-        <span>100</span>
+        <div className="mt-4 flex items-baseline gap-2">
+          <span className="text-5xl font-semibold tracking-tightest tabular-nums">
+            {displayed}
+          </span>
+          <span className="text-lg text-foreground-muted tabular-nums">
+            / 100
+          </span>
+        </div>
+
+        <div
+          className="mt-6 relative h-2.5 w-full overflow-hidden rounded-full bg-surface-3"
+          aria-label={`Risk score ${clamped} of 100`}
+          role="progressbar"
+          aria-valuenow={clamped}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          {/* band marker background */}
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-20"
+            style={{
+              background:
+                "linear-gradient(90deg, #10b981 0%, #10b981 30%, #eab308 30%, #eab308 60%, #f97316 60%, #f97316 80%, #ef4444 80%)",
+            }}
+          />
+          <div
+            className="relative h-full rounded-full transition-all duration-700 ease-out"
+            style={{
+              width: `${displayed}%`,
+              background: `linear-gradient(90deg, ${band.color}aa, ${band.color})`,
+              boxShadow: `0 0 20px ${band.color}80`,
+            }}
+          />
+        </div>
+
+        <div className="mt-3 flex justify-between text-[10px] uppercase tracking-wider text-foreground-subtle tabular-nums">
+          <span>0 · Safe</span>
+          <span>30</span>
+          <span>60</span>
+          <span>80</span>
+          <span>100 · Critical</span>
+        </div>
       </div>
     </div>
   );

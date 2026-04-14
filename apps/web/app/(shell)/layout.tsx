@@ -1,4 +1,5 @@
-import Nav from "@/components/Nav";
+import TopNav from "@/components/TopNav";
+import Footer from "@/components/Footer";
 
 export default function ShellLayout({
   children,
@@ -6,9 +7,10 @@ export default function ShellLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Nav />
-      <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
-    </>
+    <div className="flex min-h-screen flex-col">
+      <TopNav variant="app" />
+      <main className="container-app flex-1 py-10 md:py-14">{children}</main>
+      <Footer />
+    </div>
   );
 }

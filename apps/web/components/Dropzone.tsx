@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useDropzone } from "react-dropzone";
+import { UploadCloud, FileUp, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ACCEPT = {
@@ -33,10 +34,7 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
       setError(null);
       if (rejected.length > 0) {
         const r = rejected[0];
-        setError(
-          r.errors[0]?.message ??
-            `File rejected: ${r.file.name}`,
-        );
+        setError(r.errors[0]?.message ?? `File rejected: ${r.file.name}`);
         return;
       }
       if (accepted[0]) onFile(accepted[0]);
@@ -44,42 +42,49 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
   });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div
         {...getRootProps()}
         className={cn(
-          "rounded-xl border-2 border-dashed border-border bg-surface/60",
-          "p-10 text-center cursor-pointer transition-colors",
-          isDragActive && "border-accent bg-accent/5",
+          "group relative overflow-hidden rounded-2xl border-2 border-dashed border-border bg-surface/40 transition-all",
+          "p-12 text-center cursor-pointer",
+          "hover:border-accent/40 hover:bg-surface-2/60",
+          isDragActive && "border-accent bg-accent/5 scale-[1.01]",
           disabled && "opacity-60 cursor-not-allowed",
         )}
       >
         <input {...getInputProps()} />
-        <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-accent-soft flex items-center justify-center">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-accent"
-              aria-hidden
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
+
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{
+            background:
+              "radial-gradient(60% 50% at 50% 0%, rgba(124,92,252,0.08), transparent 60%)",
+          }}
+        />
+
+        <div className="relative mx-auto flex max-w-sm flex-col items-center gap-4">
+          <div
+            className={cn(
+              "h-16 w-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center",
+              "ring-1 ring-accent/20 transition-all",
+              isDragActive && "scale-110 ring-accent/40",
+            )}
+          >
+            <UploadCloud
+              className="h-7 w-7 text-accent"
+              strokeWidth={1.75}
+            />
           </div>
           <div>
-            <p className="text-sm font-medium">
-              {isDragActive ? "Drop the contract here…" : "Drop a contract to analyze"}
+            <p className="text-base font-semibold text-foreground">
+              {isDragActive
+                ? "Drop your contract here"
+                : "Drop a contract to analyze"}
             </p>
-            <p className="mt-1 text-xs text-muted">
-              PDF, DOCX, or TXT · up to 10 MB
+            <p className="mt-1 text-xs text-foreground-muted">
+              PDF · DOCX · TXT · up to 10 MB
             </p>
           </div>
           <button
@@ -88,17 +93,25 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
               e.stopPropagation();
               open();
             }}
-            className="mt-2 h-9 rounded-md bg-accent px-4 text-sm font-medium text-white hover:bg-accent-hover"
+            className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-medium text-white shadow-glow hover:bg-accent-hover active:translate-y-px transition-all"
             disabled={disabled}
           >
+            <FileUp className="h-3.5 w-3.5" />
             Choose a file
           </button>
+          <p className="mt-1 text-[11px] text-foreground-subtle">
+            or drag it right onto this card
+          </p>
         </div>
       </div>
       {error && (
-        <p className="text-sm text-severity-critical" role="alert">
-          {error}
-        </p>
+        <div
+          className="flex items-start gap-2 rounded-lg border border-severity-critical/40 bg-severity-critical/10 px-3 py-2.5 text-xs text-severity-critical"
+          role="alert"
+        >
+          <AlertOctagon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
       )}
     </div>
   );
