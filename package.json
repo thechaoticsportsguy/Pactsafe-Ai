@@ -1,0 +1,15 @@
+{
+  "name": "pactsafe-ai",
+  "version": "1.0.0",
+  "description": "AI-powered freelance contract analyzer — identifies red flags, missing protections, and negotiation suggestions.",
+  "type": "module",
+  "main": "contractAnalyzer.js",
+  "scripts": {
+    "start": "node contractAnalyzer.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0"
+  },
+  "author": "Thechaoticsportsguy",
+  "license": "MIT"
+}
