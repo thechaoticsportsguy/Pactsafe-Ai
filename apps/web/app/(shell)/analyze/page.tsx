@@ -38,8 +38,10 @@ export default function AnalyzePage() {
   const [progress, setProgress] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
   const [jobId, setJobId] = React.useState<string | null>(null);
+  const [isDraggingGlobal, setIsDraggingGlobal] = React.useState(false);
 
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const dragDepthRef = React.useRef(0);
 
   function stopPolling() {
     if (pollRef.current !== null) {
@@ -163,6 +165,58 @@ export default function AnalyzePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busy, mode, text]);
 
+  // Global drag-and-drop over the entire analyze page
+  React.useEffect(() => {
+    if (busy) return;
+
+    const hasFiles = (e: DragEvent) => {
+      const types = e.dataTransfer?.types;
+      if (!types) return false;
+      for (let i = 0; i < types.length; i++) {
+        if (types[i] === "Files") return true;
+      }
+      return false;
+    };
+
+    const onDragEnter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      dragDepthRef.current += 1;
+      setIsDraggingGlobal(true);
+    };
+    const onDragLeave = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+      if (dragDepthRef.current === 0) setIsDraggingGlobal(false);
+    };
+    const onDragOver = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      dragDepthRef.current = 0;
+      setIsDraggingGlobal(false);
+      const f = e.dataTransfer?.files?.[0];
+      if (f) {
+        setMode("file");
+        onFile(f);
+      }
+    };
+
+    window.addEventListener("dragenter", onDragEnter);
+    window.addEventListener("dragleave", onDragLeave);
+    window.addEventListener("dragover", onDragOver);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragenter", onDragEnter);
+      window.removeEventListener("dragleave", onDragLeave);
+      window.removeEventListener("dragover", onDragOver);
+      window.removeEventListener("drop", onDrop);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busy]);
+
   function reset() {
     setError(null);
     setBusy(false);
@@ -172,7 +226,26 @@ export default function AnalyzePage() {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+      {isDraggingGlobal && (
+        <div
+          aria-hidden
+          className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none animate-fade-in"
+        >
+          <div className="absolute inset-4 rounded-3xl border-2 border-dashed border-accent/60 bg-accent/[0.08] backdrop-blur-sm" />
+          <div className="relative flex flex-col items-center gap-3 rounded-2xl border border-accent/40 bg-bg-elevated/95 px-8 py-6 shadow-card-lg ring-1 ring-accent/30">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-accent/25 to-accent/5 text-accent ring-1 ring-accent/30">
+              <Upload className="h-6 w-6" strokeWidth={1.75} />
+            </span>
+            <p className="text-sm font-semibold text-foreground">
+              Drop your contract anywhere
+            </p>
+            <p className="text-xs text-foreground-muted">
+              PDF · DOCX · TXT · up to 10 MB
+            </p>
+          </div>
+        </div>
+      )}
       {/* Main */}
       <div className="min-w-0 space-y-8">
         <div>
