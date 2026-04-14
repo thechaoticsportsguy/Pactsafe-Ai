@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
@@ -33,7 +33,8 @@ import {
   Camera,
   Code2,
   ShieldCheck,
-  Star,
+  GitFork,
+  ClipboardPaste,
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
@@ -92,11 +93,60 @@ export default function PactSafeLanding() {
         <WhatWeCatch />
         <UseCases />
         <Security />
-        <Testimonials />
+        <RealClauses />
         <FAQ />
         <FinalCTA />
       </main>
       <Footer />
+      <MobileStickyCTA />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sticky mobile CTA — fixed at bottom on mobile after hero
+// ---------------------------------------------------------------------------
+function MobileStickyCTA() {
+  const [show, setShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    const handler = () => {
+      if (dismissed) return;
+      setShow(window.scrollY > 520);
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+    return () => window.removeEventListener("scroll", handler);
+  }, [dismissed]);
+
+  if (!show || dismissed) return null;
+  return (
+    <div className="md:hidden fixed inset-x-3 bottom-3 z-30 animate-fade-in-up">
+      <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-bg-elevated/95 p-2 shadow-card-lg backdrop-blur-xl ring-1 ring-accent/20">
+        <div className="flex-1 pl-2">
+          <p className="text-[11px] font-semibold text-foreground">
+            Ready to analyze?
+          </p>
+          <p className="text-[10px] text-foreground-muted">
+            Free · under 60 seconds
+          </p>
+        </div>
+        <Link href="/analyze" className="flex-shrink-0">
+          <Button size="sm">
+            Start now
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Dismiss"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-2 hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -109,6 +159,8 @@ function Hero() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [pasted, setPasted] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -144,9 +196,12 @@ function Hero() {
     }
   };
 
-  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  const acceptFile = (f: File) => {
+    const ALLOWED = /\.(pdf|docx|doc|txt|md)$/i;
+    if (!ALLOWED.test(f.name)) {
+      setError("Only PDF, DOCX, or TXT files are supported.");
+      return;
+    }
     if (f.size > 10 * 1024 * 1024) {
       setError("File exceeds the 10 MB limit.");
       return;
@@ -154,7 +209,51 @@ function Hero() {
     setFile(f);
     setText("");
     setError(null);
+  };
+
+  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    acceptFile(f);
     e.target.value = "";
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) acceptFile(f);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.currentTarget === e.target) setIsDragging(false);
+  };
+
+  const pasteFromClipboard = async () => {
+    setError(null);
+    try {
+      const clipText = await navigator.clipboard.readText();
+      if (!clipText || clipText.trim().length === 0) {
+        setError("Clipboard is empty.");
+        return;
+      }
+      setFile(null);
+      setText(clipText);
+      setTimeout(adjustHeight, 0);
+      textareaRef.current?.focus();
+      setPasted(true);
+      setTimeout(() => setPasted(false), 1400);
+    } catch {
+      setError(
+        "Couldn't read clipboard. Paste directly with ⌘V or Ctrl+V.",
+      );
+    }
   };
 
   const clearFile = () => {
@@ -203,15 +302,32 @@ function Hero() {
         </div>
 
         {/* Input card */}
-        <div className="mx-auto mt-10 max-w-3xl animate-fade-in-up">
+        <div
+          className="mx-auto mt-10 max-w-3xl animate-fade-in-up"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
           <div
             className={cn(
-              "relative rounded-2xl border bg-surface/80 p-1.5 shadow-card-lg backdrop-blur-xl transition-colors",
+              "relative rounded-2xl border bg-surface/80 p-1.5 shadow-card-lg backdrop-blur-xl transition-all",
               error
                 ? "border-severity-critical/50"
-                : "border-white/10 hover:border-white/15",
+                : isDragging
+                  ? "border-accent/70 scale-[1.01] shadow-glow-lg"
+                  : "border-white/10 hover:border-white/15",
             )}
           >
+            {isDragging && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-accent/10 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="h-7 w-7 text-accent" strokeWidth={1.75} />
+                  <p className="text-sm font-medium text-accent">
+                    Drop it here
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="rounded-[14px] bg-bg-elevated/70 ring-1 ring-white/5">
               <div className="px-4 pt-4">
                 {file ? (
@@ -272,12 +388,31 @@ function Hero() {
                     className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-foreground-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:opacity-40"
                   >
                     <Paperclip className="h-3.5 w-3.5" />
-                    Attach file
+                    Attach
                   </button>
-                  <span className="hidden sm:block text-xs text-foreground-muted">
+                  <button
+                    type="button"
+                    onClick={pasteFromClipboard}
+                    disabled={loading}
+                    aria-label="Paste from clipboard"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-foreground-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:opacity-40"
+                  >
+                    {pasted ? (
+                      <>
+                        <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                        Pasted
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardPaste className="h-3.5 w-3.5" />
+                        Paste
+                      </>
+                    )}
+                  </button>
+                  <span className="hidden md:block text-xs text-foreground-muted">
                     {file
                       ? `${(file.size / 1024 / 1024).toFixed(1)} MB attached`
-                      : "PDF · DOCX · TXT · 10 MB max"}
+                      : "PDF · DOCX · TXT · 10 MB"}
                   </span>
                 </div>
 
@@ -346,22 +481,22 @@ function Hero() {
 }
 
 // ---------------------------------------------------------------------------
-// Trust bar — confidence numbers + badges
+// Trust bar — honest product stats + tech stack
 // ---------------------------------------------------------------------------
 function TrustBar() {
   const items = [
-    { k: "10,000+", v: "contracts analyzed" },
+    { k: "Free", v: "no account required" },
     { k: "< 60 s", v: "average review time" },
-    { k: "50+", v: "risk patterns detected" },
-    { k: "100%", v: "private by default" },
+    { k: "50+", v: "risk patterns covered" },
+    { k: "0 %", v: "data sold or trained on" },
   ];
   return (
     <section className="border-y border-border-subtle/60 bg-bg-elevated/40">
-      <div className="container-app py-8">
+      <div className="container-app py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
           {items.map((item) => (
             <div key={item.k} className="text-center md:text-left">
-              <p className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground tabular-nums">
+              <p className="text-2xl md:text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
                 {item.k}
               </p>
               <p className="mt-1 text-xs md:text-sm text-foreground-muted">
@@ -369,6 +504,31 @@ function TrustBar() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Powered-by row */}
+        <div className="mt-8 pt-8 border-t border-border-subtle/60 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-subtle">
+            Powered by
+          </p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-foreground-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              Anthropic Claude
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              Groq · Llama&nbsp;3.3
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <GitFork className="h-3.5 w-3.5" />
+              Open source on GitHub
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-success" />
+              TLS 1.3 · AES-256
+            </span>
+          </div>
         </div>
       </div>
     </section>
@@ -870,62 +1030,142 @@ function Security() {
 }
 
 // ---------------------------------------------------------------------------
-// Testimonials
+// Real clauses — what PactSafe actually catches in contracts we've tested
 // ---------------------------------------------------------------------------
-function Testimonials() {
-  const quotes = [
+function RealClauses() {
+  const examples = [
     {
-      quote:
-        "Caught a clause that would have cost me my entire portfolio. Paid for itself on the first contract.",
-      name: "Maya L.",
-      role: "Brand designer · Brooklyn",
+      tone: "critical" as const,
+      contract: "Freelance Services Agreement",
+      label: "Unlimited IP transfer",
+      clause:
+        '"All work product, including drafts, concepts, and unused variations, shall become the sole property of Client upon creation, irrespective of payment status."',
+      explanation:
+        "Client owns everything you make — even before paying. If they ghost mid-project, they still walk away with your work.",
     },
     {
-      quote:
-        "I used to send every SOW to my lawyer. Now I screen them here first. Saves me $400/month.",
-      name: "Tom R.",
-      role: "Freelance developer",
+      tone: "critical" as const,
+      contract: "Consulting Agreement",
+      label: "Uncapped liability",
+      clause:
+        '"Consultant shall indemnify and hold harmless Company from any and all damages, losses, or liabilities arising from the services, without limitation."',
+      explanation:
+        "No liability cap means a single bad outcome could bankrupt you. A fair contract caps this at fees paid.",
     },
     {
-      quote:
-        "The negotiation drafts are gold. Confident, clear, and I never have to pretend I understood section 14.",
-      name: "Priya S.",
-      role: "Marketing consultant",
+      tone: "high" as const,
+      contract: "SaaS MSA",
+      label: "Auto-renewal trap",
+      clause:
+        '"This Agreement shall automatically renew for successive one-year terms unless Customer provides written notice at least 90 days prior to expiration."',
+      explanation:
+        "90-day pre-notice windows are designed to trap you. Calendar it — or miss it and you're locked in for another year.",
+    },
+    {
+      tone: "high" as const,
+      contract: "NDA",
+      label: "Perpetual confidentiality",
+      clause:
+        '"Recipient shall maintain the confidentiality of all Confidential Information in perpetuity following termination of this Agreement."',
+      explanation:
+        'Most NDAs should expire in 2–5 years. "Perpetuity" is an unusual ask and worth negotiating down.',
+    },
+    {
+      tone: "medium" as const,
+      contract: "Design SOW",
+      label: "Unlimited revisions",
+      clause:
+        '"Contractor shall provide revisions as reasonably requested by Client until Client is satisfied with the final deliverable."',
+      explanation:
+        '"Until satisfied" is a black hole. Fair SOWs cap revisions at 2–3 rounds with hourly fees beyond that.',
+    },
+    {
+      tone: "medium" as const,
+      contract: "Vendor Terms",
+      label: "Net-60 with no late fee",
+      clause:
+        '"Payment terms are Net 60 from receipt of properly-submitted invoice. No late fees or interest shall accrue on overdue balances."',
+      explanation:
+        "Net-60 is borderline predatory for a solo freelancer. No late-fee clause means zero leverage if they stall.",
     },
   ];
+
+  const toneMeta = {
+    critical: {
+      chip: "Critical",
+      badge: "critical" as const,
+      ring: "border-severity-critical/30",
+      bg: "bg-severity-critical/[0.05]",
+      label: "text-severity-critical",
+    },
+    high: {
+      chip: "High",
+      badge: "high" as const,
+      ring: "border-severity-high/30",
+      bg: "bg-severity-high/[0.05]",
+      label: "text-severity-high",
+    },
+    medium: {
+      chip: "Medium",
+      badge: "medium" as const,
+      ring: "border-severity-medium/30",
+      bg: "bg-severity-medium/[0.05]",
+      label: "text-severity-medium",
+    },
+  };
+
   return (
     <section className="relative py-20 md:py-28">
       <div className="container-app">
         <SectionHeader
-          eyebrow="Loved by independents"
-          title="Trusted by freelancers who've been burned before"
+          eyebrow="Real examples"
+          title="What PactSafe actually catches"
+          subtitle="Not marketing fluff — real clause patterns we flag, pulled from contracts we've analyzed in testing."
         />
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
-          {quotes.map((q, i) => (
-            <Reveal key={q.name} delay={i * 90}>
-              <figure className="surface-card h-full p-6 flex flex-col">
-              <div className="flex items-center gap-0.5 text-accent">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-3.5 w-3.5 fill-current"
-                  />
-                ))}
-              </div>
-              <Quote className="mt-4 h-5 w-5 text-accent/40" />
-              <blockquote className="mt-2 flex-1 text-sm leading-relaxed text-foreground/90">
-                {q.quote}
-              </blockquote>
-              <figcaption className="mt-6 pt-4 border-t border-border/50">
-                <p className="text-sm font-semibold text-foreground">
-                  {q.name}
-                </p>
-                <p className="text-xs text-foreground-muted">{q.role}</p>
-              </figcaption>
-            </figure>
-            </Reveal>
-          ))}
+        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {examples.map((ex, i) => {
+            const meta = toneMeta[ex.tone];
+            return (
+              <Reveal key={ex.label} delay={i * 60}>
+                <div
+                  className={cn(
+                    "group h-full rounded-xl border p-6 transition-all hover:-translate-y-0.5",
+                    meta.ring,
+                    meta.bg,
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <Badge tone={meta.badge} size="xs">
+                      {meta.chip}
+                    </Badge>
+                    <span className="text-[10px] uppercase tracking-wider text-foreground-subtle">
+                      {ex.contract}
+                    </span>
+                  </div>
+                  <p
+                    className={cn(
+                      "mt-4 text-sm font-semibold tracking-tight",
+                      meta.label,
+                    )}
+                  >
+                    {ex.label}
+                  </p>
+                  <blockquote className="mt-3 text-[13px] font-mono leading-relaxed text-foreground/85 border-l-2 border-border pl-3">
+                    {ex.clause}
+                  </blockquote>
+                  <p className="mt-4 text-xs text-foreground-muted leading-relaxed">
+                    {ex.explanation}
+                  </p>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
+
+        <p className="mt-10 text-center text-xs text-foreground-subtle">
+          These are real clause patterns from sample contracts — not
+          customer quotes or testimonials.
+        </p>
       </div>
     </section>
   );
