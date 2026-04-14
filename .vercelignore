@@ -1,0 +1,17 @@
+apps/api
+packages
+alembic
+alembic.ini
+*.py
+requirements.txt
+pyproject.toml
+contract_analyzer.py
+contractAnalyzer.js
+fly.toml
+Dockerfile
+docker-compose.yml
+.env
+.env.local
+uploads
+*.db
+*.db-journal

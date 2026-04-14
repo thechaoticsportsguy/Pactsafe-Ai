@@ -1,0 +1,37 @@
+app = "pactsafe-ai"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  LLM_PROVIDER        = "anthropic"
+  ANTHROPIC_MODEL     = "claude-opus-4-5"
+  UPLOAD_DIR          = "/data/uploads"
+  MAX_UPLOAD_MB       = "10"
+  CORS_ORIGINS        = "http://localhost:3000,https://pactsafe-ai.vercel.app"
+  # DATABASE_URL and ANTHROPIC_API_KEY are Fly secrets — not here.
+
+[http_service]
+  internal_port       = 8000
+  force_https         = true
+  auto_stop_machines  = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes           = ["app"]
+
+  [[http_service.checks]]
+    interval     = "30s"
+    timeout      = "5s"
+    grace_period = "20s"
+    method       = "GET"
+    path         = "/api/health"
+
+[[mounts]]
+  source      = "pactsafe_data"
+  destination = "/data"
+
+[[vm]]
+  memory   = "1gb"
+  cpu_kind = "shared"
+  cpus     = 1
