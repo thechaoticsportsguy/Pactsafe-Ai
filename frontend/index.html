@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PactSafe AI — Contract Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --border: #2a2a3a;
+      --accent: #7c5cfc;
+      --accent2: #a78bfa;
+      --accent-glow: rgba(124, 92, 252, 0.3);
+      --red: #ef4444;
+      --orange: #f97316;
+      --yellow: #eab308;
+      --green: #22c55e;
+      --text: #e2e8f0;
+      --text-dim: #64748b;
+      --text-mid: #94a3b8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,92,252,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,92,252,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 48px 0 32px;
+      text-align: center;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .logo-text {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 17px;
+      color: var(--text-mid);
+      max-width: 500px;
+      margin: 0 auto 12px;
+      line-height: 1.6;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(124,92,252,0.15);
+      border: 1px solid rgba(124,92,252,0.3);
+      color: var(--accent2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 40px;
+    }
+
+    /* Upload zone */
+    .upload-section {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 24px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .upload-section:hover {
+      border-color: rgba(124,92,252,0.4);
+      box-shadow: 0 0 40px rgba(124,92,252,0.08);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg3);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+      width: fit-content;
+    }
+
+    .tab {
+      padding: 8px 20px;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-dim);
+      border: none;
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 12px var(--accent-glow);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Drop zone */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 56px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124,92,252,0.05);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dropzone-icon { font-size: 44px; margin-bottom: 16px; }
+
+    .dropzone-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .dropzone-sub {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .dropzone.has-file {
+      border-color: var(--accent);
+      background: rgba(124,92,252,0.08);
+    }
+
+    .dropzone.has-file .dropzone-icon::after { content: '✅'; }
+
+    /* Textarea */
+    textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: vertical;
+      min-height: 180px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--text-dim); }
+
+    /* API key row */
+    .key-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      align-items: flex-end;
+    }
+
+    .input-group { flex: 1; }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--text-dim); }
+
+    /* Analyze button */
+    .btn-analyze {
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 24px var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-analyze:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 32px var(--accent-glow);
+    }
+
+    .btn-analyze:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 60px 0;
+    }
+
+    .loading.show { display: block; }
+
+    .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 16px;
+      color: var(--text-mid);
+    }
+
+    .loading-sub {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    /* Results */
+    #results { display: none; }
+    #results.show { display: block; }
+
+    .result-header {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .contract-type {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent2);
+      margin-bottom: 8px;
+    }
+
+    .verdict-text {
+      font-size: 16px;
+      color: var(--text-mid);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* Risk score */
+    .risk-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .risk-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 80px;
+    }
+
+    .risk-bar-wrap {
+      flex: 1;
+      min-width: 160px;
+      height: 8px;
+      background: var(--bg3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .risk-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .risk-score-num {
+      font-size: 22px;
+      font-weight: 700;
+      min-width: 60px;
+      text-align: right;
+    }
+
+    .risk-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon { font-size: 20px; }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .card-count {
+      margin-left: auto;
+      background: var(--bg3);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .card-body { padding: 16px 24px 20px; }
+
+    /* Flag items */
+    .flag-item {
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 3px solid;
+    }
+
+    .flag-item:last-child { margin-bottom: 0; }
+
+    .flag-item.critical {
+      background: rgba(239,68,68,0.08);
+      border-color: var(--red);
+    }
+
+    .flag-item.high {
+      background: rgba(249,115,22,0.08);
+      border-color: var(--orange);
+    }
+
+    .flag-item.medium {
+      background: rgba(234,179,8,0.08);
+      border-color: var(--yellow);
+    }
+
+    .flag-item.low {
+      background: rgba(34,197,94,0.08);
+      border-color: var(--green);
+    }
+
+    .flag-severity {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flag-severity.critical { color: var(--red); }
+    .flag-severity.high { color: var(--orange); }
+    .flag-severity.medium { color: var(--yellow); }
+    .flag-severity.low { color: var(--green); }
+
+    .flag-clause {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    .flag-explanation {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* List items */
+    .list-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-mid);
+    }
+
+    .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .list-item-num {
+      min-width: 24px;
+      height: 24px;
+      background: var(--bg3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent2);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      padding: 20px 0 48px;
+    }
+
+    /* Error */
+    .error-box {
+      background: rgba(239,68,68,0.08);
+      border: 1.5px solid rgba(239,68,68,0.3);
+      border-radius: 12px;
+      padding: 20px;
+      color: var(--red);
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-box.show { display: block; }
+
+    /* Reset button */
+    .btn-reset {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg3);
+      border: 1.5px solid var(--border);
+      color: var(--text-mid);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 24px;
+      transition: all 0.15s;
+    }
+
+    .btn-reset:hover {
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    @media (max-width: 600px) {
+      .key-row { flex-direction: column; }
+      .upload-section { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🔍</div>
+      <span class="logo-text">PactSafe AI</span>
+    </div>
+    <h1>Know what you're signing.</h1>
+    <p class="subtitle">AI-powered contract analysis. Spot red flags, missing protections, and exactly what to negotiate — in seconds.</p>
+    <div class="badge">⚡ Powered by Claude AI</div>
+  </header>
+
+  <!-- Upload Section -->
+  <div class="upload-section" id="uploadSection">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('text')">Paste Text</button>
+      <button class="tab" onclick="switchTab('file')">Upload File</button>
+    </div>
+
+    <!-- Text tab -->
+    <div class="tab-content active" id="tab-text">
+      <textarea id="contractText" placeholder="Paste your contract text here…&#10;&#10;e.g. This agreement allows termination at any time without payment. The client retains full ownership of all work immediately..."></textarea>
+    </div>
+
+    <!-- File tab -->
+    <div class="tab-content" id="tab-file">
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" onchange="handleFile(this)" />
+        <div class="dropzone-icon" id="dropzoneIcon">📄</div>
+        <div class="dropzone-title" id="dropzoneTitle">Drop your contract here</div>
+        <div class="dropzone-sub" id="dropzoneSub">PDF, DOCX, or TXT · Click to browse</div>
+      </div>
+    </div>
+
+    <!-- API Key -->
+    <div class="key-row">
+      <div class="input-group">
+        <label>Anthropic API Key</label>
+        <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="errorBox"></div>
+
+    <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
+      🔍 Analyze Contract
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Analyzing your contract…</div>
+    <div class="loading-sub">Claude is reviewing every clause. This takes 10–30 seconds.</div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <button class="btn-reset" onclick="resetUI()">← Analyze another contract</button>
+
+    <div class="result-header">
+      <div class="contract-type" id="contractType"></div>
+      <div class="verdict-text" id="verdictText"></div>
+      <div class="risk-row">
+        <span class="risk-label">Risk Score</span>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-fill" id="riskBarFill"></div>
+        </div>
+        <span class="risk-score-num" id="riskScoreNum"></span>
+        <span class="risk-badge" id="riskBadge"></span>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <!-- Red Flags -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🚩</span>
+          <span class="card-title">Red Flags</span>
+          <span class="card-count" id="flagCount"></span>
+        </div>
+        <div class="card-body" id="redFlagsBody"></div>
+      </div>
+
+      <!-- Missing Protections -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🛡️</span>
+          <span class="card-title">Missing Protections</span>
+          <span class="card-count" id="missingCount"></span>
+        </div>
+        <div class="card-body" id="missingBody"></div>
+      </div>
+
+      <!-- Negotiation -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">💬</span>
+          <span class="card-title">Negotiation Suggestions</span>
+          <span class="card-count" id="negoCount"></span>
+        </div>
+        <div class="card-body" id="negoBody"></div>
+      </div>
+    </div>
+
+    <div class="disclaimer">⚖️ Not legal advice. For high-stakes contracts, always consult a licensed attorney.</div>
+  </div>
+
+</div>
+
+<script>
+  let activeTab = 'text';
+  let selectedFile = null;
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'text') || (i === 1 && tab === 'file'));
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  }
+
+  function handleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    selectedFile = file;
+    const dz = document.getElementById('dropzone');
+    dz.classList.add('has-file');
+    document.getElementById('dropzoneIcon').textContent = '✅';
+    document.getElementById('dropzoneTitle').textContent = file.name;
+    document.getElementById('dropzoneSub').textContent = `${(file.size / 1024).toFixed(1)} KB · Click to change`;
+  }
+
+  // Drag and drop
+  const dz = document.getElementById('dropzone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      document.getElementById('fileInput').files = e.dataTransfer.files;
+      handleFile(document.getElementById('fileInput'));
+    }
+  });
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = '⚠️ ' + msg;
+    box.classList.add('show');
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('show');
+  }
+
+  async function readFileAsText(file) {
+    // For TXT files
+    if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+      return new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result);
+        reader.onerror = rej;
+        reader.readAsText(file);
+      });
+    }
+    // For PDF/DOCX — send to backend
+    return null;
+  }
+
+  async function runAnalysis() {
+    hideError();
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) { showError('Enter your Anthropic API key above.'); return; }
+
+    let contractText = '';
+    let fileToSend = null;
+
+    if (activeTab === 'text') {
+      contractText = document.getElementById('contractText').value.trim();
+      if (!contractText) { showError('Paste your contract text first.'); return; }
+      if (contractText.length < 50) { showError('Contract text is too short.'); return; }
+    } else {
+      if (!selectedFile) { showError('Please select a contract file.'); return; }
+      if (selectedFile.name.endsWith('.txt')) {
+        contractText = await readFileAsText(selectedFile);
+      } else {
+        fileToSend = selectedFile;
+      }
+    }
+
+    // Show loading
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('loading').classList.add('show');
+    document.getElementById('results').classList.remove('show');
+
+    try {
+      let result;
+
+      if (fileToSend) {
+        // Send file to backend
+        const formData = new FormData();
+        formData.append('file', fileToSend);
+        formData.append('api_key', apiKey);
+        const resp = await fetch('/analyze', { method: 'POST', body: formData });
+        if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+        result = await resp.json();
+      } else {
+        // Send text directly to Claude API
+        result = await analyzeWithClaude(contractText, apiKey);
+      }
+
+      renderResults(result);
+    } catch (err) {
+      document.getElementById('uploadSection').style.display = 'block';
+      document.getElementById('loading').classList.remove('show');
+      showError(err.message || 'Analysis failed. Check your API key and try again.');
+    }
+  }
+
+  async function analyzeWithClaude(contractText, apiKey) {
+    const prompt = `Analyze this contract and return ONLY a JSON object — no markdown, no text outside JSON.
+
+CONTRACT:
+---
+${contractText.slice(0, 60000)}
+---
+
+Return EXACTLY this JSON:
+{
+  "contract_type": "type of contract",
+  "risk_score": <integer 0-100>,
+  "overall_summary": "2-3 plain-English sentences",
+  "red_flags": [{"clause": "quote", "explanation": "why dangerous", "severity": "CRITICAL|HIGH|MEDIUM|LOW"}],
+  "missing_protections": ["what's missing and why it matters"],
+  "negotiation_suggestions": ["specific actionable suggestion"]
+}
+
+Rules: 3-7 red flags ordered CRITICAL first. 3-5 missing protections. 3-5 negotiation suggestions. risk_score: 0=safe, 100=do not sign.`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 2048,
+        system: 'You are a senior contract attorney protecting freelancers. Be direct. Plain English. No jargon. Output only valid JSON.',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `Claude API error ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const raw = data.content?.[0]?.text || '';
+
+    // Parse JSON from response
+    let cleaned = raw.trim();
+    const fence = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fence) cleaned = fence[1].trim();
+
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if (match) return JSON.parse(match[0]);
+      throw new Error('Could not parse AI response. Try again.');
+    }
+  }
+
+  function renderResults(data) {
+    document.getElementById('loading').classList.remove('show');
+
+    if (data.error) throw new Error(data.error);
+
+    // Header
+    document.getElementById('contractType').textContent = data.contract_type || 'Contract Analysis';
+    document.getElementById('verdictText').textContent = data.overall_summary || '';
+
+    // Risk score
+    const score = Math.max(0, Math.min(100, parseInt(data.risk_score) || 50));
+    let color, label;
+    if (score <= 30) { color = '#22c55e'; label = 'Low Risk'; }
+    else if (score <= 60) { color = '#eab308'; label = 'Moderate Risk'; }
+    else if (score <= 80) { color = '#f97316'; label = 'High Risk'; }
+    else { color = '#ef4444'; label = 'Critical Risk'; }
+
+    document.getElementById('riskBarFill').style.width = score + '%';
+    document.getElementById('riskBarFill').style.background = `linear-gradient(90deg, ${color}aa, ${color})`;
+    document.getElementById('riskScoreNum').textContent = score + '/100';
+    document.getElementById('riskScoreNum').style.color = color;
+    const badge = document.getElementById('riskBadge');
+    badge.textContent = label;
+    badge.style.background = color + '22';
+    badge.style.color = color;
+    badge.style.border = `1px solid ${color}44`;
+
+    // Red flags
+    const flags = data.red_flags || [];
+    document.getElementById('flagCount').textContent = flags.length;
+    const flagsHtml = flags.map(f => {
+      const sev = (f.severity || 'medium').toLowerCase();
+      return `<div class="flag-item ${sev}">
+        <div class="flag-severity ${sev}">${severityEmoji(sev)} ${sev.toUpperCase()}</div>
+        ${f.clause ? `<div class="flag-clause">"${escHtml(f.clause)}"</div>` : ''}
+        <div class="flag-explanation">${escHtml(f.explanation)}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('redFlagsBody').innerHTML = flagsHtml || '<div style="color:var(--text-dim);font-size:14px">No red flags detected.</div>';
+
+    // Missing protections
+    const missing = data.missing_protections || [];
+    document.getElementById('missingCount').textContent = missing.length;
+    document.getElementById('missingBody').innerHTML = missing.map((m, i) =>
+      `<div class="list-item"><span class="list-item-num">${i+1}</span><span>${escHtml(m)}</span></div>`
+    ).join('') || '<div style="color:var(--text-dim);font-size:14px">No issues found.</div>';
+
+    // Negotiation
+    const nego = data.negotiation_suggestions || [];
+    document.getElementById('negoCount').textContent = nego.length;
+    document.getElementById('negoBody').innerHTML = nego.map((n, i) =>
+      `<div class="list-item"><span class="list-item-num">${i+1}</span><span>${escHtml(n)}</span></div>`
+    ).join('') || '<div style="color:var(--text-dim);font-size:14px">No suggestions.</div>';
+
+    // Animate risk bar
+    setTimeout(() => {
+      document.getElementById('riskBarFill').style.width = score + '%';
+    }, 100);
+
+    document.getElementById('results').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetUI() {
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('uploadSection').style.display = 'block';
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('contractText').value = '';
+    document.getElementById('errorBox').classList.remove('show');
+    selectedFile = null;
+    const dz = document.getElementById('dropzone');
+    dz.classList.remove('has-file');
+    document.getElementById('dropzoneIcon').textContent = '📄';
+    document.getElementById('dropzoneTitle').textContent = 'Drop your contract here';
+    document.getElementById('dropzoneSub').textContent = 'PDF, DOCX, or TXT · Click to browse';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function severityEmoji(sev) {
+    return { critical: '💀', high: '🔴', medium: '🟡', low: '🟢' }[sev] || '⚠️';
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
