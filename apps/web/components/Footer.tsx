@@ -115,16 +115,36 @@ export default function Footer() {
             </p>
             <ul className="mt-4 space-y-3 text-sm">
               <li>
-                <span className="text-foreground-muted">Privacy policy</span>
+                <Link
+                  href="/privacy"
+                  className="text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  Privacy policy
+                </Link>
               </li>
               <li>
-                <span className="text-foreground-muted">Terms of service</span>
+                <Link
+                  href="/terms"
+                  className="text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  Terms of service
+                </Link>
               </li>
               <li>
-                <span className="text-foreground-muted">Security</span>
+                <Link
+                  href="/security"
+                  className="text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  Security
+                </Link>
               </li>
               <li>
-                <span className="text-foreground-muted">Contact</span>
+                <Link
+                  href="/contact"
+                  className="text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>

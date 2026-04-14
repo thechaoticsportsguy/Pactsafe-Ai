@@ -4,6 +4,7 @@ import * as React from "react";
 import { Copy, Check, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
+import { useToast } from "@/components/Toast";
 import { cn } from "@/lib/cn";
 
 interface NegotiationComposerProps {
@@ -33,6 +34,7 @@ export default function NegotiationComposer({
   contractType,
   className,
 }: NegotiationComposerProps) {
+  const { toast } = useToast();
   const [tone, setTone] = React.useState<Tone>("friendly");
   const [selected, setSelected] = React.useState<Set<number>>(
     () => new Set(suggestions.map((_, i) => i)),
@@ -73,8 +75,17 @@ export default function NegotiationComposer({
       await navigator.clipboard.writeText(draft);
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
+      toast({
+        tone: "success",
+        message: "Email copied to clipboard",
+        description: "Paste it into Gmail, Superhuman, or your client thread.",
+      });
     } catch {
-      /* ignore */
+      toast({
+        tone: "error",
+        message: "Couldn't copy",
+        description: "Your browser blocked clipboard access.",
+      });
     }
   }
 
