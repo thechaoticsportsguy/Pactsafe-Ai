@@ -13,11 +13,10 @@ interface TopNavProps {
 }
 
 const NAV_LINKS_MARKETING = [
-  { href: "/#features", label: "Features" },
   { href: "/#how-it-works", label: "How it works" },
-  { href: "/#use-cases", label: "For freelancers" },
+  { href: "/demo", label: "Sample report" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/changelog", label: "Changelog" },
 ];
 
 const NAV_LINKS_APP = [

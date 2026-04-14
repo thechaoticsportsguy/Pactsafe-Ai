@@ -36,6 +36,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/demo"
+                  className="text-foreground-muted hover:text-foreground transition-colors"
+                >
+                  Sample report
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/compare"
                   className="text-foreground-muted hover:text-foreground transition-colors"
                 >

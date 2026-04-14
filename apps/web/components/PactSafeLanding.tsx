@@ -543,6 +543,14 @@ function Hero() {
                 </button>
               ))}
             </div>
+
+            <Link
+              href="/demo"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs text-accent hover:underline underline-offset-2"
+            >
+              Or see a full sample report without signing up
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
         </div>
       </div>
