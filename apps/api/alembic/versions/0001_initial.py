@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Sequence, Union
 
 import sqlalchemy as sa
-import sqlmodel
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
@@ -22,7 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def _uuid() -> sa.types.TypeEngine:
     # Use native UUID on postgres, fall back to 36-char string on sqlite.
-    return postgresql.UUID(as_uuid=True).with_variant(sqlmodel.sql.sqltypes.GUID(), "sqlite")
+    return postgresql.UUID(as_uuid=True).with_variant(sa.String(36), "sqlite")
 
 
 def _json() -> sa.types.TypeEngine:
