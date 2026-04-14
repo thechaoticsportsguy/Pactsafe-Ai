@@ -22,13 +22,22 @@ const WS_URL = (
 ).replace(/\/+$/, "");
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-    },
-    cache: "no-store",
-  });
+  const url = `${API_URL}${path}`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers: { ...(init?.headers ?? {}) },
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error(`[api] fetch failed — ${url}`, err);
+    throw new Error(
+      `Cannot reach the API at ${API_URL}. ` +
+      `Verify NEXT_PUBLIC_API_URL is set and the backend is running. ` +
+      `(${err instanceof Error ? err.message : String(err)})`,
+    );
+  }
   if (!res.ok) {
     let msg = `${res.status} ${res.statusText}`;
     try {
@@ -37,6 +46,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       // ignore
     }
+    console.error(`[api] ${init?.method ?? "GET"} ${url} → ${msg}`);
     throw new Error(msg);
   }
   return (await res.json()) as T;

@@ -32,6 +32,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
+    # Covers production + any Vercel preview deploy (pactsafe-ai-*.vercel.app)
+    allow_origin_regex=r"https://pactsafe-ai.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
