@@ -6,11 +6,7 @@ import Dropzone from "@/components/Dropzone";
 import UploadProgress from "@/components/UploadProgress";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
-import {
-  createJobFromFile,
-  createJobFromText,
-  subscribeToJob,
-} from "@/lib/api";
+import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus } from "@/lib/schemas";
 
 type Mode = "file" | "text";
@@ -26,6 +22,18 @@ export default function AnalyzePage() {
   const [error, setError] = React.useState<string | null>(null);
   const [jobId, setJobId] = React.useState<string | null>(null);
 
+  const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function stopPolling() {
+    if (pollRef.current !== null) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }
+
+  // Clean up interval if the component unmounts mid-analysis
+  React.useEffect(() => () => stopPolling(), []);
+
   async function start(promise: Promise<{ job_id: string; status: JobStatus }>) {
     setError(null);
     setBusy(true);
@@ -33,38 +41,52 @@ export default function AnalyzePage() {
     setMessage("Creating job…");
     setProgress(0.05);
 
+    let job_id: string;
     try {
-      const { job_id } = await promise;
-      setJobId(job_id);
-      setStatus("queued");
-      setMessage("Queued for processing…");
-      setProgress(0.12);
-
-      const unsub = subscribeToJob(
-        job_id,
-        (ev) => {
-          setStatus(ev.status);
-          setMessage(ev.message);
-          setProgress(ev.progress);
-          if (ev.status === "completed") {
-            unsub();
-            // brief pause so the 100% bar is visible
-            setTimeout(() => router.push(`/analysis/${job_id}`), 400);
-          } else if (ev.status === "failed") {
-            unsub();
-            setBusy(false);
-            setError(ev.message || "Analysis failed.");
-          }
-        },
-        () => {
-          /* closed */
-        },
-      );
+      ({ job_id } = await promise);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
+      console.error("[analyze] job creation failed", e);
       setError(msg);
       setBusy(false);
+      return;
     }
+
+    setJobId(job_id);
+    setMessage("Queued for processing…");
+    setProgress(0.12);
+
+    // Poll GET /api/jobs/{id} every 2 s instead of using WebSocket
+    pollRef.current = setInterval(async () => {
+      try {
+        const job = await getJob(job_id);
+        setStatus(job.status);
+
+        if (job.status === "extracting") {
+          setMessage("Extracting text…");
+          setProgress(0.35);
+        } else if (job.status === "analyzing") {
+          setMessage("Analyzing contract…");
+          setProgress(0.65);
+        } else if (job.status === "completed") {
+          stopPolling();
+          setProgress(1);
+          setMessage("Done!");
+          setTimeout(() => router.push(`/analysis/${job_id}`), 400);
+        } else if (job.status === "failed") {
+          stopPolling();
+          console.error("[analyze] job failed", job.error);
+          setError(job.error || "Analysis failed.");
+          setBusy(false);
+        }
+      } catch (e: unknown) {
+        stopPolling();
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("[analyze] poll failed", e);
+        setError(msg);
+        setBusy(false);
+      }
+    }, 2000);
   }
 
   function onFile(file: File) {
