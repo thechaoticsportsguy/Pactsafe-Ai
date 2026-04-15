@@ -61,8 +61,10 @@ def extract_text(path: str | Path) -> ExtractedDocument:
     ext = p.suffix.lower()
     if ext == ".pdf":
         return _extract_pdf(p)
-    if ext in {".docx", ".doc"}:
+    if ext == ".docx":
         return _extract_docx(p)
+    if ext == ".doc":
+        return _extract_doc_legacy(p)
     if ext in {".txt", ".md", ""}:
         return _extract_txt(p)
     raise ValueError(f"Unsupported file type: {ext}")
@@ -129,7 +131,7 @@ def _ocr_pdf(path: Path) -> tuple[str, list[PageRange]]:
 
 
 # ---------------------------------------------------------------------------
-# DOCX
+# DOCX  (.docx — ZIP/XML format, handled by python-docx)
 # ---------------------------------------------------------------------------
 
 
@@ -139,6 +141,43 @@ def _extract_docx(path: Path) -> ExtractedDocument:
     doc = Document(str(path))
     paragraphs = [p.text for p in doc.paragraphs if p.text and p.text.strip()]
     text = "\n".join(paragraphs).strip()
+
+    return ExtractedDocument(
+        text=text,
+        page_map=[{"page": 1, "start": 0, "end": len(text)}],
+        source_format="docx",
+    )
+
+
+# ---------------------------------------------------------------------------
+# DOC  (.doc — legacy binary OLE format, handled by antiword)
+# ---------------------------------------------------------------------------
+
+
+def _extract_doc_legacy(path: Path) -> ExtractedDocument:
+    """Handle old binary .doc files via antiword (system package)."""
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            ["antiword", str(path)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except FileNotFoundError:
+        raise RuntimeError(
+            "antiword is not installed — cannot process .doc files. "
+            "Please save the document as .docx and re-upload."
+        )
+
+    text = result.stdout.strip()
+    if result.returncode != 0 or not text:
+        stderr = result.stderr.strip()
+        raise ValueError(
+            f"Could not extract text from .doc file. "
+            f"Try saving as .docx. (antiword: {stderr or 'no output'})"
+        )
 
     return ExtractedDocument(
         text=text,
