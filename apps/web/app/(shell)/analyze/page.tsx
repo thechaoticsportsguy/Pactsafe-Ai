@@ -38,6 +38,7 @@ import {
 import Dropzone from "@/components/Dropzone";
 import ContractReader from "@/components/ContractReader";
 import AnalysisReport from "@/components/AnalysisReport";
+import LiveScanModal from "@/components/LiveScanModal";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -140,18 +141,28 @@ export default function AnalyzePage() {
         } else if (job.status === "completed") {
           // Final fetch to guarantee the latest result payload, then
           // flip into inline-render mode. No route change — the same
-          // /analyze page now shows the full report below the form
-          // (see the early-return branch in the JSX below).
+          // /analyze page shows the full report below the form (see
+          // the early-return branch in the JSX below).
+          //
+          // We hold the LiveScanModal on "Report ready" for ~500ms so
+          // users see the success state before the modal unmounts and
+          // the report slides in.
           stopPolling();
+          setStatus("completed");
           setProgress(1);
           setMessage("Report ready");
+
+          let finalJob: JobStatusResponse;
           try {
-            const finalJob = await getJob(job_id);
-            setCompletedJob(finalJob);
+            finalJob = await getJob(job_id);
           } catch {
-            setCompletedJob(job);
+            finalJob = job;
           }
-          setBusy(false);
+
+          setTimeout(() => {
+            setCompletedJob(finalJob);
+            setBusy(false);
+          }, 500);
         } else if (job.status === "failed") {
           stopPolling();
           console.error("[analyze] job failed", job.error);
@@ -325,9 +336,20 @@ export default function AnalyzePage() {
 
   // ---------------------------------------------------------------------
   // FORM / SCANNING — pre-completion layout: form + side reassurance.
+  // The LiveScanModal is a fixed-position overlay that covers the form
+  // whenever `busy` is true and we haven't flipped to the completedJob
+  // branch yet. It's the single source of loading feedback.
   // ---------------------------------------------------------------------
   return (
     <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <LiveScanModal
+        open={busy && !completedJob}
+        status={status}
+        progress={progress}
+        filename={filename}
+        elapsed={elapsed}
+      />
+
       {isDraggingGlobal && (
         <div
           aria-hidden
