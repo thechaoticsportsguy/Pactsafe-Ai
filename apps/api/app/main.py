@@ -30,21 +30,22 @@ app = FastAPI(
 )
 
 _EXTRA_ORIGINS = [
-    # Production custom domains
-    "https://pactsafe.ai",
-    "https://www.pactsafe.ai",
+    # Production custom domain
+    "https://pactsafeai.com",
+    "https://www.pactsafeai.com",
     # Vercel canonical + known preview
     "https://pactsafe-ai.vercel.app",
     "https://pactsafe-ai-git-main-omgohel-3379s-projects.vercel.app",
     # Local dev
     "http://localhost:3000",
+    "http://localhost:3001",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=list(dict.fromkeys(settings.cors_origin_list + _EXTRA_ORIGINS)),
-    # Also covers any other Vercel preview deploy automatically
-    allow_origin_regex=r"https://(www\.)?pactsafe(\.ai|-ai.*\.vercel\.app)",
+    # Covers all Vercel preview deploys + custom domains
+    allow_origin_regex=r"https://(www\.)?pactsafeai\.com|https://pactsafe-ai[^.]*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
