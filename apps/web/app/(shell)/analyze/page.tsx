@@ -1,23 +1,21 @@
 "use client";
 
 /**
- * /analyze — single-page live-scan flow.
+ * /analyze — live-scan flow, three distinct phases.
  *
- * Flow:
- *   1. User uploads a file or pastes text.
- *   2. createJobFromFile / createJobFromText fires; we start polling.
- *   3. While polling we mount <ContractReader/> as the "Live scan"
- *      state with progress + rotating copy.
- *   4. When status === "completed" we fetch the final job payload and
- *      render <AnalysisReport/> INLINE in a plain-flow container —
- *      no `router.push`, no grid trap, no height clipping.
- *   5. The user can start another analysis with the "Analyze another"
- *      button, which resets all state and returns to the form.
+ * PHASE 1 — UPLOAD (busy === false && !completedJob)
+ *   Standard form: file dropzone or text paste, drag-and-drop overlay.
  *
- * The results render lives in a normal `<div className="space-y-10">`
- * wrapper — explicitly no `h-screen`, `max-h-[Xvh]`, `overflow-hidden`
- * on any parent — so scrolling from the risk gauge down to the last
- * finding works on every viewport.
+ * PHASE 2 — SCANNING (busy === true && !completedJob)
+ *   Full-viewport two-column grid that *escapes* the shell container.
+ *   Left  → <ContractPreview> (document + animated scan beam + highlights)
+ *   Right → <LiveScanSidebar> (steps, progress bar, live counters)
+ *   When status === "completed", the sidebar turns green for ~500 ms
+ *   before the completedJob state flips and the phase-3 report renders.
+ *
+ * PHASE 3 — REPORT (completedJob set, busy === false)
+ *   Full inline <AnalysisReport> with an "Analyze another" reset button.
+ *   No route change — same /analyze page, no height traps.
  */
 
 import * as React from "react";
@@ -36,22 +34,33 @@ import {
   Plus,
 } from "lucide-react";
 import Dropzone from "@/components/Dropzone";
-import ContractReader from "@/components/ContractReader";
+import ContractPreview from "@/components/ContractPreview";
+import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
-import LiveScanModal from "@/components/LiveScanModal";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/Toast";
-import {
-  createJobFromFile,
-  createJobFromText,
-  getJob,
-} from "@/lib/api";
+import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
 import { cn } from "@/lib/cn";
 
 type Mode = "file" | "text";
+
+// ---------------------------------------------------------------------------
+// Clause / risk counters
+// Derived from progress because the API doesn't emit real-time clause
+// counts. These feel live even though they're approximations.
+// ---------------------------------------------------------------------------
+
+function estimateClauses(progress: number) {
+  return Math.max(0, Math.round(progress * 16));
+}
+function estimateRisks(progress: number) {
+  return Math.max(0, Math.round(progress * 7));
+}
+
+// ---------------------------------------------------------------------------
 
 export default function AnalyzePage() {
   const { toast } = useToast();
@@ -64,14 +73,8 @@ export default function AnalyzePage() {
   const [error, setError] = React.useState<string | null>(null);
   const [jobId, setJobId] = React.useState<string | null>(null);
   const [isDraggingGlobal, setIsDraggingGlobal] = React.useState(false);
-  // Filename of the uploaded file (if any) — surfaced in the live
-  // "PactSafe AI is reading" animation so the user sees their own
-  // document inside the reader frame.
   const [filename, setFilename] = React.useState<string | null>(null);
-  // Seconds elapsed since the current job started, for the reader header.
   const [elapsed, setElapsed] = React.useState(0);
-  // Completed-job payload. When this is set AND has a result, we swap
-  // the form+sidebar layout for the full <AnalysisReport/>.
   const [completedJob, setCompletedJob] =
     React.useState<JobStatusResponse | null>(null);
 
@@ -87,13 +90,9 @@ export default function AnalyzePage() {
 
   React.useEffect(() => () => stopPolling(), []);
 
-  // Tick the elapsed-time counter while a job is in flight. Reset on
-  // each new job via the `busy` dep so every analysis starts at 0.
+  // Elapsed timer — runs while a job is in flight.
   React.useEffect(() => {
-    if (!busy) {
-      setElapsed(0);
-      return;
-    }
+    if (!busy) { setElapsed(0); return; }
     const start = Date.now();
     const id = window.setInterval(
       () => setElapsed(Math.floor((Date.now() - start) / 1000)),
@@ -101,6 +100,10 @@ export default function AnalyzePage() {
     );
     return () => window.clearInterval(id);
   }, [busy]);
+
+  // ---------------------------------------------------------------------------
+  // Job lifecycle
+  // ---------------------------------------------------------------------------
 
   async function start(
     promise: Promise<{ job_id: string; status: JobStatus }>,
@@ -117,7 +120,6 @@ export default function AnalyzePage() {
       ({ job_id } = await promise);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.error("[analyze] job creation failed", e);
       setError(msg);
       setBusy(false);
       return;
@@ -139,41 +141,29 @@ export default function AnalyzePage() {
           setMessage("Scoring risks…");
           setProgress(0.65);
         } else if (job.status === "completed") {
-          // Final fetch to guarantee the latest result payload, then
-          // flip into inline-render mode. No route change — the same
-          // /analyze page shows the full report below the form (see
-          // the early-return branch in the JSX below).
-          //
-          // We hold the LiveScanModal on "Report ready" for ~500ms so
-          // users see the success state before the modal unmounts and
-          // the report slides in.
           stopPolling();
           setStatus("completed");
           setProgress(1);
           setMessage("Report ready");
 
           let finalJob: JobStatusResponse;
-          try {
-            finalJob = await getJob(job_id);
-          } catch {
-            finalJob = job;
-          }
+          try { finalJob = await getJob(job_id); }
+          catch { finalJob = job; }
 
+          // Hold the scanning UI in "done" state for 500 ms so users
+          // can see the green success transition before the report appears.
           setTimeout(() => {
             setCompletedJob(finalJob);
             setBusy(false);
-          }, 500);
+          }, 600);
         } else if (job.status === "failed") {
           stopPolling();
-          console.error("[analyze] job failed", job.error);
           setError(job.error || "Analysis failed.");
           setBusy(false);
         }
       } catch (e: unknown) {
         stopPolling();
-        const msg = e instanceof Error ? e.message : String(e);
-        console.error("[analyze] poll failed", e);
-        setError(msg);
+        setError(e instanceof Error ? e.message : String(e));
         setBusy(false);
       }
     }, 2000);
@@ -197,40 +187,26 @@ export default function AnalyzePage() {
   async function pasteFromClipboard() {
     try {
       const clipText = await navigator.clipboard.readText();
-      if (!clipText || clipText.trim().length === 0) {
-        toast({
-          tone: "error",
-          message: "Clipboard is empty",
-          description: "Copy your contract text first, then try again.",
-        });
+      if (!clipText?.trim()) {
+        toast({ tone: "error", message: "Clipboard is empty", description: "Copy your contract text first." });
         return;
       }
       setMode("text");
       setText(clipText);
       setError(null);
-      toast({
-        tone: "success",
-        message: "Pasted from clipboard",
-        description: `${clipText.length.toLocaleString()} characters loaded.`,
-      });
+      toast({ tone: "success", message: "Pasted from clipboard", description: `${clipText.length.toLocaleString()} characters loaded.` });
     } catch {
-      toast({
-        tone: "error",
-        message: "Couldn't read clipboard",
-        description: "Your browser blocked access — paste with ⌘V instead.",
-      });
+      toast({ tone: "error", message: "Couldn't read clipboard", description: "Your browser blocked access — paste with ⌘V instead." });
     }
   }
 
-  // ⌘/Ctrl + Enter submits from either mode
+  // ⌘/Ctrl+Enter in text mode
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (busy) return;
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-        if (mode === "text" && text.trim().length >= 50) {
-          e.preventDefault();
-          onAnalyzeText();
-        }
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && mode === "text" && text.trim().length >= 50) {
+        e.preventDefault();
+        onAnalyzeText();
       }
     };
     window.addEventListener("keydown", handler);
@@ -238,54 +214,39 @@ export default function AnalyzePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busy, mode, text]);
 
-  // Global drag-and-drop over the entire analyze page
+  // Global drag-and-drop (upload phase only)
   React.useEffect(() => {
     if (busy || completedJob) return;
-
     const hasFiles = (e: DragEvent) => {
       const types = e.dataTransfer?.types;
       if (!types) return false;
-      for (let i = 0; i < types.length; i++) {
-        if (types[i] === "Files") return true;
-      }
+      for (let i = 0; i < types.length; i++) if (types[i] === "Files") return true;
       return false;
     };
-
-    const onDragEnter = (e: DragEvent) => {
-      if (!hasFiles(e)) return;
-      dragDepthRef.current += 1;
-      setIsDraggingGlobal(true);
-    };
+    const onDragEnter = (e: DragEvent) => { if (!hasFiles(e)) return; dragDepthRef.current++; setIsDraggingGlobal(true); };
     const onDragLeave = (e: DragEvent) => {
       if (!hasFiles(e)) return;
       dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
       if (dragDepthRef.current === 0) setIsDraggingGlobal(false);
     };
-    const onDragOver = (e: DragEvent) => {
-      if (!hasFiles(e)) return;
-      e.preventDefault();
-    };
+    const onDragOver  = (e: DragEvent) => { if (hasFiles(e)) e.preventDefault(); };
     const onDrop = (e: DragEvent) => {
       if (!hasFiles(e)) return;
       e.preventDefault();
       dragDepthRef.current = 0;
       setIsDraggingGlobal(false);
       const f = e.dataTransfer?.files?.[0];
-      if (f) {
-        setMode("file");
-        onFile(f);
-      }
+      if (f) { setMode("file"); onFile(f); }
     };
-
     window.addEventListener("dragenter", onDragEnter);
     window.addEventListener("dragleave", onDragLeave);
-    window.addEventListener("dragover", onDragOver);
-    window.addEventListener("drop", onDrop);
+    window.addEventListener("dragover",  onDragOver);
+    window.addEventListener("drop",      onDrop);
     return () => {
       window.removeEventListener("dragenter", onDragEnter);
       window.removeEventListener("dragleave", onDragLeave);
-      window.removeEventListener("dragover", onDragOver);
-      window.removeEventListener("drop", onDrop);
+      window.removeEventListener("dragover",  onDragOver);
+      window.removeEventListener("drop",      onDrop);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busy, completedJob]);
@@ -301,15 +262,12 @@ export default function AnalyzePage() {
     setCompletedJob(null);
   }
 
-  // ---------------------------------------------------------------------
-  // INLINE RESULTS — when polling finishes, we render the full
-  // AnalysisReport here on the SAME page, in a plain-flow container
-  // with no grid, no height trap, no overflow clipping.
-  // ---------------------------------------------------------------------
-  if (completedJob && completedJob.result) {
+  // ---------------------------------------------------------------------------
+  // PHASE 3 — REPORT
+  // ---------------------------------------------------------------------------
+  if (completedJob?.result) {
     return (
       <div className="space-y-10">
-        {/* Small header strip so the user knows they're still on /analyze */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-foreground-muted">
             <CheckCircle2 className="h-3.5 w-3.5 text-success" />
@@ -334,22 +292,55 @@ export default function AnalyzePage() {
     );
   }
 
-  // ---------------------------------------------------------------------
-  // FORM / SCANNING — pre-completion layout: form + side reassurance.
-  // The LiveScanModal is a fixed-position overlay that covers the form
-  // whenever `busy` is true and we haven't flipped to the completedJob
-  // branch yet. It's the single source of loading feedback.
-  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // PHASE 2 — SCANNING
+  // Escape the container-app and py-10 shell padding with negative margins,
+  // then fill the viewport below the sticky nav (~60 px) with the 2-col grid.
+  // ---------------------------------------------------------------------------
+  if (busy) {
+    const isDone = status === "completed";
+    return (
+      <div
+        className={cn(
+          // Break out of container-app (px-5 md:px-8) + py-10 md:py-14
+          "-mx-5 -mt-10 md:-mx-8 md:-mt-14",
+          // Fill remaining viewport below the sticky TopNav (≈60px)
+          "grid h-[calc(100dvh-60px)] overflow-hidden",
+          // Responsive: stack on mobile, side-by-side on md+
+          "grid-rows-[1fr_auto] md:grid-cols-[1fr_340px] md:grid-rows-1",
+        )}
+      >
+        {/* LEFT — Document preview with live highlights */}
+        <ContractPreview
+          status={status}
+          progress={progress}
+          text={mode === "text" ? text : null}
+          filename={filename}
+          elapsed={elapsed}
+          done={isDone}
+        />
+
+        {/* RIGHT — Live scan sidebar */}
+        <LiveScanSidebar
+          status={status}
+          progress={progress}
+          filename={filename}
+          elapsed={elapsed}
+          clausesFound={estimateClauses(progress)}
+          risksIdentified={estimateRisks(progress)}
+          done={isDone}
+        />
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // PHASE 1 — UPLOAD FORM
+  // ---------------------------------------------------------------------------
   return (
     <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <LiveScanModal
-        open={busy && !completedJob}
-        status={status}
-        progress={progress}
-        filename={filename}
-        elapsed={elapsed}
-      />
 
+      {/* Global drag overlay */}
       {isDraggingGlobal && (
         <div
           aria-hidden
@@ -360,17 +351,13 @@ export default function AnalyzePage() {
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-accent/25 to-accent/5 text-accent ring-1 ring-accent/30">
               <Upload className="h-6 w-6" strokeWidth={1.75} />
             </span>
-            <p className="text-sm font-semibold text-foreground">
-              Drop your contract anywhere
-            </p>
-            <p className="text-xs text-foreground-muted">
-              PDF · DOCX · TXT · up to 10 MB
-            </p>
+            <p className="text-sm font-semibold text-foreground">Drop your contract anywhere</p>
+            <p className="text-xs text-foreground-muted">PDF · DOCX · TXT · up to 10 MB</p>
           </div>
         </div>
       )}
 
-      {/* Main */}
+      {/* Main column */}
       <div className="min-w-0 space-y-8">
         <div>
           <Badge tone="accent" size="xs" className="mb-3">
@@ -380,115 +367,96 @@ export default function AnalyzePage() {
           <h1 className="text-3xl font-semibold tracking-tight">
             Analyze a contract
           </h1>
-          <p className="mt-2 text-sm text-foreground-muted max-w-xl leading-relaxed">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground-muted">
             Upload a PDF, DOCX, or TXT — or paste raw text. We&rsquo;ll extract
             it, flag risks, and give you ready-to-send negotiation language.
             Your full report appears right here when the scan finishes.
           </p>
         </div>
 
-        {!busy && (
-          <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface/60 p-1">
-                {(
-                  [
-                    ["file", "Upload file", Upload],
-                    ["text", "Paste text", Type],
-                  ] as [Mode, string, React.ElementType][]
-                ).map(([m, label, Icon]) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMode(m)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
-                      mode === m
-                        ? "bg-accent text-white shadow-glow"
-                        : "text-foreground-muted hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={pasteFromClipboard}
-                disabled={busy}
+        {/* Mode toggle + clipboard paste */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface/60 p-1">
+            {(
+              [
+                ["file", "Upload file", Upload],
+                ["text", "Paste text", Type],
+              ] as [Mode, string, React.ElementType][]
+            ).map(([m, label, Icon]) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
+                  mode === m
+                    ? "bg-accent text-white shadow-glow"
+                    : "text-foreground-muted hover:text-foreground",
+                )}
               >
-                <ClipboardPaste className="h-3.5 w-3.5" />
-                Paste from clipboard
-              </Button>
-            </div>
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
+          <Button variant="outline" size="sm" onClick={pasteFromClipboard}>
+            <ClipboardPaste className="h-3.5 w-3.5" />
+            Paste from clipboard
+          </Button>
+        </div>
 
-            {mode === "file" && <Dropzone onFile={onFile} disabled={busy} />}
+        {mode === "file" && <Dropzone onFile={onFile} />}
 
-            {mode === "text" && (
-              <div className="rounded-xl border border-border bg-surface/60 p-5">
-                <TextArea
-                  placeholder="Paste your contract text here (at least 50 characters)…"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                      e.preventDefault();
-                      if (text.trim().length >= 50) onAnalyzeText();
-                    }
-                  }}
-                  rows={14}
-                  disabled={busy}
-                />
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 text-xs text-foreground-muted">
-                    <span className="tabular-nums">
-                      {text.trim().length.toLocaleString()} characters
-                    </span>
-                    {text.trim().length >= 50 && (
-                      <span className="inline-flex items-center gap-1 text-success">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Ready
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="hidden sm:inline text-xs text-foreground-subtle">
-                      <kbd>⌘</kbd> <kbd>Enter</kbd>
-                    </span>
-                    <Button
-                      onClick={onAnalyzeText}
-                      disabled={busy || text.trim().length < 50}
-                    >
-                      Analyze text
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
+        {mode === "text" && (
+          <div className="rounded-xl border border-border bg-surface/60 p-5">
+            <TextArea
+              placeholder="Paste your contract text here (at least 50 characters)…"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  if (text.trim().length >= 50) onAnalyzeText();
+                }
+              }}
+              rows={14}
+            />
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-xs text-foreground-muted">
+                <span className="tabular-nums">
+                  {text.trim().length.toLocaleString()} characters
+                </span>
+                {text.trim().length >= 50 && (
+                  <span className="inline-flex items-center gap-1 text-success">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Ready
+                  </span>
+                )}
               </div>
-            )}
-          </>
+              <div className="flex items-center gap-2">
+                <span className="hidden text-xs text-foreground-subtle sm:inline">
+                  <kbd>⌘</kbd> <kbd>Enter</kbd>
+                </span>
+                <Button
+                  onClick={onAnalyzeText}
+                  disabled={text.trim().length < 50}
+                >
+                  Analyze text
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
 
-        {busy && (
-          <ContractReader
-            status={status}
-            message={message}
-            progress={progress}
-            text={mode === "text" ? text : null}
-            filename={filename}
-            elapsed={elapsed}
-          />
-        )}
-
+        {/* Error state */}
         {error && (
           <div
             role="alert"
             className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-5"
           >
             <div className="flex items-start gap-3">
-              <AlertOctagon className="h-5 w-5 text-severity-critical mt-0.5 flex-shrink-0" />
+              <AlertOctagon className="mt-0.5 h-5 w-5 flex-shrink-0 text-severity-critical" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-severity-critical">
                   Something went wrong
@@ -515,21 +483,21 @@ export default function AnalyzePage() {
       {/* Side reassurance panel */}
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-xl border border-border bg-surface/60 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-accent flex items-center gap-1.5">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent">
             <ShieldCheck className="h-3.5 w-3.5" />
             Private by default
           </p>
-          <ul className="mt-4 space-y-3 text-xs text-foreground-muted leading-relaxed">
+          <ul className="mt-4 space-y-3 text-xs leading-relaxed text-foreground-muted">
             <li className="flex items-start gap-2">
-              <Lock className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
               <span>Uploads are encrypted in transit and at rest.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Lock className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
               <span>We never train on your contracts.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Lock className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
               <span>Delete any analysis anytime from history.</span>
             </li>
           </ul>
@@ -542,27 +510,24 @@ export default function AnalyzePage() {
           <dl className="mt-3 space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
               <dt className="text-foreground-muted">Typical review</dt>
-              <dd className="text-foreground font-medium">&lt; 60 s</dd>
+              <dd className="font-medium text-foreground">&lt; 60 s</dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="text-foreground-muted">File size</dt>
-              <dd className="text-foreground font-medium">up to 10 MB</dd>
+              <dd className="font-medium text-foreground">up to 10 MB</dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="text-foreground-muted">Formats</dt>
-              <dd className="text-foreground font-medium">PDF · DOCX · TXT</dd>
+              <dd className="font-medium text-foreground">PDF · DOCX · TXT</dd>
             </div>
           </dl>
         </div>
 
         <div className="rounded-xl border border-border-subtle bg-surface/30 p-5">
-          <p className="text-xs text-foreground-subtle leading-relaxed">
+          <p className="text-xs leading-relaxed text-foreground-subtle">
             PactSafe AI is a screening tool, not a law firm. For high-stakes
             deals, consult a licensed attorney.{" "}
-            <Link
-              href="/#faq"
-              className="text-accent hover:underline underline-offset-2"
-            >
+            <Link href="/#faq" className="text-accent hover:underline underline-offset-2">
               Learn more
             </Link>
             .
@@ -572,6 +537,8 @@ export default function AnalyzePage() {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
 
 function formatElapsed(seconds: number): string {
   if (seconds <= 0) return "just now";
