@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Link2,
   Check,
+  Columns2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -274,6 +275,12 @@ export default function AnalysisPage() {
         </div>
 
         <div className="flex flex-shrink-0 gap-2">
+          <Link href={`/analysis/${jobId}/review`}>
+            <Button variant="outline" size="sm" disabled={!result}>
+              <Columns2 className="h-3.5 w-3.5" />
+              Split-pane review
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="sm"

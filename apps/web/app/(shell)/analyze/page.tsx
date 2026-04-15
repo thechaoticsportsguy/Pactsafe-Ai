@@ -16,7 +16,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Dropzone from "@/components/Dropzone";
-import UploadProgress from "@/components/UploadProgress";
+import ContractReader from "@/components/ContractReader";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,12 @@ export default function AnalyzePage() {
   const [error, setError] = React.useState<string | null>(null);
   const [jobId, setJobId] = React.useState<string | null>(null);
   const [isDraggingGlobal, setIsDraggingGlobal] = React.useState(false);
+  // Filename of the uploaded file (if any) — surfaced in the live
+  // "PactSafe AI is reading" animation so the user sees their own
+  // document inside the reader frame.
+  const [filename, setFilename] = React.useState<string | null>(null);
+  // Seconds elapsed since the current job started, for the reader header.
+  const [elapsed, setElapsed] = React.useState(0);
 
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   const dragDepthRef = React.useRef(0);
@@ -51,6 +57,21 @@ export default function AnalyzePage() {
   }
 
   React.useEffect(() => () => stopPolling(), []);
+
+  // Tick the elapsed-time counter while a job is in flight. Reset on
+  // each new job via the `busy` dep so every analysis starts at 0.
+  React.useEffect(() => {
+    if (!busy) {
+      setElapsed(0);
+      return;
+    }
+    const start = Date.now();
+    const id = window.setInterval(
+      () => setElapsed(Math.floor((Date.now() - start) / 1000)),
+      1000,
+    );
+    return () => window.clearInterval(id);
+  }, [busy]);
 
   async function start(
     promise: Promise<{ job_id: string; status: JobStatus }>,
@@ -109,6 +130,7 @@ export default function AnalyzePage() {
   }
 
   function onFile(file: File) {
+    setFilename(file.name);
     start(createJobFromFile(file));
   }
 
@@ -118,6 +140,7 @@ export default function AnalyzePage() {
       setError("Paste at least 50 characters of contract text.");
       return;
     }
+    setFilename(null);
     start(createJobFromText(trimmed));
   }
 
@@ -223,6 +246,8 @@ export default function AnalyzePage() {
     setProgress(0);
     setJobId(null);
     setText("");
+    setFilename(null);
+    setElapsed(0);
   }
 
   return (
@@ -347,10 +372,13 @@ export default function AnalyzePage() {
         )}
 
         {busy && (
-          <UploadProgress
+          <ContractReader
             status={status}
             message={message}
             progress={progress}
+            text={mode === "text" ? text : null}
+            filename={filename}
+            elapsed={elapsed}
           />
         )}
 

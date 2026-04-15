@@ -125,12 +125,23 @@ const config: Config = {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        "ping-slow": {
+          "0%": { transform: "scale(1)", opacity: "0.7" },
+          "75%, 100%": { transform: "scale(1.6)", opacity: "0" },
+        },
+        "scan-sweep": {
+          "0%": { top: "-10%" },
+          "100%": { top: "110%" },
+        },
       },
       animation: {
         shimmer: "shimmer 2.2s linear infinite",
         "pulse-soft": "pulse-soft 1.6s ease-in-out infinite",
         "fade-in-up": "fade-in-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both",
         "fade-in": "fade-in 0.4s ease-out both",
+        "ping-slow":
+          "ping-slow 2.4s cubic-bezier(0, 0, 0.2, 1) infinite",
+        "scan-sweep": "scan-sweep 5s linear infinite",
       },
     },
   },

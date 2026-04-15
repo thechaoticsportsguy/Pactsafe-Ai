@@ -52,6 +52,40 @@ export interface SubScores {
   payment_safety: number;
 }
 
+/**
+ * Structured location data for a single flagged clause. Allows the
+ * frontend to overlay highlights directly on the rendered PDF (and the
+ * "AI reading" animation to show the exact spans as they get marked).
+ *
+ * Optional on the wire: frontends should gracefully fall back to
+ * plain-text highlighting (search-based) when `highlight_map` is absent.
+ */
+export type HighlightCategory =
+  | "ip_ownership"
+  | "payment_terms"
+  | "scope_creep"
+  | "liability_indemnity"
+  | "termination"
+  | "non_compete"
+  | "confidentiality"
+  | "dispute_resolution"
+  | "missing_protection"
+  | "positive";
+
+export interface HighlightSpan {
+  flag_id: string;
+  quote: string;
+  severity: Severity | "POSITIVE";
+  category?: HighlightCategory;
+  page?: number | null;
+  paragraph_index?: number | null;
+  char_start?: number | null;
+  char_end?: number | null;
+  issue_title?: string | null;
+  explanation?: string | null;
+  suggested_fix?: string | null;
+}
+
 export interface AnalysisResult {
   contract_type: string;
   risk_score: number;
@@ -66,6 +100,12 @@ export interface AnalysisResult {
   // Optional forward-compat additions
   green_flags?: GreenFlag[];
   sub_scores?: SubScores;
+  /**
+   * Character-offset highlight spans keyed back to red/green flags.
+   * Enables the split-pane "PDF + highlights" viewer described in the
+   * product roadmap. Absent on older backends.
+   */
+  highlight_map?: HighlightSpan[];
 }
 
 export interface JobCreateResponse {
