@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
 
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-1.5-pro"
+    gemini_model: str = "gemini-1.5-pro-latest"
 
     # --- Database ---
     database_url: str = "sqlite:///./pactsafe.db"
