@@ -19,6 +19,14 @@ class GroqClient:
     async def is_available(self) -> bool:
         return bool(self.api_key)
 
+    async def generate(
+        self,
+        prompt: str,
+        system_instruction: str | None = None,
+        model: str = "pro",
+    ) -> str:
+        return await self.chat(system_instruction or "", prompt)
+
     async def chat(self, system: str, user: str) -> str:
         client = AsyncGroq(api_key=self.api_key)
         response = await client.chat.completions.create(

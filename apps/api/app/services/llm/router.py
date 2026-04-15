@@ -27,6 +27,12 @@ class LLMClient(Protocol):
     provider: str
 
     async def chat(self, system: str, user: str) -> str: ...
+    async def generate(
+        self,
+        prompt: str,
+        system_instruction: str | None = None,
+        model: str = "pro",
+    ) -> str: ...
     async def is_available(self) -> bool: ...
 
 
@@ -36,7 +42,7 @@ async def get_llm_client(settings: Settings | None = None) -> LLMClient:
     s = settings or get_settings()
 
     if s.llm_provider == "gemini":
-        return GeminiClient(api_key=s.gemini_api_key, model=s.gemini_model)
+        return GeminiClient(api_key=s.gemini_api_key, default_model=s.gemini_model)
 
     if s.llm_provider == "anthropic":
         return AnthropicClient(api_key=s.anthropic_api_key, model=s.anthropic_model)
@@ -51,7 +57,7 @@ async def get_llm_client(settings: Settings | None = None) -> LLMClient:
 
     if s.gemini_api_key:
         logger.warning("Ollama unreachable at %s — falling back to Gemini.", s.ollama_url)
-        return GeminiClient(api_key=s.gemini_api_key, model=s.gemini_model)
+        return GeminiClient(api_key=s.gemini_api_key, default_model=s.gemini_model)
 
     if s.anthropic_api_key:
         logger.warning("Ollama unreachable at %s — falling back to Anthropic.", s.ollama_url)

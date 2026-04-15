@@ -20,6 +20,14 @@ class AnthropicClient:
         # we assume it's available. Failures surface via chat() retries.
         return True
 
+    async def generate(
+        self,
+        prompt: str,
+        system_instruction: str | None = None,
+        model: str = "pro",
+    ) -> str:
+        return await self.chat(system_instruction or "", prompt)
+
     async def chat(self, system: str, user: str) -> str:
         response = await self._client.messages.create(
             model=self.model,

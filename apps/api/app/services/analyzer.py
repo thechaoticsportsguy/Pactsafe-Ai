@@ -112,7 +112,10 @@ class ContractAnalyzer:
         )
         async for attempt in retryer:
             with attempt:
-                return await self.llm.chat(SYSTEM_PROMPT, build_prompt(text))
+                return await self.llm.generate(
+                    prompt=build_prompt(text),
+                    system_instruction=SYSTEM_PROMPT,
+                )
         # Unreachable but keeps mypy happy
         raise RuntimeError("Retry loop exited without a result")
 

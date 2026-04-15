@@ -20,6 +20,14 @@ class OllamaClient:
         except Exception:
             return False
 
+    async def generate(
+        self,
+        prompt: str,
+        system_instruction: str | None = None,
+        model: str = "pro",
+    ) -> str:
+        return await self.chat(system_instruction or "", prompt)
+
     async def chat(self, system: str, user: str) -> str:
         payload = {
             "model": self.model,
