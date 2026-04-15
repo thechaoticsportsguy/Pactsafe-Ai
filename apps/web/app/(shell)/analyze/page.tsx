@@ -3,19 +3,25 @@
 /**
  * /analyze — live-scan flow, three distinct phases.
  *
- * PHASE 1 — UPLOAD (busy === false && !completedJob)
+ * PHASE 1 — UPLOAD  (!busy && !completedJob)
  *   Standard form: file dropzone or text paste, drag-and-drop overlay.
  *
- * PHASE 2 — SCANNING (busy === true && !completedJob)
+ * PHASE 2 — SCANNING  (busy || (completedJob && !showReport))
  *   Full-viewport two-column grid that *escapes* the shell container.
  *   Left  → <ContractPreview> (document + animated scan beam + highlights)
- *   Right → <LiveScanSidebar> (steps, progress bar, live counters)
- *   When status === "completed", the sidebar turns green for ~500 ms
- *   before the completedJob state flips and the phase-3 report renders.
+ *   Right → <LiveScanSidebar>  (steps, progress bar, live counters)
  *
- * PHASE 3 — REPORT (completedJob set, busy === false)
- *   Full inline <AnalysisReport> with an "Analyze another" reset button.
- *   No route change — same /analyze page, no height traps.
+ *   When the backend reports "completed" we IMMEDIATELY flip both
+ *   panels to their `done` state (beam stops, steps all green, progress
+ *   locks at 100%, sidebar header switches to "Scan complete in Xs")
+ *   and hold there for ~2 s so the user actually sees the success
+ *   transition. Only after the hold does `showReport` flip to true and
+ *   the page re-renders in Phase 3.
+ *
+ * PHASE 3 — REPORT  (completedJob && showReport)
+ *   Plain-flow container. A sticky compact banner at the top keeps the
+ *   frozen ContractPreview + LiveScanSidebar visible as the user scrolls
+ *   through the full <AnalysisReport/> below.
  */
 
 import * as React from "react";
@@ -77,8 +83,14 @@ export default function AnalyzePage() {
   const [elapsed, setElapsed] = React.useState(0);
   const [completedJob, setCompletedJob] =
     React.useState<JobStatusResponse | null>(null);
+  // Gates the Phase 3 report render. Stays `false` for ~2 s after the
+  // backend reports "completed" so the scanner can visibly finish in
+  // Phase 2 instead of vanishing the instant polling ends. Controlled
+  // by the setTimeout inside the completion branch below.
+  const [showReport, setShowReport] = React.useState(false);
 
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const holdRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragDepthRef = React.useRef(0);
 
   function stopPolling() {
@@ -88,14 +100,30 @@ export default function AnalyzePage() {
     }
   }
 
-  React.useEffect(() => () => stopPolling(), []);
+  function stopHold() {
+    if (holdRef.current !== null) {
+      clearTimeout(holdRef.current);
+      holdRef.current = null;
+    }
+  }
 
-  // Elapsed timer — runs while a job is in flight.
   React.useEffect(() => {
-    if (!busy) { setElapsed(0); return; }
-    const start = Date.now();
+    return () => {
+      stopPolling();
+      stopHold();
+    };
+  }, []);
+
+  // Elapsed timer — runs while a job is in flight. Intentionally does
+  // NOT reset to 0 on `busy -> false`; we want to keep the final count
+  // visible in the Phase 2 hold-state header ("Scanned in 7s") and in
+  // the Phase 3 sticky banner. Only the `reset()` helper and a fresh
+  // `start()` call reset it to 0.
+  React.useEffect(() => {
+    if (!busy) return;
+    const startTime = Date.now();
     const id = window.setInterval(
-      () => setElapsed(Math.floor((Date.now() - start) / 1000)),
+      () => setElapsed(Math.floor((Date.now() - startTime) / 1000)),
       1000,
     );
     return () => window.clearInterval(id);
@@ -110,6 +138,9 @@ export default function AnalyzePage() {
   ) {
     setError(null);
     setCompletedJob(null);
+    setShowReport(false);
+    setElapsed(0);
+    stopHold();
     setBusy(true);
     setStatus("queued");
     setMessage("Scanning document…");
@@ -141,21 +172,28 @@ export default function AnalyzePage() {
           setMessage("Scoring risks…");
           setProgress(0.65);
         } else if (job.status === "completed") {
+          // ── Job finished. Flip the scanner into its frozen success
+          //    state IMMEDIATELY, then hold Phase 2 for 2 000 ms before
+          //    swapping in Phase 3's sticky-banner + report layout.
           stopPolling();
           setStatus("completed");
           setProgress(1);
-          setMessage("Report ready");
+          setMessage("Analysis complete");
 
           let finalJob: JobStatusResponse;
           try { finalJob = await getJob(job_id); }
           catch { finalJob = job; }
 
-          // Hold the scanning UI in "done" state for 500 ms so users
-          // can see the green success transition before the report appears.
-          setTimeout(() => {
-            setCompletedJob(finalJob);
-            setBusy(false);
-          }, 600);
+          // Flip both scanner panels to "done" without unmounting.
+          // Phase 2 renders while `busy` OR `completedJob && !showReport`.
+          setCompletedJob(finalJob);
+          setBusy(false);
+
+          // ...then after 2 s, unmount Phase 2 and render Phase 3.
+          stopHold();
+          holdRef.current = setTimeout(() => {
+            setShowReport(true);
+          }, 2000);
         } else if (job.status === "failed") {
           stopPolling();
           setError(job.error || "Analysis failed.");
@@ -252,6 +290,8 @@ export default function AnalyzePage() {
   }, [busy, completedJob]);
 
   function reset() {
+    stopPolling();
+    stopHold();
     setError(null);
     setBusy(false);
     setProgress(0);
@@ -260,23 +300,58 @@ export default function AnalyzePage() {
     setFilename(null);
     setElapsed(0);
     setCompletedJob(null);
+    setShowReport(false);
   }
 
+  // Derived gates — declared once so the JSX below reads like a truth table.
+  const inScanningPhase = busy || (completedJob !== null && !showReport);
+  const inReportPhase = completedJob !== null && completedJob.result !== null && showReport;
+  const scannerFinalClauses = estimateClauses(progress);
+  const scannerFinalRisks = estimateRisks(progress);
+
   // ---------------------------------------------------------------------------
-  // PHASE 3 — REPORT
+  // PHASE 3 — REPORT (sticky frozen scanner at top + full AnalysisReport)
   // ---------------------------------------------------------------------------
-  if (completedJob?.result) {
+  if (inReportPhase && completedJob?.result) {
     return (
       <div className="space-y-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-foreground-muted">
-            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-            <span>Live scan complete — {formatElapsed(elapsed)}</span>
+        {/* Sticky frozen scanner banner — breaks out horizontally so the
+            backdrop-blur covers the full viewport width, then re-insets
+            its inner grid with matching padding. */}
+        <div className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-border/50 bg-background/95 backdrop-blur-xl md:-mx-8 md:-mt-14">
+          <div className="px-5 pt-4 md:px-8">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-success">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Live scan complete
+              </div>
+              <Button variant="outline" size="sm" onClick={reset}>
+                <Plus className="h-3.5 w-3.5" />
+                Analyze another
+              </Button>
+            </div>
+            <div className="grid gap-3 pb-4 md:grid-cols-[1fr_340px]">
+              <ContractPreview
+                frozen
+                status="completed"
+                progress={1}
+                text={mode === "text" ? text : null}
+                filename={completedJob.filename ?? filename}
+                elapsed={elapsed}
+                done
+              />
+              <LiveScanSidebar
+                frozen
+                status="completed"
+                progress={1}
+                filename={completedJob.filename ?? filename}
+                elapsed={elapsed}
+                clausesFound={scannerFinalClauses}
+                risksIdentified={scannerFinalRisks}
+                done
+              />
+            </div>
           </div>
-          <Button variant="outline" size="sm" onClick={reset}>
-            <Plus className="h-3.5 w-3.5" />
-            Analyze another
-          </Button>
         </div>
 
         <AnalysisReport
@@ -293,12 +368,16 @@ export default function AnalyzePage() {
   }
 
   // ---------------------------------------------------------------------------
-  // PHASE 2 — SCANNING
-  // Escape the container-app and py-10 shell padding with negative margins,
-  // then fill the viewport below the sticky nav (~60 px) with the 2-col grid.
+  // PHASE 2 — SCANNING (full viewport side-by-side, animated → frozen)
+  //
+  // Rendered both while `busy` is true AND during the ~2 s hold after
+  // completion (completedJob set, showReport still false). `done=true`
+  // is passed to the panels once the backend flips to "completed",
+  // which freezes the beam and turns everything green — so the hold
+  // period is visually "here's your finished scan, read it".
   // ---------------------------------------------------------------------------
-  if (busy) {
-    const isDone = status === "completed";
+  if (inScanningPhase) {
+    const isDone = status === "completed" || completedJob !== null;
     return (
       <div
         className={cn(
@@ -326,8 +405,8 @@ export default function AnalyzePage() {
           progress={progress}
           filename={filename}
           elapsed={elapsed}
-          clausesFound={estimateClauses(progress)}
-          risksIdentified={estimateRisks(progress)}
+          clausesFound={scannerFinalClauses}
+          risksIdentified={scannerFinalRisks}
           done={isDone}
         />
       </div>
@@ -536,14 +615,4 @@ export default function AnalyzePage() {
       </aside>
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-
-function formatElapsed(seconds: number): string {
-  if (seconds <= 0) return "just now";
-  if (seconds < 60) return `${seconds}s`;
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}m ${s}s`;
 }

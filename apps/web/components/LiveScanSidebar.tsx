@@ -49,6 +49,13 @@ export interface LiveScanSidebarProps {
    * unmounting the sidebar altogether.
    */
   done?: boolean;
+  /**
+   * Frozen mode — renders a short (~80 px) compact success banner
+   * instead of the full scanner sidebar. Used in the Phase 3 sticky
+   * header on the /analyze page where the report sits underneath and
+   * we want the banner to take minimal vertical space. Implies done.
+   */
+  frozen?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -96,8 +103,58 @@ export default function LiveScanSidebar({
   clausesFound,
   risksIdentified,
   done = false,
+  frozen = false,
 }: LiveScanSidebarProps) {
   const pct = Math.max(0, Math.min(100, Math.round(progress * 100)));
+
+  // ── Frozen compact mode (Phase 3 sticky banner) ──────────────────────────
+  if (frozen) {
+    return (
+      <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-success/40 bg-success/[0.04] shadow-[0_0_0_1px_rgba(16,185,129,0.15),0_8px_32px_-20px_rgba(16,185,129,0.35)] backdrop-blur-sm">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-success/15 text-success ring-1 ring-success/30">
+            <CheckCircle2 className="h-4 w-4" strokeWidth={2.25} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">
+              Analysis complete
+            </p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] tabular-nums text-foreground-muted">
+              <Clock className="h-3 w-3" />
+              Scanned in {formatElapsed(elapsed)}
+            </p>
+          </div>
+          <div className="flex flex-shrink-0 items-center gap-4 border-l border-border/60 pl-4 text-right">
+            <div>
+              <div className="text-sm font-semibold tabular-nums text-foreground">
+                {clausesFound}
+              </div>
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-foreground-subtle">
+                Clauses
+              </div>
+            </div>
+            <div>
+              <div
+                className={cn(
+                  "text-sm font-semibold tabular-nums",
+                  risksIdentified > 0
+                    ? "text-severity-critical"
+                    : "text-foreground",
+                )}
+              >
+                {risksIdentified}
+              </div>
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-foreground-subtle">
+                Risks
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Locked full progress bar — no shimmer */}
+        <div className="mt-auto h-1 w-full bg-success" />
+      </aside>
+    );
+  }
 
   return (
     <aside

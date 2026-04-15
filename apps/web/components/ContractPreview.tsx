@@ -193,6 +193,13 @@ export interface ContractPreviewProps {
   elapsed?: number;
   /** True once the backend reports "completed" — freezes beam, locks highlights. */
   done?: boolean;
+  /**
+   * Frozen mode — renders a short (~80 px) compact document strip
+   * instead of the full scanning viewer. Used in the Phase 3 sticky
+   * header on the /analyze page where the full report sits beneath.
+   * Implies done.
+   */
+  frozen?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -206,6 +213,7 @@ export default function ContractPreview({
   filename,
   elapsed = 0,
   done = false,
+  frozen = false,
 }: ContractPreviewProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const lineRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
@@ -216,6 +224,35 @@ export default function ContractPreview({
     const src = raw.length >= 40 ? raw : SAMPLE_LINES.join("\n");
     return src.split(/\r?\n/).slice(0, 56);
   }, [text]);
+
+  // ── Frozen compact mode (Phase 3 sticky banner) ───────────────────────────
+  // Short horizontal strip matching LiveScanSidebar's frozen mode height
+  // so the sticky banner stays tight against the top of the viewport.
+  if (frozen) {
+    const pageCount = Math.max(1, Math.round(lines.length / 40));
+    return (
+      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden rounded-xl border border-border/70 bg-surface/70 px-4 py-3 shadow-card backdrop-blur-sm">
+        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-accent ring-1 ring-accent/30">
+          <FileText className="h-5 w-5" strokeWidth={2} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground-muted">
+            Scanned document
+          </p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
+            {filename ?? "Pasted contract"}
+          </p>
+          <p className="mt-0.5 text-[11px] tabular-nums text-foreground-subtle">
+            {pageCount} page{pageCount !== 1 ? "s" : ""} · {lines.length} lines
+            {elapsed > 0 && ` · analyzed in ${elapsed}s`}
+          </p>
+        </div>
+        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-success/15 text-success ring-1 ring-success/30">
+          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+        </span>
+      </div>
+    );
+  }
 
   // ── Local progress ramp ───────────────────────────────────────────────────
   // Keeps the beam moving even when polling is slow.
