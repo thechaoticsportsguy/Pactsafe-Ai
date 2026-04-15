@@ -18,8 +18,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
-# apps/api/app/config.py -> parents[3] = repo root (Pactsafe-Ai/)
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+# In Docker: /app/app/config.py → parents[2] = / (3 dirs deep only).
+# In local dev: parents[3] would reach repo root, but .env is found via
+# pydantic-settings env_file fallback ".env" relative to CWD.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 _REPO_ENV = _REPO_ROOT / ".env"
 _API_ENV = _REPO_ROOT / "apps" / "api" / ".env"
 
