@@ -46,6 +46,17 @@ class Settings(BaseSettings):
     max_upload_mb: int = 10
     cors_origins: str = "http://localhost:3000"
 
+    # --- LlamaParse (smart extraction routing) ---
+    # Set LLAMA_CLOUD_API_KEY in Fly secrets to enable LlamaParse for
+    # large documents. When empty, the backend falls back to direct
+    # extraction (pdfplumber + python-docx) only.
+    llama_cloud_api_key: str = ""
+    # Tokens above this threshold trigger the LlamaParse route.
+    token_threshold: int = 120_000
+    # Hard ceiling: reject uploads above this many MB before we even
+    # touch LlamaParse or the local extractor.
+    hard_max_upload_mb: int = 100
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -53,6 +64,14 @@ class Settings(BaseSettings):
     @property
     def max_upload_bytes(self) -> int:
         return self.max_upload_mb * 1024 * 1024
+
+    @property
+    def hard_max_upload_bytes(self) -> int:
+        return self.hard_max_upload_mb * 1024 * 1024
+
+    @property
+    def llama_parse_enabled(self) -> bool:
+        return bool(self.llama_cloud_api_key.strip())
 
 
 @lru_cache(maxsize=1)

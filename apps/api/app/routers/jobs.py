@@ -1,7 +1,18 @@
 """
-POST /api/jobs        — create a job (upload file or raw text) and enqueue it.
-GET  /api/jobs/{id}   — return current status + result (when ready).
-GET  /api/jobs        — list recent jobs (for /history).
+Jobs router.
+
+Endpoints:
+    POST /api/jobs              — legacy one-shot endpoint (file OR text)
+                                  Kept working for the existing frontend client.
+    POST /api/jobs/from-file    — explicit file upload with smart extraction
+    POST /api/jobs/from-text    — explicit paste-text with token check
+    GET  /api/jobs/{id}         — status + result + extraction route
+    GET  /api/jobs              — recent history
+
+Extraction is performed *inside* the endpoint, not the worker, so the
+response can include `extraction_route`, `tokens`, and `text_preview`.
+The background worker consumes the already-extracted text stored on
+`Job.extracted_text` and skips ingestion entirely.
 """
 
 from __future__ import annotations
@@ -34,6 +45,11 @@ from app.schemas import (
     JobCreateResponse,
     JobStatusResponse,
 )
+from app.services.extraction import (
+    ExtractionResult,
+    extract_from_inline_text,
+    route_and_extract,
+)
 from app.workers.background import run_job
 
 logger = logging.getLogger(__name__)
@@ -47,14 +63,246 @@ ALLOWED_CONTENT_TYPES = {
     "text/markdown",
 }
 ALLOWED_EXTS = {".pdf", ".docx", ".doc", ".txt", ".md"}
+PREVIEW_CHARS = 1000
+MIN_TEXT_CHARS = 50
 
 
 # ---------------------------------------------------------------------------
-# POST /api/jobs
+# Internal helpers — shared by legacy + new endpoints
 # ---------------------------------------------------------------------------
 
 
-@router.post("/jobs", response_model=JobCreateResponse, status_code=status.HTTP_201_CREATED)
+async def _save_upload_to_disk(
+    file: UploadFile,
+    settings: Settings,
+) -> tuple[Path, int, str]:
+    """
+    Stream an UploadFile to disk under `settings.upload_dir`, enforcing
+    both the soft `max_upload_mb` limit (HTTP 413 per user) and the
+    hard `hard_max_upload_mb` ceiling. Returns `(path, size_bytes, ext)`.
+    """
+
+    ext = Path(file.filename or "").suffix.lower()
+    if ext not in ALLOWED_EXTS:
+        raise HTTPException(415, f"Unsupported file type: {ext or 'unknown'}")
+    if file.content_type and file.content_type not in ALLOWED_CONTENT_TYPES and ext == "":
+        raise HTTPException(415, f"Unsupported content-type: {file.content_type}")
+
+    upload_dir = Path(settings.upload_dir)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    saved_path = upload_dir / f"{uuid.uuid4().hex}{ext}"
+
+    total = 0
+    try:
+        with saved_path.open("wb") as f:
+            while chunk := await file.read(64 * 1024):
+                total += len(chunk)
+                if total > settings.hard_max_upload_bytes:
+                    saved_path.unlink(missing_ok=True)
+                    raise HTTPException(
+                        413,
+                        f"File exceeds hard limit of {settings.hard_max_upload_mb} MB.",
+                    )
+                if total > settings.max_upload_bytes:
+                    saved_path.unlink(missing_ok=True)
+                    raise HTTPException(
+                        413,
+                        f"File too large (max {settings.max_upload_mb} MB).",
+                    )
+                f.write(chunk)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        saved_path.unlink(missing_ok=True)
+        logger.exception("[_save_upload_to_disk] write failed")
+        raise HTTPException(500, f"Could not save upload: {exc}") from exc
+
+    return saved_path, total, ext
+
+
+def _persist_job(
+    session: Session,
+    *,
+    filename: Optional[str],
+    content_type: Optional[str],
+    file_path: Optional[str],
+    size_bytes: Optional[int],
+    extraction: ExtractionResult,
+) -> Job:
+    """Create a queued Job row pre-loaded with the already-extracted text."""
+
+    job = Job(
+        filename=filename,
+        content_type=content_type,
+        file_path=file_path,
+        size_bytes=size_bytes,
+        status="queued",
+        extracted_text=extraction.text,
+        text_preview=extraction.text[:PREVIEW_CHARS] if extraction.text else None,
+        extraction_route=extraction.route,
+        token_count=extraction.tokens,
+    )
+    session.add(job)
+    session.commit()
+    session.refresh(job)
+    return job
+
+
+def _build_create_response(job: Job, extraction: ExtractionResult) -> dict:
+    """Shared response body for the create endpoints."""
+
+    return {
+        "job_id": str(job.id),
+        "status": job.status,
+        "filename": job.filename,
+        "file_size": extraction.file_size,
+        "tokens": extraction.tokens,
+        "extraction_route": extraction.route,
+        "text_preview": (job.text_preview or "")[:PREVIEW_CHARS],
+        "ocr_used": extraction.ocr_used,
+        "warnings": extraction.warnings or [],
+        "message": "File queued for analysis",
+    }
+
+
+# ---------------------------------------------------------------------------
+# POST /api/jobs/from-file — smart extraction + queue
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/jobs/from-file",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_job_from_file(
+    background: BackgroundTasks,
+    file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    """
+    Upload a file, run smart extraction (LlamaParse or direct), persist
+    the job with the extracted text pre-populated, and kick off the
+    analyzer in the background.
+    """
+
+    saved_path, size_bytes, _ext = await _save_upload_to_disk(file, settings)
+    filename = file.filename or saved_path.name
+
+    # --- smart extraction (may call LlamaParse) ---
+    try:
+        extraction = await route_and_extract(str(saved_path), filename)
+    except Exception as exc:
+        saved_path.unlink(missing_ok=True)
+        logger.exception("[create_job_from_file] extraction failed")
+        raise HTTPException(500, f"Text extraction failed: {exc}") from exc
+
+    if not extraction.text or len(extraction.text.strip()) < MIN_TEXT_CHARS:
+        saved_path.unlink(missing_ok=True)
+        raise HTTPException(
+            422,
+            "Could not extract enough text from this file. "
+            "If it's a scanned PDF, please try a text-based version.",
+        )
+
+    logger.info(
+        "[create_job_from_file] filename=%s route=%s tokens=%d size=%d",
+        filename,
+        extraction.route,
+        extraction.tokens,
+        extraction.file_size,
+    )
+
+    job = _persist_job(
+        session,
+        filename=filename,
+        content_type=file.content_type
+        or mimetypes.guess_type(str(saved_path))[0],
+        file_path=str(saved_path),
+        size_bytes=size_bytes,
+        extraction=extraction,
+    )
+
+    background.add_task(run_job, job.id)
+    return _build_create_response(job, extraction)
+
+
+# ---------------------------------------------------------------------------
+# POST /api/jobs/from-text — paste text + token check
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/jobs/from-text",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_job_from_text(
+    background: BackgroundTasks,
+    text: str = Form(...),
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    """
+    Create a job from pasted text. Enforces the same token threshold as
+    file uploads so users get a clear "break this into sections" error
+    instead of a silent LLM context blow-up.
+    """
+
+    trimmed = (text or "").strip()
+    if len(trimmed) < MIN_TEXT_CHARS:
+        raise HTTPException(
+            400,
+            f"Text is too short (minimum {MIN_TEXT_CHARS} characters).",
+        )
+
+    extraction = extract_from_inline_text(trimmed)
+    if extraction.tokens > settings.token_threshold:
+        raise HTTPException(
+            413,
+            (
+                f"Pasted text is too long "
+                f"({extraction.tokens:,} tokens > {settings.token_threshold:,}). "
+                f"Break the contract into smaller sections and analyze "
+                f"each one separately, or upload it as a file so we can "
+                f"use LlamaParse."
+            ),
+        )
+
+    logger.info(
+        "[create_job_from_text] tokens=%d chars=%d",
+        extraction.tokens,
+        len(trimmed),
+    )
+
+    job = _persist_job(
+        session,
+        filename=None,
+        content_type="text/plain",
+        file_path=None,
+        size_bytes=extraction.file_size,
+        extraction=extraction,
+    )
+
+    background.add_task(run_job, job.id)
+    return _build_create_response(job, extraction)
+
+
+# ---------------------------------------------------------------------------
+# POST /api/jobs — LEGACY (kept for the existing frontend client)
+#
+# The current frontend posts a multipart body with either a `file` field
+# or a `text` field to this single endpoint. We keep it working by
+# dispatching internally to the smart routing path used by the new
+# endpoints, so existing clients get all the new behavior "for free"
+# without any api.ts change.
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/jobs",
+    response_model=JobCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def create_job(
     background: BackgroundTasks,
     file: Optional[UploadFile] = File(default=None),
@@ -67,48 +315,56 @@ async def create_job(
     if file is None and not text:
         raise HTTPException(400, "Provide either a file or text.")
 
-    job = Job()
-
     if file is not None:
-        ext = Path(file.filename or "").suffix.lower()
-        if ext not in ALLOWED_EXTS:
-            raise HTTPException(415, f"Unsupported file type: {ext or 'unknown'}")
-        if file.content_type and file.content_type not in ALLOWED_CONTENT_TYPES and ext == "":
-            raise HTTPException(415, f"Unsupported content-type: {file.content_type}")
-
-        # Save upload to disk
-        upload_dir = Path(settings.upload_dir)
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        saved_path = upload_dir / f"{uuid.uuid4().hex}{ext}"
-
-        total = 0
-        with saved_path.open("wb") as f:
-            while chunk := await file.read(64 * 1024):
-                total += len(chunk)
-                if total > settings.max_upload_bytes:
-                    saved_path.unlink(missing_ok=True)
-                    raise HTTPException(
-                        413, f"File too large (max {settings.max_upload_mb} MB)"
-                    )
-                f.write(chunk)
-
-        job.filename = file.filename
-        job.content_type = file.content_type or mimetypes.guess_type(str(saved_path))[0]
-        job.file_path = str(saved_path)
-        job.size_bytes = total
+        saved_path, size_bytes, _ext = await _save_upload_to_disk(file, settings)
+        filename = file.filename or saved_path.name
+        try:
+            extraction = await route_and_extract(str(saved_path), filename)
+        except Exception as exc:
+            saved_path.unlink(missing_ok=True)
+            logger.exception("[create_job] extraction failed")
+            raise HTTPException(500, f"Text extraction failed: {exc}") from exc
+        if not extraction.text or len(extraction.text.strip()) < MIN_TEXT_CHARS:
+            saved_path.unlink(missing_ok=True)
+            raise HTTPException(
+                422,
+                "Could not extract enough text from this file. "
+                "If it's a scanned PDF, please try a text-based version.",
+            )
+        job = _persist_job(
+            session,
+            filename=filename,
+            content_type=file.content_type
+            or mimetypes.guess_type(str(saved_path))[0],
+            file_path=str(saved_path),
+            size_bytes=size_bytes,
+            extraction=extraction,
+        )
     else:
-        # Text mode — stash full text in text_preview column for the worker
-        assert text is not None
-        if len(text.strip()) < 50:
-            raise HTTPException(400, "Text is too short (minimum 50 characters).")
-        job.text_preview = text
+        trimmed = (text or "").strip()
+        if len(trimmed) < MIN_TEXT_CHARS:
+            raise HTTPException(
+                400, f"Text is too short (minimum {MIN_TEXT_CHARS} characters)."
+            )
+        extraction = extract_from_inline_text(trimmed)
+        if extraction.tokens > settings.token_threshold:
+            raise HTTPException(
+                413,
+                (
+                    f"Pasted text is too long "
+                    f"({extraction.tokens:,} tokens > {settings.token_threshold:,}). "
+                    f"Break the contract into smaller sections or upload as a file."
+                ),
+            )
+        job = _persist_job(
+            session,
+            filename=None,
+            content_type="text/plain",
+            file_path=None,
+            size_bytes=extraction.file_size,
+            extraction=extraction,
+        )
 
-    job.status = "queued"
-    session.add(job)
-    session.commit()
-    session.refresh(job)
-
-    # Enqueue the analysis
     background.add_task(run_job, job.id)
     return JobCreateResponse(job_id=job.id, status="queued")
 

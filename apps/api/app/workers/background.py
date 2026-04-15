@@ -36,20 +36,42 @@ async def run_job(job_id: UUID) -> None:
                                    message="Reading file…", progress=0.1))
 
     try:
+        # Short-circuit: if the endpoint already extracted the text via
+        # the smart router (LlamaParse or direct), there's nothing to
+        # do here — we stored the full text in `extracted_text` and the
+        # preview in `text_preview` *before* enqueueing. Worker goes
+        # straight to analysis.
         with session_scope() as s:
             job = s.get(Job, job_id)
             if job is None:
                 logger.error("Job %s not found", job_id)
                 return
             file_path = job.file_path
-            raw_text = job.text_preview  # may be the full text if text-mode
+            already_extracted = job.extracted_text
+            legacy_text_preview = job.text_preview
+            extraction_route = job.extraction_route
 
-        if file_path:
+        if already_extracted:
+            logger.info(
+                "run_job skip-extract job=%s route=%s tokens~%d",
+                job_id,
+                extraction_route,
+                len(already_extracted) // 4,
+            )
+            text = already_extracted
+            # We don't keep a full page_map across the wire; build a
+            # single-page fallback. The analyzer only uses page_map for
+            # page-number hints, so this is safe.
+            page_map = [{"page": 1, "start": 0, "end": len(text)}]
+        elif file_path:
+            # Legacy path — no extracted_text column populated yet
+            # (e.g. rows created before this deploy). Re-extract locally.
             doc = extract_text(file_path)
             text, page_map = doc.text, doc.page_map
         else:
-            # text-mode job: we stored the full text in text_preview
-            text, page_map = (raw_text or "", [])
+            # Pre-extraction-era text-mode job — full text was stashed
+            # directly in text_preview.
+            text, page_map = (legacy_text_preview or "", [])
 
         preview = text[:500]
         with session_scope() as s:

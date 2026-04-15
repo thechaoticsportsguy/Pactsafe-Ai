@@ -56,6 +56,24 @@ class Job(SQLModel, table=True):
 
     text_preview: Optional[str] = Field(default=None, sa_column=Column(Text, nullable=True))
 
+    # Full extracted text — populated by the smart-routing extractor
+    # *before* the job is enqueued, so the background worker skips
+    # extraction entirely for uploads that went through /jobs/from-file
+    # or /jobs/from-text.
+    extracted_text: Optional[str] = Field(
+        default=None, sa_column=Column(Text, nullable=True)
+    )
+
+    # How the text was extracted: "direct" | "llama_parse" | "inline_text".
+    # Surfaced on the job response so the frontend can show which path
+    # was used and we can debug extraction quality regressions.
+    extraction_route: Optional[str] = Field(
+        default=None, sa_column=Column(String(32), nullable=True)
+    )
+
+    # Rough token count (len(text) // 4) — cheap, fine for routing.
+    token_count: Optional[int] = None
+
     created_at: datetime = Field(default_factory=_utcnow, nullable=False)
     updated_at: datetime = Field(default_factory=_utcnow, nullable=False)
 
