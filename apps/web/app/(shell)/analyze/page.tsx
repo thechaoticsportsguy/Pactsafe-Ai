@@ -1,7 +1,26 @@
 "use client";
 
+/**
+ * /analyze — single-page live-scan flow.
+ *
+ * Flow:
+ *   1. User uploads a file or pastes text.
+ *   2. createJobFromFile / createJobFromText fires; we start polling.
+ *   3. While polling we mount <ContractReader/> as the "Live scan"
+ *      state with progress + rotating copy.
+ *   4. When status === "completed" we fetch the final job payload and
+ *      render <AnalysisReport/> INLINE in a plain-flow container —
+ *      no `router.push`, no grid trap, no height clipping.
+ *   5. The user can start another analysis with the "Analyze another"
+ *      button, which resets all state and returns to the form.
+ *
+ * The results render lives in a normal `<div className="space-y-10">`
+ * wrapper — explicitly no `h-screen`, `max-h-[Xvh]`, `overflow-hidden`
+ * on any parent — so scrolling from the risk gauge down to the last
+ * finding works on every viewport.
+ */
+
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Upload,
@@ -14,21 +33,26 @@ import {
   ArrowRight,
   ClipboardPaste,
   CheckCircle2,
+  Plus,
 } from "lucide-react";
 import Dropzone from "@/components/Dropzone";
 import ContractReader from "@/components/ContractReader";
+import AnalysisReport from "@/components/AnalysisReport";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/Toast";
-import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
-import type { JobStatus } from "@/lib/schemas";
+import {
+  createJobFromFile,
+  createJobFromText,
+  getJob,
+} from "@/lib/api";
+import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
 import { cn } from "@/lib/cn";
 
 type Mode = "file" | "text";
 
 export default function AnalyzePage() {
-  const router = useRouter();
   const { toast } = useToast();
   const [mode, setMode] = React.useState<Mode>("file");
   const [text, setText] = React.useState("");
@@ -45,6 +69,10 @@ export default function AnalyzePage() {
   const [filename, setFilename] = React.useState<string | null>(null);
   // Seconds elapsed since the current job started, for the reader header.
   const [elapsed, setElapsed] = React.useState(0);
+  // Completed-job payload. When this is set AND has a result, we swap
+  // the form+sidebar layout for the full <AnalysisReport/>.
+  const [completedJob, setCompletedJob] =
+    React.useState<JobStatusResponse | null>(null);
 
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   const dragDepthRef = React.useRef(0);
@@ -77,9 +105,10 @@ export default function AnalyzePage() {
     promise: Promise<{ job_id: string; status: JobStatus }>,
   ) {
     setError(null);
+    setCompletedJob(null);
     setBusy(true);
     setStatus("queued");
-    setMessage("Creating job…");
+    setMessage("Scanning document…");
     setProgress(0.05);
 
     let job_id: string;
@@ -103,16 +132,26 @@ export default function AnalyzePage() {
         setStatus(job.status);
 
         if (job.status === "extracting") {
-          setMessage("Extracting text…");
+          setMessage("Extracting clauses…");
           setProgress(0.35);
         } else if (job.status === "analyzing") {
-          setMessage("Analyzing contract…");
+          setMessage("Scoring risks…");
           setProgress(0.65);
         } else if (job.status === "completed") {
+          // Final fetch to guarantee the latest result payload, then
+          // flip into inline-render mode. No route change — the same
+          // /analyze page now shows the full report below the form
+          // (see the early-return branch in the JSX below).
           stopPolling();
           setProgress(1);
-          setMessage("Done!");
-          setTimeout(() => router.push(`/analysis/${job_id}`), 400);
+          setMessage("Report ready");
+          try {
+            const finalJob = await getJob(job_id);
+            setCompletedJob(finalJob);
+          } catch {
+            setCompletedJob(job);
+          }
+          setBusy(false);
         } else if (job.status === "failed") {
           stopPolling();
           console.error("[analyze] job failed", job.error);
@@ -190,7 +229,7 @@ export default function AnalyzePage() {
 
   // Global drag-and-drop over the entire analyze page
   React.useEffect(() => {
-    if (busy) return;
+    if (busy || completedJob) return;
 
     const hasFiles = (e: DragEvent) => {
       const types = e.dataTransfer?.types;
@@ -238,7 +277,7 @@ export default function AnalyzePage() {
       window.removeEventListener("drop", onDrop);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [busy]);
+  }, [busy, completedJob]);
 
   function reset() {
     setError(null);
@@ -248,8 +287,45 @@ export default function AnalyzePage() {
     setText("");
     setFilename(null);
     setElapsed(0);
+    setCompletedJob(null);
   }
 
+  // ---------------------------------------------------------------------
+  // INLINE RESULTS — when polling finishes, we render the full
+  // AnalysisReport here on the SAME page, in a plain-flow container
+  // with no grid, no height trap, no overflow clipping.
+  // ---------------------------------------------------------------------
+  if (completedJob && completedJob.result) {
+    return (
+      <div className="space-y-10">
+        {/* Small header strip so the user knows they're still on /analyze */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-foreground-muted">
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+            <span>Live scan complete — {formatElapsed(elapsed)}</span>
+          </div>
+          <Button variant="outline" size="sm" onClick={reset}>
+            <Plus className="h-3.5 w-3.5" />
+            Analyze another
+          </Button>
+        </div>
+
+        <AnalysisReport
+          jobId={completedJob.job_id}
+          result={completedJob.result}
+          filename={completedJob.filename}
+          createdAt={completedJob.created_at}
+          textPreview={completedJob.text_preview}
+          showBreadcrumb={false}
+          copyWindowHref={false}
+        />
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------
+  // FORM / SCANNING — pre-completion layout: form + side reassurance.
+  // ---------------------------------------------------------------------
   return (
     <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
       {isDraggingGlobal && (
@@ -271,6 +347,7 @@ export default function AnalyzePage() {
           </div>
         </div>
       )}
+
       {/* Main */}
       <div className="min-w-0 space-y-8">
         <div>
@@ -282,8 +359,9 @@ export default function AnalyzePage() {
             Analyze a contract
           </h1>
           <p className="mt-2 text-sm text-foreground-muted max-w-xl leading-relaxed">
-            Upload a PDF, DOCX, or TXT — or paste raw text. We’ll extract it,
-            flag risks, and give you ready-to-send negotiation language.
+            Upload a PDF, DOCX, or TXT — or paste raw text. We&rsquo;ll extract
+            it, flag risks, and give you ready-to-send negotiation language.
+            Your full report appears right here when the scan finishes.
           </p>
         </div>
 
@@ -405,7 +483,7 @@ export default function AnalyzePage() {
           </div>
         )}
 
-        {jobId && !busy && !error && (
+        {jobId && !busy && !error && !completedJob && (
           <p className="text-xs text-foreground-muted">
             Job ID: <span className="font-mono">{jobId}</span>
           </p>
@@ -471,4 +549,12 @@ export default function AnalyzePage() {
       </aside>
     </div>
   );
+}
+
+function formatElapsed(seconds: number): string {
+  if (seconds <= 0) return "just now";
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}m ${s}s`;
 }

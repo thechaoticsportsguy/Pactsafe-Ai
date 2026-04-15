@@ -131,7 +131,12 @@ export default function ClauseHighlighter({
       <div
         ref={containerRef}
         className={cn(
-          "max-h-[600px] overflow-y-auto px-6 py-5",
+          // No height trap — let the outer page scroll naturally.
+          // The clause highlighter flows inline with the rest of the
+          // results so users can scroll from the risk score down to
+          // the last finding without getting caught in a nested
+          // scroll container.
+          "px-6 py-5",
           "prose-contract whitespace-pre-wrap",
           className,
         )}
