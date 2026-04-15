@@ -38,6 +38,7 @@ import {
   subscribeToJob,
 } from "@/lib/api";
 import type { JobStatusResponse, RedFlag } from "@/lib/schemas";
+import { displayRiskScore, isEmptyAnalysis } from "@/lib/review";
 import { cn } from "@/lib/cn";
 
 type SectionKey =
@@ -234,6 +235,13 @@ export default function AnalysisPage() {
   const high =
     result?.red_flags.filter((f) => f.severity === "HIGH").length ?? 0;
 
+  // Empty-analysis detection — backends can return status=completed with
+  // zero flags and an empty summary (LLM returned nothing usable). Swap
+  // the default dashboard for an explicit recovery state so we don't
+  // render the "50/100 moderate" bug from the old flow.
+  const emptyResult = !!result && isEmptyAnalysis(result);
+  const displayScore = result ? displayRiskScore(result) : 0;
+
   return (
     <div className="space-y-8">
       {/* Breadcrumb + back */}
@@ -353,11 +361,46 @@ export default function AnalysisPage() {
         </div>
       )}
 
-      {result && (
+      {result && emptyResult && (
+        <div className="rounded-2xl border border-warning/40 bg-warning/[0.06] p-6 md:p-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning ring-1 ring-warning/30">
+              <AlertTriangle className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold text-foreground">
+                Analysis came back empty
+              </h2>
+              <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed max-w-2xl">
+                We finished the scan but the model didn&rsquo;t return any
+                flagged clauses, missing protections, or summary content.
+                This usually means the extracted text was too short or the
+                upstream model rate-limited. Try again — or re-upload a
+                different format of the same contract.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href="/analyze">
+                  <Button size="sm">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Run a new analysis
+                  </Button>
+                </Link>
+                <Link href="/demo">
+                  <Button size="sm" variant="outline">
+                    See a sample report instead
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {result && !emptyResult && (
         <>
           {/* Top strip: Risk + key counts */}
           <div className="grid gap-4 lg:grid-cols-3">
-            <RiskGauge score={result.risk_score} className="lg:col-span-2" />
+            <RiskGauge score={displayScore} className="lg:col-span-2" />
             <div className="rounded-xl border border-border bg-surface/70 p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
                 At a glance

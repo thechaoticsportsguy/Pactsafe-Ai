@@ -11,12 +11,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ChevronLeft, Loader2, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LiveScanReview from "@/components/LiveScanReview";
 import { getJob, subscribeToJob } from "@/lib/api";
 import type { JobStatusResponse } from "@/lib/schemas";
-import { buildHighlights } from "@/lib/review";
+import { buildHighlights, isEmptyAnalysis } from "@/lib/review";
 
 export default function LiveScanPage() {
   const params = useParams<{ id: string }>();
@@ -67,6 +67,8 @@ export default function LiveScanPage() {
     [result, text],
   );
 
+  const emptyResult = !!result && isEmptyAnalysis(result);
+
   if (error) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-6 text-center">
@@ -90,6 +92,49 @@ export default function LiveScanPage() {
       <div className="flex min-h-[60vh] items-center justify-center text-sm text-foreground-muted">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         Loading live scan…
+      </div>
+    );
+  }
+
+  if (emptyResult) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <div className="rounded-2xl border border-warning/40 bg-warning/[0.06] p-6 md:p-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning ring-1 ring-warning/30">
+              <AlertTriangle className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold text-foreground">
+                Nothing to replay yet
+              </h2>
+              <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
+                This analysis came back without any flagged clauses, so
+                there&rsquo;s nothing for the live scanner to highlight. Run
+                a fresh analysis or view the pre-baked sample report.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href="/analyze">
+                  <Button size="sm">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Run a new analysis
+                  </Button>
+                </Link>
+                <Link href="/demo">
+                  <Button size="sm" variant="outline">
+                    See a sample scan
+                  </Button>
+                </Link>
+                <Link href={`/analysis/${jobId}`}>
+                  <Button size="sm" variant="ghost">
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    Back to report
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
