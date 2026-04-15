@@ -19,6 +19,7 @@ async def health() -> dict[str, object]:
     return {
         "status": "ok",
         "provider": os.getenv("LLM_PROVIDER", "unknown"),
+        "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
         "groq_configured": bool(os.getenv("GROQ_API_KEY")),
         "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
         "llama_parse_available": llama_parse_status()["available"],

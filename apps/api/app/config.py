@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     )
 
     # --- LLM provider ---
-    llm_provider: Literal["ollama", "anthropic", "groq"] = "ollama"
+    llm_provider: Literal["ollama", "anthropic", "groq", "gemini"] = "gemini"
 
     ollama_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:0.5b"
@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
+
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
 
     # --- Database ---
     database_url: str = "sqlite:///./pactsafe.db"
