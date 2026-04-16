@@ -24,7 +24,7 @@ from tenacity import (
 )
 
 from app.prompts.contract import SYSTEM_PROMPT, build_prompt
-from app.schemas import AnalysisResult, RedFlag, sort_flags_by_severity
+from app.schemas import AnalysisResult, GreenFlag, RedFlag, sort_flags_by_severity
 from app.services.ingestion import PageRange, find_page_for_offset
 from app.services.llm import LLMClient
 
@@ -449,14 +449,34 @@ class ContractAnalyzer:
         # Red flags — normalize severity, clamp to 8 items, sort CRITICAL first
         red_flags: list[RedFlag] = []
         for item in (data.get("red_flags") or [])[:8]:
+            if not isinstance(item, dict):
+                continue
+            clause = str(item.get("clause") or "").strip()
+            explanation = str(item.get("explanation") or "").strip()
+            if not clause or not explanation:
+                continue
             sev_raw = str(item.get("severity") or "MEDIUM").upper()
             sev = sev_raw if sev_raw in {"LOW", "MEDIUM", "HIGH", "CRITICAL"} else "MEDIUM"
             red_flags.append(
                 RedFlag(
-                    clause=str(item.get("clause") or "").strip(),
-                    explanation=str(item.get("explanation") or "").strip(),
+                    clause=clause,
+                    explanation=explanation,
                     severity=sev,  # type: ignore[arg-type]
                 )
+            )
+
+        # Green flags — clauses that work in the signer's favor. Optional
+        # per the schema, safe to emit even as an empty list.
+        green_flags: list[GreenFlag] = []
+        for item in (data.get("green_flags") or [])[:6]:
+            if not isinstance(item, dict):
+                continue
+            clause = str(item.get("clause") or "").strip()
+            explanation = str(item.get("explanation") or "").strip()
+            if not clause or not explanation:
+                continue
+            green_flags.append(
+                GreenFlag(clause=clause, explanation=explanation)
             )
 
         return AnalysisResult(
@@ -464,6 +484,7 @@ class ContractAnalyzer:
             risk_score=max(0, min(100, int(data.get("risk_score") or 50))),
             overall_summary=str(data.get("overall_summary") or "").strip(),
             red_flags=sort_flags_by_severity(red_flags),
+            green_flags=green_flags,
             missing_protections=[
                 str(x).strip()
                 for x in (data.get("missing_protections") or [])[:6]
@@ -484,7 +505,7 @@ class ContractAnalyzer:
     ) -> None:
         """Look up each flag's clause in the extracted text and tag it with a page."""
 
-        for flag in result.red_flags:
+        for flag in (*result.red_flags, *result.green_flags):
             if not flag.clause:
                 continue
             # Use first 80 chars of the clause as a lookup key (robust to paraphrase).

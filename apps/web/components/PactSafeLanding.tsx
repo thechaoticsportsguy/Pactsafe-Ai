@@ -9,6 +9,7 @@ import { normalizeJobStatus } from "@/lib/review";
 import ContractPreview from "@/components/ContractPreview";
 import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
+import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import {
   Paperclip,
   ArrowUp,
@@ -232,6 +233,11 @@ function Hero() {
   // Mount guard — a late poll / refetch resolving after unmount would
   // otherwise call setState on a dead tree and throw a React warning.
   const mountedRef = useRef(true);
+  // Completion lock — once we've captured a normalized completed result,
+  // any late poll response (in-flight tick that predated stopPolling, or
+  // a rogue retry) must be ignored. Locking prevents partial data from
+  // clobbering the final payload.
+  const hasFinalResultRef = useRef(false);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -287,6 +293,7 @@ function Hero() {
     setElapsed(0);
     setCompletedJob(null);
     setShowReport(false);
+    hasFinalResultRef.current = false;
     stopHold();
 
     let jobId: string;
@@ -312,6 +319,9 @@ function Hero() {
       try {
         const job = await getJob(jobId);
         if (!mountedRef.current) return;
+        // Completion lock — a late poll firing after we've already
+        // captured the final result must not overwrite the UI state.
+        if (hasFinalResultRef.current) return;
         setStatus(job.status);
 
         if (job.status === "extracting") {
@@ -319,6 +329,7 @@ function Hero() {
         } else if (job.status === "analyzing") {
           setProgress((p) => Math.max(p, 0.65));
         } else if (job.status === "completed") {
+          hasFinalResultRef.current = true;
           stopPolling();
           // Refetch on completion — poll responses sometimes arrive with
           // a partially-populated `result` (missing arrays, half-shaped
@@ -361,6 +372,7 @@ function Hero() {
   const resetAnalysis = () => {
     stopPolling();
     stopHold();
+    hasFinalResultRef.current = false;
     setLoading(false);
     setError(null);
     setCompletedJob(null);
@@ -499,15 +511,17 @@ function Hero() {
             />
           </div>
 
-          <AnalysisReport
-            jobId={completedJob.job_id}
-            result={completedJob.result}
-            filename={completedJob.filename}
-            createdAt={completedJob.created_at}
-            textPreview={completedJob.text_preview}
-            showBreadcrumb={false}
-            copyWindowHref={false}
-          />
+          <AnalysisErrorBoundary onRetry={resetAnalysis}>
+            <AnalysisReport
+              jobId={completedJob.job_id}
+              result={completedJob.result}
+              filename={completedJob.filename}
+              createdAt={completedJob.created_at}
+              textPreview={completedJob.text_preview}
+              showBreadcrumb={false}
+              copyWindowHref={false}
+            />
+          </AnalysisErrorBoundary>
         </div>
       </section>
     );

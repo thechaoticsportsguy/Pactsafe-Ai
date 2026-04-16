@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnalysisReport from "@/components/AnalysisReport";
+import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import UploadProgress from "@/components/UploadProgress";
 import { getJob, subscribeToJob } from "@/lib/api";
 import { normalizeJobStatus } from "@/lib/review";
@@ -189,14 +190,16 @@ export default function AnalysisPage() {
   }
 
   return (
-    <AnalysisReport
-      jobId={jobId}
-      result={job.result}
-      filename={job.filename}
-      createdAt={job.created_at}
-      textPreview={job.text_preview}
-      showBreadcrumb
-      copyWindowHref
-    />
+    <AnalysisErrorBoundary>
+      <AnalysisReport
+        jobId={jobId}
+        result={job.result}
+        filename={job.filename}
+        createdAt={job.created_at}
+        textPreview={job.text_preview}
+        showBreadcrumb
+        copyWindowHref
+      />
+    </AnalysisErrorBoundary>
   );
 }

@@ -43,6 +43,7 @@ import Dropzone from "@/components/Dropzone";
 import ContractPreview from "@/components/ContractPreview";
 import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
+import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +94,8 @@ export default function AnalyzePage() {
   const pollRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   const holdRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragDepthRef = React.useRef(0);
+  // Completion lock — late polls must not overwrite the final result.
+  const hasFinalResultRef = React.useRef(false);
 
   function stopPolling() {
     if (pollRef.current !== null) {
@@ -141,6 +144,7 @@ export default function AnalyzePage() {
     setCompletedJob(null);
     setShowReport(false);
     setElapsed(0);
+    hasFinalResultRef.current = false;
     stopHold();
     setBusy(true);
     setStatus("queued");
@@ -164,6 +168,9 @@ export default function AnalyzePage() {
     pollRef.current = setInterval(async () => {
       try {
         const job = await getJob(job_id);
+        // Completion lock — an in-flight poll that predates the final
+        // refetch must never overwrite the already-captured payload.
+        if (hasFinalResultRef.current) return;
         setStatus(job.status);
 
         if (job.status === "extracting") {
@@ -176,6 +183,7 @@ export default function AnalyzePage() {
           // ── Job finished. Flip the scanner into its frozen success
           //    state IMMEDIATELY, then hold Phase 2 for 2 000 ms before
           //    swapping in Phase 3's sticky-banner + report layout.
+          hasFinalResultRef.current = true;
           stopPolling();
           setStatus("completed");
           setProgress(1);
@@ -303,6 +311,7 @@ export default function AnalyzePage() {
   function reset() {
     stopPolling();
     stopHold();
+    hasFinalResultRef.current = false;
     setError(null);
     setBusy(false);
     setProgress(0);
@@ -365,15 +374,17 @@ export default function AnalyzePage() {
           </div>
         </div>
 
-        <AnalysisReport
-          jobId={completedJob.job_id}
-          result={completedJob.result}
-          filename={completedJob.filename}
-          createdAt={completedJob.created_at}
-          textPreview={completedJob.text_preview}
-          showBreadcrumb={false}
-          copyWindowHref={false}
-        />
+        <AnalysisErrorBoundary onRetry={reset}>
+          <AnalysisReport
+            jobId={completedJob.job_id}
+            result={completedJob.result}
+            filename={completedJob.filename}
+            createdAt={completedJob.created_at}
+            textPreview={completedJob.text_preview}
+            showBreadcrumb={false}
+            copyWindowHref={false}
+          />
+        </AnalysisErrorBoundary>
       </div>
     );
   }

@@ -39,6 +39,18 @@ class RedFlag(BaseModel):
     end_offset: Optional[int] = Field(None, ge=0, description="Char offset end in extracted text")
 
 
+class GreenFlag(BaseModel):
+    """A clause that works in the signer's favor."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    clause: str = Field(..., description="Exact or near-exact quote from the contract")
+    explanation: str = Field(..., description="Plain-English explanation of why this helps the signer")
+    page: Optional[int] = Field(None, ge=1)
+    start_offset: Optional[int] = Field(None, ge=0)
+    end_offset: Optional[int] = Field(None, ge=0)
+
+
 class AnalysisResult(BaseModel):
     """Top-level contract analysis result."""
 
@@ -48,6 +60,7 @@ class AnalysisResult(BaseModel):
     risk_score: int = Field(0, ge=0, le=100)
     overall_summary: str = ""
     red_flags: list[RedFlag] = Field(default_factory=list)
+    green_flags: list[GreenFlag] = Field(default_factory=list)
     missing_protections: list[str] = Field(default_factory=list)
     negotiation_suggestions: list[str] = Field(default_factory=list)
 
