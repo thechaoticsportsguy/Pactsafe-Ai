@@ -56,10 +56,20 @@ export default function UploadProgress({
     return () => window.clearInterval(id);
   }, [inFlight]);
 
-  // Rotating tip index
-  const [tipIdx, setTipIdx] = React.useState(() =>
-    Math.floor(Math.random() * TIPS.length),
-  );
+  // Rotating tip index.
+  //
+  // IMPORTANT: the initial value must be deterministic — `useState(() =>
+  // Math.random())` runs on BOTH the SSR render and the initial client
+  // render, producing different values and a hydration mismatch (React
+  // error #418 in minified builds). We start at 0 so SSR and the first
+  // client render agree, then jitter to a random starting tip in a
+  // mount-only effect (effects don't run during SSR, so this is safe).
+  const [tipIdx, setTipIdx] = React.useState(0);
+  React.useEffect(() => {
+    // Runs once on mount only; randomizes the starting tip so users
+    // don't always see tip #1 first.
+    setTipIdx(Math.floor(Math.random() * TIPS.length));
+  }, []);
   React.useEffect(() => {
     if (!inFlight) return;
     const id = window.setInterval(() => {
