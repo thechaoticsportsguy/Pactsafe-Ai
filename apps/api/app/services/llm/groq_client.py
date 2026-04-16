@@ -24,18 +24,20 @@ class GroqClient:
         prompt: str,
         system_instruction: str | None = None,
         model: str = "pro",
+        max_output_tokens: int = 8000,
+        temperature: float = 0.1,
     ) -> str:
-        return await self.chat(system_instruction or "", prompt)
-
-    async def chat(self, system: str, user: str) -> str:
         client = AsyncGroq(api_key=self.api_key)
         response = await client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
+                {"role": "system", "content": system_instruction or ""},
+                {"role": "user", "content": prompt},
             ],
-            temperature=0.1,
-            max_tokens=2048,
+            temperature=temperature,
+            max_tokens=max_output_tokens,
         )
         return str(response.choices[0].message.content)
+
+    async def chat(self, system: str, user: str) -> str:
+        return await self.generate(prompt=user, system_instruction=system)

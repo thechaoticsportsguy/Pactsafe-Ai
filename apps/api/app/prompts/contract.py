@@ -20,8 +20,47 @@ SYSTEM_PROMPT = (
 )
 
 
-def build_prompt(contract_text: str) -> str:
-    """Return the user message asking for a strict JSON analysis."""
+def _tier_guidance(model: str) -> tuple[str, tuple[int, int], tuple[int, int], tuple[int, int]]:
+    """Return a (suffix, red_flags_range, missing_range, negotiation_range).
+
+    The home-page "flash" path should stay brief so it fits comfortably
+    inside a smaller token budget (fewer, punchier items). The dedicated
+    "pro" path can stretch out into a deeper review.
+    """
+
+    m = (model or "").lower()
+    if m in {"flash", "flash-lite"}:
+        return (
+            "TIER GUIDANCE: Keep the response concise but complete. Prioritize "
+            "the most important findings. Keep each explanation to 1-2 sentences.",
+            (3, 5),
+            (2, 4),
+            (2, 4),
+        )
+    if m == "pro":
+        return (
+            "TIER GUIDANCE: Provide a comprehensive analysis. Surface every "
+            "material red flag, missing protection, and actionable "
+            "negotiation ask. Do NOT add filler; depth, not length.",
+            (4, 7),
+            (3, 5),
+            (3, 5),
+        )
+    return ("", (3, 7), (3, 5), (3, 5))
+
+
+def build_prompt(contract_text: str, model: str = "pro") -> str:
+    """Return the user message asking for a strict JSON analysis.
+
+    ``model`` selects a per-tier guidance suffix and target list sizes so
+    fast (flash) runs stay inside a smaller token budget while pro runs
+    get full coverage.
+    """
+
+    suffix, rf_range, mp_range, ns_range = _tier_guidance(model)
+    rf_lo, rf_hi = rf_range
+    mp_lo, mp_hi = mp_range
+    ns_lo, ns_hi = ns_range
 
     return f"""Analyze this contract and return ONLY a JSON object — no markdown, no explanation outside JSON.
 
@@ -47,9 +86,10 @@ Return EXACTLY this JSON:
 }}
 
 Rules:
-- red_flags: 3-7 items ordered by severity (CRITICAL first)
-- missing_protections: 3-5 items
-- negotiation_suggestions: 3-5 specific, actionable items
+- red_flags: {rf_lo}-{rf_hi} items ordered by severity (CRITICAL first)
+- missing_protections: {mp_lo}-{mp_hi} items
+- negotiation_suggestions: {ns_lo}-{ns_hi} specific, actionable items
 - risk_score: 0=perfectly safe, 100=do not sign
 - Severity: LOW=minor, MEDIUM=real risk, HIGH=serious harm likely, CRITICAL=don't sign as-is
+{suffix}
 """

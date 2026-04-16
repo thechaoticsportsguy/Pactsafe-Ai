@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 import google.generativeai as genai
@@ -21,6 +22,8 @@ from tenacity import (
     wait_exponential,
 )
 
+logger = logging.getLogger(__name__)
+
 _RETRYABLE = (
     DeadlineExceeded,
     ServiceUnavailable,
@@ -28,6 +31,11 @@ _RETRYABLE = (
     InternalServerError,
     TooManyRequests,
 )
+
+# Gemini finish_reason enum values we care about. The SDK returns them as
+# integers (older SDK) or enum-like objects (newer SDK); we compare via
+# the `.name` attr when present, falling back to the int.
+_FINISH_MAX_TOKENS = 2  # MAX_TOKENS — response hit the output cap
 
 
 class ModelClient:
@@ -63,9 +71,16 @@ class ModelClient:
         prompt: str,
         system_instruction: str | None = None,
         model: str = "pro",
+        max_output_tokens: int = 8000,
+        temperature: float = 0.1,
     ) -> str:
         return await asyncio.to_thread(
-            self._generate_sync, prompt, system_instruction, model
+            self._generate_sync,
+            prompt,
+            system_instruction,
+            model,
+            max_output_tokens,
+            temperature,
         )
 
     async def chat(self, system: str, user: str) -> str:
@@ -76,12 +91,20 @@ class ModelClient:
         prompt: str,
         system_instruction: str | None,
         requested_model: str,
+        max_output_tokens: int,
+        temperature: float,
     ) -> str:
         candidates = self._candidate_models(requested_model)
         last_err: Exception | None = None
         for candidate in candidates:
             try:
-                return self._generate_with_retry(prompt, system_instruction, candidate)
+                return self._generate_with_retry(
+                    prompt,
+                    system_instruction,
+                    candidate,
+                    max_output_tokens,
+                    temperature,
+                )
             except NotFound as e:
                 last_err = e
                 continue
@@ -92,6 +115,8 @@ class ModelClient:
         prompt: str,
         system_instruction: str | None,
         resolved_model: str,
+        max_output_tokens: int,
+        temperature: float,
     ) -> str:
         retryer = Retrying(
             stop=stop_after_attempt(3),
@@ -101,7 +126,13 @@ class ModelClient:
         )
         for attempt in retryer:
             with attempt:
-                return self._generate_once(prompt, system_instruction, resolved_model)
+                return self._generate_once(
+                    prompt,
+                    system_instruction,
+                    resolved_model,
+                    max_output_tokens,
+                    temperature,
+                )
         raise RuntimeError("Retry loop exited without result")
 
     def _generate_once(
@@ -109,6 +140,8 @@ class ModelClient:
         prompt: str,
         system_instruction: str | None,
         resolved_model: str,
+        max_output_tokens: int,
+        temperature: float,
     ) -> str:
         model = genai.GenerativeModel(
             model_name=resolved_model,
@@ -117,21 +150,60 @@ class ModelClient:
         resp = model.generate_content(
             prompt,
             generation_config=genai.GenerationConfig(
-                temperature=0.1,
-                max_output_tokens=2048,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
             ),
         )
         text = (resp.text or "").strip()
         if not text:
             raise RuntimeError(f"Empty response from {resolved_model}")
 
+        # Detect hard MAX_TOKENS truncation so the analyzer layer can log
+        # and (if desired) retry with a higher budget. We don't raise here
+        # — a truncated JSON is still sometimes repairable downstream —
+        # but we flag it on `last_response_metadata`.
+        finish_reason = None
+        truncated_by_max_tokens = False
+        try:
+            cand0 = resp.candidates[0] if resp.candidates else None  # type: ignore[attr-defined]
+            if cand0 is not None:
+                fr = getattr(cand0, "finish_reason", None)
+                finish_reason = getattr(fr, "name", None) or fr
+                if finish_reason == "MAX_TOKENS" or fr == _FINISH_MAX_TOKENS:
+                    truncated_by_max_tokens = True
+        except Exception:  # pragma: no cover — defensive against SDK shape drift
+            pass
+
         usage = getattr(resp, "usage_metadata", None)
+        prompt_tokens = getattr(usage, "prompt_token_count", None)
+        out_tokens = getattr(usage, "candidates_token_count", None)
+        total_tokens = getattr(usage, "total_token_count", None)
+
         self.last_response_metadata = {
             "resolved_model": resolved_model,
-            "prompt_token_count": getattr(usage, "prompt_token_count", None),
-            "candidates_token_count": getattr(usage, "candidates_token_count", None),
-            "total_token_count": getattr(usage, "total_token_count", None),
+            "prompt_token_count": prompt_tokens,
+            "candidates_token_count": out_tokens,
+            "total_token_count": total_tokens,
+            "max_output_tokens": max_output_tokens,
+            "finish_reason": finish_reason,
+            "truncated_by_max_tokens": truncated_by_max_tokens,
+            "response_chars": len(text),
         }
+
+        log_level = logging.WARNING if truncated_by_max_tokens else logging.INFO
+        logger.log(
+            log_level,
+            "[gemini] call done model=%s finish=%s in_tokens=%s out_tokens=%s "
+            "max_output_tokens=%s response_chars=%d truncated=%s",
+            resolved_model,
+            finish_reason,
+            prompt_tokens,
+            out_tokens,
+            max_output_tokens,
+            len(text),
+            truncated_by_max_tokens,
+        )
+
         self.model = resolved_model
         return text
 

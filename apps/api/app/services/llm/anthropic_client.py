@@ -25,15 +25,17 @@ class AnthropicClient:
         prompt: str,
         system_instruction: str | None = None,
         model: str = "pro",
+        max_output_tokens: int = 8000,
+        temperature: float = 0.1,
     ) -> str:
-        return await self.chat(system_instruction or "", prompt)
-
-    async def chat(self, system: str, user: str) -> str:
         response = await self._client.messages.create(
             model=self.model,
-            max_tokens=2048,
-            system=system,
-            messages=[{"role": "user", "content": user}],
+            max_tokens=max_output_tokens,
+            temperature=temperature,
+            system=system_instruction or "",
+            messages=[{"role": "user", "content": prompt}],
         )
-        # Anthropic returns a list of content blocks; first block is the text.
         return str(response.content[0].text)  # type: ignore[union-attr]
+
+    async def chat(self, system: str, user: str) -> str:
+        return await self.generate(prompt=user, system_instruction=system)

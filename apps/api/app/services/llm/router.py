@@ -32,6 +32,8 @@ class LLMClient(Protocol):
         prompt: str,
         system_instruction: str | None = None,
         model: str = "pro",
+        max_output_tokens: int = 8000,
+        temperature: float = 0.1,
     ) -> str: ...
     async def is_available(self) -> bool: ...
 

@@ -25,21 +25,26 @@ class OllamaClient:
         prompt: str,
         system_instruction: str | None = None,
         model: str = "pro",
+        max_output_tokens: int = 8000,
+        temperature: float = 0.1,
     ) -> str:
-        return await self.chat(system_instruction or "", prompt)
-
-    async def chat(self, system: str, user: str) -> str:
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
+                {"role": "system", "content": system_instruction or ""},
+                {"role": "user", "content": prompt},
             ],
             "stream": False,
-            "options": {"temperature": 0.1, "num_predict": 2048},
+            "options": {
+                "temperature": temperature,
+                "num_predict": max_output_tokens,
+            },
         }
         async with httpx.AsyncClient(timeout=180.0) as client:
             r = await client.post(f"{self.base_url}/api/chat", json=payload)
             r.raise_for_status()
             data = r.json()
         return str(data["message"]["content"])
+
+    async def chat(self, system: str, user: str) -> str:
+        return await self.generate(prompt=user, system_instruction=system)
