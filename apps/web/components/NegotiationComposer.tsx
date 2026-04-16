@@ -56,9 +56,18 @@ export default function NegotiationComposer({
   // Keep the "selected" set aligned with the current suggestions list so
   // a late-arriving normalized payload doesn't leave stale indices
   // pointing past the end of the array.
+  //
+  // Dep is the LENGTH, not the array identity. Parent components sometimes
+  // pass a fresh `[]` (or fresh non-empty array) on every render when the
+  // backend field is missing or the parent doesn't memoize — depending on
+  // array identity here produces a setSelected-on-every-render churn that
+  // wastes work and, combined with other loops, contributes to React #300.
+  // Resetting on length change is the right semantics anyway: a late
+  // normalized payload differs in cardinality, not in string identity.
+  const suggestionCount = safeSuggestions.length;
   React.useEffect(() => {
-    setSelected(new Set(safeSuggestions.map((_, i) => i)));
-  }, [safeSuggestions]);
+    setSelected(new Set(Array.from({ length: suggestionCount }, (_, i) => i)));
+  }, [suggestionCount]);
 
   const draft = React.useMemo(() => {
     const lines: string[] = [];

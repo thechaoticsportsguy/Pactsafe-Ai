@@ -225,9 +225,87 @@ export default function ContractPreview({
     return src.split(/\r?\n/).slice(0, 56);
   }, [text]);
 
+  // ── Local progress ramp ───────────────────────────────────────────────────
+  // Keeps the beam moving even when polling is slow.
+  //
+  // IMPORTANT: every hook below MUST run unconditionally on every render,
+  // including when `frozen` is true. The frozen compact branch returns at
+  // the bottom of this function — NOT before the hook calls. Hoisting the
+  // early return above the hooks breaks Rules of Hooks when the Hero /
+  // /analyze page transitions the same mounted instance from
+  // `frozen={false}` to `frozen={true}`: React sees fewer hooks on the
+  // second render, throws "Rendered fewer hooks than expected," and the
+  // recovery re-render cycles until #300 ("Too many re-renders") bubbles
+  // past the analysis error boundary (ContractPreview is a sibling of
+  // AnalysisErrorBoundary, not a child).
+  const [localTick, setLocalTick] = React.useState(0);
+  const inFlight = !frozen && !done && status !== "failed";
+
+  React.useEffect(() => {
+    if (!inFlight) return;
+    const start = Date.now();
+    let raf = 0;
+    const tick = () => {
+      const ramp = ((Date.now() - start) / 1000 / 28) % 1;
+      setLocalTick(ramp);
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, [inFlight, status]);
+
+  const effectiveProg = done
+    ? 1
+    : Math.max(0.06, Math.min(0.98, Math.max(progress, localTick)));
+
+  // ── Scan beam position ────────────────────────────────────────────────────
+  const [beamPct, setBeamPct] = React.useState(0);
+
+  React.useEffect(() => {
+    if (frozen) return;
+    if (done) { setBeamPct(100); return; }
+    if (!inFlight) return;
+    const start = Date.now();
+    let raf = 0;
+    const loop = () => {
+      const t = ((Date.now() - start) / 6000) % 1;
+      setBeamPct(t * 100);
+      raf = window.requestAnimationFrame(loop);
+    };
+    raf = window.requestAnimationFrame(loop);
+    return () => window.cancelAnimationFrame(raf);
+  }, [inFlight, done, status, frozen]);
+
+  // ── Annotations ───────────────────────────────────────────────────────────
+  const annotations = React.useMemo(
+    () => buildAnnotations(lines.length),
+    [lines.length],
+  );
+  const visible = React.useMemo(
+    () => annotations.filter((a) => effectiveProg >= a.at),
+    [annotations, effectiveProg],
+  );
+
+  // ── Auto-scroll to keep the scan beam visible ─────────────────────────────
+  // Throttle via Math.round(beamPct/5) — the effect only re-runs on ~5%
+  // jumps, not every rAF tick. Guarded by `frozen` so the compact banner
+  // doesn't try to scroll a non-existent container.
+  const beamBucket = Math.round(beamPct / 5);
+  React.useEffect(() => {
+    if (frozen || done || !scrollRef.current) return;
+    const container = scrollRef.current;
+    const targetY = (beamPct / 100) * container.scrollHeight;
+    const halfVp = container.clientHeight / 2;
+    container.scrollTo({ top: Math.max(0, targetY - halfVp), behavior: "smooth" });
+    // beamPct is read fresh each tick but we only fire when beamBucket
+    // changes (5% granularity). done + frozen gate the work.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beamBucket, done, frozen]);
+
   // ── Frozen compact mode (Phase 3 sticky banner) ───────────────────────────
-  // Short horizontal strip matching LiveScanSidebar's frozen mode height
-  // so the sticky banner stays tight against the top of the viewport.
+  // Placed AFTER every hook so the hook call order stays identical across
+  // the Phase 2 → Phase 3 transition. See the note above for why this
+  // ordering is load-bearing.
   if (frozen) {
     const pageCount = Math.max(1, Math.round(lines.length / 40));
     return (
@@ -253,61 +331,6 @@ export default function ContractPreview({
       </div>
     );
   }
-
-  // ── Local progress ramp ───────────────────────────────────────────────────
-  // Keeps the beam moving even when polling is slow.
-  const [localTick, setLocalTick] = React.useState(0);
-  const inFlight = !done && status !== "failed";
-
-  React.useEffect(() => {
-    if (!inFlight) return;
-    const start = Date.now();
-    let raf = 0;
-    const tick = () => {
-      const ramp = ((Date.now() - start) / 1000 / 28) % 1;
-      setLocalTick(ramp);
-      raf = window.requestAnimationFrame(tick);
-    };
-    raf = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(raf);
-  }, [inFlight, status]);
-
-  const effectiveProg = done
-    ? 1
-    : Math.max(0.06, Math.min(0.98, Math.max(progress, localTick)));
-
-  // ── Scan beam position ────────────────────────────────────────────────────
-  const [beamPct, setBeamPct] = React.useState(0);
-
-  React.useEffect(() => {
-    if (done) { setBeamPct(100); return; }
-    if (!inFlight) return;
-    const start = Date.now();
-    let raf = 0;
-    const loop = () => {
-      const t = ((Date.now() - start) / 6000) % 1;
-      setBeamPct(t * 100);
-      raf = window.requestAnimationFrame(loop);
-    };
-    raf = window.requestAnimationFrame(loop);
-    return () => window.cancelAnimationFrame(raf);
-  }, [inFlight, done, status]);
-
-  // ── Annotations ───────────────────────────────────────────────────────────
-  const annotations = React.useMemo(
-    () => buildAnnotations(lines.length),
-    [lines.length],
-  );
-  const visible = annotations.filter((a) => effectiveProg >= a.at);
-
-  // ── Auto-scroll to keep the scan beam visible ─────────────────────────────
-  React.useEffect(() => {
-    if (done || !scrollRef.current) return;
-    const container = scrollRef.current;
-    const targetY = (beamPct / 100) * container.scrollHeight;
-    const halfVp = container.clientHeight / 2;
-    container.scrollTo({ top: Math.max(0, targetY - halfVp), behavior: "smooth" });
-  }, [Math.round(beamPct / 5), done]); // throttle scroll updates
 
   // ── Counts for the toolbar ────────────────────────────────────────────────
   const reds    = visible.filter((a) => a.severity === "critical" || a.severity === "high").length;

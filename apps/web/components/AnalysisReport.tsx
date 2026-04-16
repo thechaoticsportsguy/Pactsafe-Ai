@@ -169,18 +169,34 @@ export default function AnalysisReport({
     [rawResult],
   );
 
-  const redFlags: RedFlag[] = Array.isArray(result.red_flags)
-    ? result.red_flags
-    : [];
-  const missingProtections: string[] = Array.isArray(result.missing_protections)
-    ? result.missing_protections
-    : [];
-  const negotiationSuggestions: string[] = Array.isArray(
-    result.negotiation_suggestions,
-  )
-    ? result.negotiation_suggestions
-    : [];
-  const greenFlags = Array.isArray(result.green_flags) ? result.green_flags : [];
+  // Memoize every derived array against `result` identity. Without this,
+  // each render allocates a fresh `[]` literal for missing fields, which
+  // cascades into child useEffects that treat the prop identity as "new"
+  // and churn their own state (NegotiationComposer's selected-set reset,
+  // ClauseHighlighter's safeFlags memo, etc.). Stable references keep
+  // the downstream render graph idempotent.
+  const redFlags: RedFlag[] = React.useMemo(
+    () => (Array.isArray(result.red_flags) ? result.red_flags : []),
+    [result],
+  );
+  const missingProtections: string[] = React.useMemo(
+    () =>
+      Array.isArray(result.missing_protections)
+        ? result.missing_protections
+        : [],
+    [result],
+  );
+  const negotiationSuggestions: string[] = React.useMemo(
+    () =>
+      Array.isArray(result.negotiation_suggestions)
+        ? result.negotiation_suggestions
+        : [],
+    [result],
+  );
+  const greenFlags = React.useMemo(
+    () => (Array.isArray(result.green_flags) ? result.green_flags : []),
+    [result],
+  );
   const hasGreen = greenFlags.length > 0;
   const sections = React.useMemo<SectionDef[]>(
     () => ALL_SECTIONS.filter((s) => (s.key === "green" ? hasGreen : true)),
