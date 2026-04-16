@@ -52,21 +52,32 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+/**
+ * Logical LLM tier. "flash" is ~7x faster and is used by the home-page
+ * live preview; "pro" is slower but more thorough and is the default for
+ * the dedicated /analyze flow.
+ */
+export type ModelPreference = "pro" | "flash" | "flash-lite";
+
 /** POST /api/jobs (multipart file) */
 export async function createJobFromFile(
   file: File,
+  model: ModelPreference = "pro",
 ): Promise<JobCreateResponse> {
   const fd = new FormData();
   fd.append("file", file);
+  fd.append("model", model);
   return req<JobCreateResponse>("/api/jobs", { method: "POST", body: fd });
 }
 
 /** POST /api/jobs (raw text) */
 export async function createJobFromText(
   text: string,
+  model: ModelPreference = "pro",
 ): Promise<JobCreateResponse> {
   const fd = new FormData();
   fd.append("text", text);
+  fd.append("model", model);
   return req<JobCreateResponse>("/api/jobs", { method: "POST", body: fd });
 }
 

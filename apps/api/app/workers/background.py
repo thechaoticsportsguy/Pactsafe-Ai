@@ -50,6 +50,7 @@ async def run_job(job_id: UUID) -> None:
             already_extracted = job.extracted_text
             legacy_text_preview = job.text_preview
             extraction_route = job.extraction_route
+            model_pref = job.model_preference or "pro"
 
         if already_extracted:
             logger.info(
@@ -87,10 +88,15 @@ async def run_job(job_id: UUID) -> None:
 
         # ---- analyzing ----
         llm = await get_llm_client()
-        logger.info("run_job using provider=%s model=%s job=%s",
-                    os.getenv("LLM_PROVIDER", "unknown"), getattr(llm, "model", "?"), job_id)
+        logger.info(
+            "run_job using provider=%s model=%s pref=%s job=%s",
+            os.getenv("LLM_PROVIDER", "unknown"),
+            getattr(llm, "model", "?"),
+            model_pref,
+            job_id,
+        )
         analyzer = ContractAnalyzer(llm)
-        result = await analyzer.analyze(text, page_map=page_map)
+        result = await analyzer.analyze(text, page_map=page_map, model=model_pref)
 
         if result.error:
             await _fail(job_id, result.error, result=result)

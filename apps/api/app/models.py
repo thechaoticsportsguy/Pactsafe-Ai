@@ -74,6 +74,14 @@ class Job(SQLModel, table=True):
     # Rough token count (len(text) // 4) — cheap, fine for routing.
     token_count: Optional[int] = None
 
+    # Logical model preference: "pro" | "flash" | "flash-lite" (or the
+    # bare "gemini-2.5-*" name). NULL falls back to the provider's
+    # default. Home-page uploads set this to "flash" for fast preview;
+    # /analyze jobs use "pro" for a deeper pass.
+    model_preference: Optional[str] = Field(
+        default=None, sa_column=Column(String(32), nullable=True)
+    )
+
     created_at: datetime = Field(default_factory=_utcnow, nullable=False)
     updated_at: datetime = Field(default_factory=_utcnow, nullable=False)
 

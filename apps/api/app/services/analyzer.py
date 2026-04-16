@@ -37,6 +37,81 @@ RETRY_BASE_DELAY = 1.5
 TRUNCATION_NOTICE = "\n\n[Contract truncated for analysis]"
 
 
+_FENCE_RE = re.compile(
+    r"```(?:json|JSON)?\s*([\s\S]*?)```",
+    re.MULTILINE,
+)
+
+
+def clean_json_response(response_text: str) -> str:
+    """Strip markdown code fences and chatter from an LLM JSON response.
+
+    Gemini (and friends) sometimes wraps JSON in ```json ... ``` fences even
+    when the prompt forbids it. A few models also emit two fenced blocks
+    (e.g. a preview followed by the final one) — we keep the *first* fenced
+    block that parses as JSON-looking, or fall back to the whole cleaned
+    string if no fence is present.
+    """
+
+    text = (response_text or "").strip()
+    if not text:
+        return text
+
+    # Pull every fenced block. Prefer the largest one that starts with `{`
+    # or `[`, since models occasionally show a small fragment before the
+    # real JSON.
+    matches = _FENCE_RE.findall(text)
+    if matches:
+        candidates = [m.strip() for m in matches if m.strip()]
+        json_like = [c for c in candidates if c[:1] in "{["]
+        if json_like:
+            return max(json_like, key=len)
+        if candidates:
+            return max(candidates, key=len)
+
+    # No fences — strip a leading `json` hint some models emit on their own.
+    if text.lower().startswith("json"):
+        text = text[4:].lstrip(":\n\r\t ")
+
+    return text.strip()
+
+
+def _extract_outermost_json_object(text: str) -> Optional[str]:
+    """Return the outermost {...} block in ``text``, or None.
+
+    Brace-walks with string-awareness so commas and braces inside string
+    literals don't confuse the extraction.
+    """
+
+    start = text.find("{")
+    if start < 0:
+        return None
+
+    depth = 0
+    in_string = False
+    escape = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : i + 1]
+    return None
+
+
 class ContractAnalyzer:
     """Server-side contract analyzer. Single instance per job."""
 
@@ -51,11 +126,16 @@ class ContractAnalyzer:
         self,
         text: str,
         page_map: Optional[list[PageRange]] = None,
+        model: str = "pro",
     ) -> AnalysisResult:
         """Analyze `text` and return an AnalysisResult.
 
         If page_map is provided (from ingestion.extract_text), red flags will
         be enriched with page numbers and offsets.
+
+        `model` is a logical alias (``"pro"``, ``"flash"``, ``"flash-lite"``)
+        passed through to the LLM client. Callers use ``"flash"`` for quick
+        home-page previews and ``"pro"`` for the deep /analyze flow.
         """
 
         validation_error = self._validate(text)
@@ -65,7 +145,7 @@ class ContractAnalyzer:
         safe_text, truncated = self._truncate(text.strip())
 
         try:
-            raw = await self._call_with_retry(safe_text)
+            raw = await self._call_with_retry(safe_text, model=model)
         except Exception as exc:
             logger.exception("LLM call failed")
             return AnalysisResult(
@@ -103,7 +183,7 @@ class ContractAnalyzer:
             return text[:MAX_CONTRACT_CHARS] + TRUNCATION_NOTICE, True
         return text, False
 
-    async def _call_with_retry(self, text: str) -> str:
+    async def _call_with_retry(self, text: str, model: str = "pro") -> str:
         retryer = AsyncRetrying(
             stop=stop_after_attempt(MAX_RETRIES),
             wait=wait_exponential(multiplier=RETRY_BASE_DELAY, min=RETRY_BASE_DELAY, max=12),
@@ -115,31 +195,45 @@ class ContractAnalyzer:
                 return await self.llm.generate(
                     prompt=build_prompt(text),
                     system_instruction=SYSTEM_PROMPT,
+                    model=model,
                 )
         # Unreachable but keeps mypy happy
         raise RuntimeError("Retry loop exited without a result")
 
     def _parse_response(self, raw: str) -> AnalysisResult:
-        cleaned = (raw or "").strip()
+        if not raw or not raw.strip():
+            logger.error("[analyzer] empty response from LLM")
+            return AnalysisResult(error="AI returned an empty response. Try again.")
 
-        # Strip markdown fences: ```json\n{...}\n```
-        fence = re.search(r"```(?:json)?\s*([\s\S]*?)```", cleaned)
-        if fence:
-            cleaned = fence.group(1).strip()
+        cleaned = clean_json_response(raw)
 
-        # Try strict JSON first
+        # Try strict JSON first.
         try:
             data = json.loads(cleaned)
-        except json.JSONDecodeError:
-            # Fallback: grab first {...} blob
-            match = re.search(r"\{[\s\S]*\}", cleaned)
-            if not match:
+        except json.JSONDecodeError as err_strict:
+            # Fallback: grab the outermost {...} blob. We walk braces instead
+            # of regex-greedy matching so trailing prose after the JSON
+            # object (Gemini occasionally adds "Here's the analysis:" before
+            # or after) doesn't break the parser.
+            blob = _extract_outermost_json_object(cleaned)
+            if blob is None:
+                logger.error(
+                    "[analyzer] no JSON object found in response. raw=%r",
+                    raw[:500],
+                )
                 return AnalysisResult(
                     error=f"Unexpected AI response format: {cleaned[:200]}"
                 )
             try:
-                data = json.loads(match.group(0))
-            except json.JSONDecodeError:
+                data = json.loads(blob)
+            except json.JSONDecodeError as err_blob:
+                logger.error(
+                    "[analyzer] could not parse extracted JSON blob. "
+                    "strict_err=%s blob_err=%s raw=%r",
+                    err_strict,
+                    err_blob,
+                    raw[:500],
+                )
                 return AnalysisResult(error="Could not parse AI response. Try again.")
 
         # Red flags — normalize severity, clamp to 8 items, sort CRITICAL first

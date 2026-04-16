@@ -2,9 +2,12 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
-import { createJobFromFile, createJobFromText } from "@/lib/api";
+import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
+import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
+import ContractPreview from "@/components/ContractPreview";
+import LiveScanSidebar from "@/components/LiveScanSidebar";
+import AnalysisReport from "@/components/AnalysisReport";
 import {
   Paperclip,
   ArrowUp,
@@ -212,9 +215,19 @@ function Hero() {
   const [isDragging, setIsDragging] = useState(false);
   const [pasted, setPasted] = useState(false);
 
+  // Live-scan state — mirrors the /analyze page's three-phase flow but
+  // keeps the landing layout (nav / hero copy) visible above.
+  const [status, setStatus] = useState<JobStatus>("queued");
+  const [progress, setProgress] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [completedJob, setCompletedJob] =
+    useState<JobStatusResponse | null>(null);
+  const [showReport, setShowReport] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -223,6 +236,37 @@ function Hero() {
     el.style.height = Math.min(el.scrollHeight, 220) + "px";
   }, []);
 
+  function stopPolling() {
+    if (pollRef.current !== null) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }
+  function stopHold() {
+    if (holdRef.current !== null) {
+      clearTimeout(holdRef.current);
+      holdRef.current = null;
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      stopPolling();
+      stopHold();
+    };
+  }, []);
+
+  // Elapsed counter — runs while polling.
+  useEffect(() => {
+    if (!loading) return;
+    const startTime = Date.now();
+    const id = window.setInterval(
+      () => setElapsed(Math.floor((Date.now() - startTime) / 1000)),
+      1000,
+    );
+    return () => window.clearInterval(id);
+  }, [loading]);
+
   const handleSubmit = async () => {
     setError(null);
     if (!file && !text.trim()) return;
@@ -230,12 +274,24 @@ function Hero() {
       setError("Paste at least 50 characters of contract text.");
       return;
     }
+
     setLoading(true);
+    setStatus("queued");
+    setProgress(0.08);
+    setElapsed(0);
+    setCompletedJob(null);
+    setShowReport(false);
+    stopHold();
+
+    let jobId: string;
     try {
+      // Home-page preview uses the fast "flash" tier for near-instant
+      // feedback. The dedicated /analyze page uses "pro".
       const job = file
-        ? await createJobFromFile(file)
-        : await createJobFromText(text.trim());
-      router.push(`/analysis/${job.job_id}`);
+        ? await createJobFromFile(file, "flash")
+        : await createJobFromText(text.trim(), "flash");
+      jobId = job.job_id;
+      setProgress(0.15);
     } catch (e) {
       setError(
         e instanceof Error
@@ -243,8 +299,60 @@ function Hero() {
           : "Could not reach the backend. Is it running?",
       );
       setLoading(false);
+      return;
     }
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const job = await getJob(jobId);
+        setStatus(job.status);
+
+        if (job.status === "extracting") {
+          setProgress((p) => Math.max(p, 0.35));
+        } else if (job.status === "analyzing") {
+          setProgress((p) => Math.max(p, 0.65));
+        } else if (job.status === "completed") {
+          stopPolling();
+          setStatus("completed");
+          setProgress(1);
+          setCompletedJob(job);
+          setLoading(false);
+          // Hold the "scan complete" frame for ~2 s before swapping in
+          // the full report, matching /analyze's behavior.
+          stopHold();
+          holdRef.current = setTimeout(() => setShowReport(true), 2000);
+        } else if (job.status === "failed") {
+          stopPolling();
+          setError(job.error || "Analysis failed.");
+          setLoading(false);
+        }
+      } catch (err) {
+        stopPolling();
+        setError(err instanceof Error ? err.message : String(err));
+        setLoading(false);
+      }
+    }, 1500);
   };
+
+  const resetAnalysis = () => {
+    stopPolling();
+    stopHold();
+    setLoading(false);
+    setError(null);
+    setCompletedJob(null);
+    setShowReport(false);
+    setProgress(0);
+    setElapsed(0);
+    setFile(null);
+    setText("");
+  };
+
+  // Gates for the three phases — mirrors AnalyzePage so both flows stay
+  // visually consistent. "scanning" covers both the live run and the
+  // ~2 s post-complete hold.
+  const inScanningPhase = loading || (completedJob !== null && !showReport);
+  const inReportPhase =
+    completedJob !== null && completedJob.result != null && showReport;
 
   const acceptFile = (f: File) => {
     const ALLOWED = /\.(pdf|docx|doc|txt|md)$/i;
@@ -319,6 +427,110 @@ function Hero() {
   };
 
   const canSubmit = !loading && (!!file || text.trim().length > 0);
+
+  // ── Phase 3 — full report renders in place of the input card.
+  if (inReportPhase && completedJob?.result) {
+    return (
+      <section className="relative overflow-hidden bg-hero">
+        <div className="container-app py-12 md:py-16 space-y-8">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-success inline-flex items-center gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Live scan complete
+              </div>
+              <h1 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-gradient">
+                Your contract analysis
+              </h1>
+            </div>
+            <button
+              type="button"
+              onClick={resetAnalysis}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-surface/60 px-3 text-xs font-medium text-foreground-muted hover:text-foreground hover:bg-surface-2 transition-colors"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Analyze another
+            </button>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-[1fr_340px]">
+            <ContractPreview
+              frozen
+              status="completed"
+              progress={1}
+              text={file ? null : text}
+              filename={completedJob.filename ?? file?.name ?? null}
+              elapsed={elapsed}
+              done
+            />
+            <LiveScanSidebar
+              frozen
+              status="completed"
+              progress={1}
+              filename={completedJob.filename ?? file?.name ?? null}
+              elapsed={elapsed}
+              clausesFound={Math.max(0, Math.round(1 * 16))}
+              risksIdentified={Math.max(0, Math.round(1 * 7))}
+              done
+            />
+          </div>
+
+          <AnalysisReport
+            jobId={completedJob.job_id}
+            result={completedJob.result}
+            filename={completedJob.filename}
+            createdAt={completedJob.created_at}
+            textPreview={completedJob.text_preview}
+            showBreadcrumb={false}
+            copyWindowHref={false}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  // ── Phase 2 — live scanner replaces the input card while work is in flight.
+  if (inScanningPhase) {
+    const isDone = status === "completed" || completedJob !== null;
+    return (
+      <section className="relative overflow-hidden bg-hero">
+        <div className="container-app py-12 md:py-16">
+          <div className="mx-auto max-w-3xl text-center mb-8 animate-fade-in-up">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent">
+              <Sparkles className="h-3 w-3 animate-pulse" />
+              Analyzing with Gemini Flash · fast preview
+            </div>
+            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gradient">
+              Scanning your contract…
+            </h1>
+            <p className="mx-auto mt-3 max-w-xl text-sm text-foreground-muted">
+              Watch the live scan on the left. Your full report appears below
+              as soon as the scan finishes.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-[1fr_340px]">
+            <ContractPreview
+              status={status}
+              progress={progress}
+              text={file ? null : text}
+              filename={file?.name ?? null}
+              elapsed={elapsed}
+              done={isDone}
+            />
+            <LiveScanSidebar
+              status={status}
+              progress={progress}
+              filename={file?.name ?? null}
+              elapsed={elapsed}
+              clausesFound={Math.max(0, Math.round(progress * 16))}
+              risksIdentified={Math.max(0, Math.round(progress * 7))}
+              done={isDone}
+            />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative overflow-hidden bg-hero">

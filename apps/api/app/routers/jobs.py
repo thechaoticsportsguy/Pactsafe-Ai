@@ -66,6 +66,24 @@ ALLOWED_EXTS = {".pdf", ".docx", ".doc", ".txt", ".md"}
 PREVIEW_CHARS = 1000
 MIN_TEXT_CHARS = 50
 
+# Accepted `model` form values. Anything else gets coerced to None so we
+# fall back to the provider's default instead of blowing up on a typo.
+_ALLOWED_MODEL_PREFS = {"pro", "flash", "flash-lite"}
+
+
+def _normalize_model_pref(raw: Optional[str]) -> Optional[str]:
+    if not raw:
+        return None
+    value = raw.strip().lower()
+    if value in _ALLOWED_MODEL_PREFS:
+        return value
+    # Accept the fully-qualified gemini names too for convenience.
+    if value.startswith("gemini-2.5-"):
+        suffix = value.removeprefix("gemini-2.5-")
+        if suffix in _ALLOWED_MODEL_PREFS:
+            return suffix
+    return None
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers — shared by legacy + new endpoints
@@ -128,6 +146,7 @@ def _persist_job(
     file_path: Optional[str],
     size_bytes: Optional[int],
     extraction: ExtractionResult,
+    model_preference: Optional[str] = None,
 ) -> Job:
     """Create a queued Job row pre-loaded with the already-extracted text."""
 
@@ -141,6 +160,7 @@ def _persist_job(
         text_preview=extraction.text[:PREVIEW_CHARS] if extraction.text else None,
         extraction_route=extraction.route,
         token_count=extraction.tokens,
+        model_preference=model_preference,
     )
     session.add(job)
     session.commit()
@@ -177,6 +197,7 @@ def _build_create_response(job: Job, extraction: ExtractionResult) -> dict:
 async def create_job_from_file(
     background: BackgroundTasks,
     file: UploadFile = File(...),
+    model: Optional[str] = Form(default="flash"),
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ) -> dict:
@@ -184,10 +205,14 @@ async def create_job_from_file(
     Upload a file, run smart extraction (LlamaParse or direct), persist
     the job with the extracted text pre-populated, and kick off the
     analyzer in the background.
+
+    `model` defaults to ``"flash"`` so the home-page upload flow gets
+    fast feedback. The /analyze page explicitly sends ``"pro"``.
     """
 
     saved_path, size_bytes, _ext = await _save_upload_to_disk(file, settings)
     filename = file.filename or saved_path.name
+    model_pref = _normalize_model_pref(model) or "flash"
 
     # --- smart extraction (may call LlamaParse) ---
     try:
@@ -221,6 +246,7 @@ async def create_job_from_file(
         file_path=str(saved_path),
         size_bytes=size_bytes,
         extraction=extraction,
+        model_preference=model_pref,
     )
 
     background.add_task(run_job, job.id)
@@ -239,6 +265,7 @@ async def create_job_from_file(
 async def create_job_from_text(
     background: BackgroundTasks,
     text: str = Form(...),
+    model: Optional[str] = Form(default="pro"),
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ) -> dict:
@@ -268,10 +295,13 @@ async def create_job_from_text(
             ),
         )
 
+    model_pref = _normalize_model_pref(model) or "pro"
+
     logger.info(
-        "[create_job_from_text] tokens=%d chars=%d",
+        "[create_job_from_text] tokens=%d chars=%d model=%s",
         extraction.tokens,
         len(trimmed),
+        model_pref,
     )
 
     job = _persist_job(
@@ -281,6 +311,7 @@ async def create_job_from_text(
         file_path=None,
         size_bytes=extraction.file_size,
         extraction=extraction,
+        model_preference=model_pref,
     )
 
     background.add_task(run_job, job.id)
@@ -307,6 +338,7 @@ async def create_job(
     background: BackgroundTasks,
     file: Optional[UploadFile] = File(default=None),
     text: Optional[str] = Form(default=None),
+    model: Optional[str] = Form(default=None),
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ) -> JobCreateResponse:
@@ -314,6 +346,10 @@ async def create_job(
 
     if file is None and not text:
         raise HTTPException(400, "Provide either a file or text.")
+
+    # Legacy endpoint default: file → "flash" (fast), text → "pro".
+    default_pref = "flash" if file is not None else "pro"
+    model_pref = _normalize_model_pref(model) or default_pref
 
     if file is not None:
         saved_path, size_bytes, _ext = await _save_upload_to_disk(file, settings)
@@ -339,6 +375,7 @@ async def create_job(
             file_path=str(saved_path),
             size_bytes=size_bytes,
             extraction=extraction,
+            model_preference=model_pref,
         )
     else:
         trimmed = (text or "").strip()
@@ -363,6 +400,7 @@ async def create_job(
             file_path=None,
             size_bytes=extraction.file_size,
             extraction=extraction,
+            model_preference=model_pref,
         )
 
     background.add_task(run_job, job.id)

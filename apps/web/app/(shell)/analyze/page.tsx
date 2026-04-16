@@ -209,7 +209,8 @@ export default function AnalyzePage() {
 
   function onFile(file: File) {
     setFilename(file.name);
-    start(createJobFromFile(file));
+    // /analyze = dedicated deep-analysis page → use the "pro" tier.
+    start(createJobFromFile(file, "pro"));
   }
 
   function onAnalyzeText() {
@@ -219,7 +220,7 @@ export default function AnalyzePage() {
       return;
     }
     setFilename(null);
-    start(createJobFromText(trimmed));
+    start(createJobFromText(trimmed, "pro"));
   }
 
   async function pasteFromClipboard() {
