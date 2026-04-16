@@ -49,7 +49,11 @@ import ScoreBreakdown from "@/components/ScoreBreakdown";
 import ClauseHighlighter from "@/components/ClauseHighlighter";
 import NegotiationComposer from "@/components/NegotiationComposer";
 import { exportPdfUrl } from "@/lib/api";
-import { displayRiskScore, isEmptyAnalysis } from "@/lib/review";
+import {
+  displayRiskScore,
+  isEmptyAnalysis,
+  normalizeAnalysisResult,
+} from "@/lib/review";
 import type { AnalysisResult, RedFlag } from "@/lib/schemas";
 import { cn } from "@/lib/cn";
 
@@ -143,7 +147,7 @@ export interface AnalysisReportProps {
 
 export default function AnalysisReport({
   jobId,
-  result,
+  result: rawResult,
   filename,
   createdAt,
   textPreview,
@@ -157,7 +161,27 @@ export default function AnalysisReport({
     React.useState<SectionKey>("summary");
   const [linkCopied, setLinkCopied] = React.useState(false);
 
-  const hasGreen = !!result.green_flags && result.green_flags.length > 0;
+  // Defensive normalization — upstream callers should already pass a
+  // normalized result, but rerunning here keeps the component safe when
+  // mounted directly from tests, storybook, or a third-party page.
+  const result = React.useMemo(
+    () => normalizeAnalysisResult(rawResult) ?? rawResult,
+    [rawResult],
+  );
+
+  const redFlags: RedFlag[] = Array.isArray(result.red_flags)
+    ? result.red_flags
+    : [];
+  const missingProtections: string[] = Array.isArray(result.missing_protections)
+    ? result.missing_protections
+    : [];
+  const negotiationSuggestions: string[] = Array.isArray(
+    result.negotiation_suggestions,
+  )
+    ? result.negotiation_suggestions
+    : [];
+  const greenFlags = Array.isArray(result.green_flags) ? result.green_flags : [];
+  const hasGreen = greenFlags.length > 0;
   const sections = React.useMemo<SectionDef[]>(
     () => ALL_SECTIONS.filter((s) => (s.key === "green" ? hasGreen : true)),
     [hasGreen],
@@ -272,12 +296,10 @@ export default function AnalysisReport({
 
   // --- Derived numbers ---------------------------------------------------
 
-  const critical = result.red_flags.filter(
-    (f) => f.severity === "CRITICAL",
-  ).length;
-  const high = result.red_flags.filter((f) => f.severity === "HIGH").length;
-  const medium = result.red_flags.filter((f) => f.severity === "MEDIUM").length;
-  const low = result.red_flags.filter((f) => f.severity === "LOW").length;
+  const critical = redFlags.filter((f) => f.severity === "CRITICAL").length;
+  const high = redFlags.filter((f) => f.severity === "HIGH").length;
+  const medium = redFlags.filter((f) => f.severity === "MEDIUM").length;
+  const low = redFlags.filter((f) => f.severity === "LOW").length;
   const displayScore = displayRiskScore(result);
 
   // --- Main --------------------------------------------------------------
@@ -358,9 +380,9 @@ export default function AnalysisReport({
           <dl className="mt-4 space-y-3">
             <StatRow
               label="Red flags"
-              value={result.red_flags.length}
+              value={redFlags.length}
               tone={
-                result.red_flags.length === 0
+                redFlags.length === 0
                   ? "success"
                   : critical > 0
                     ? "critical"
@@ -384,17 +406,13 @@ export default function AnalysisReport({
             />
             <StatRow
               label="Missing protections"
-              value={result.missing_protections.length}
-              tone={
-                result.missing_protections.length === 0
-                  ? "success"
-                  : "warning"
-              }
+              value={missingProtections.length}
+              tone={missingProtections.length === 0 ? "success" : "warning"}
             />
             {hasGreen && (
               <StatRow
                 label="In your favor"
-                value={result.green_flags!.length}
+                value={greenFlags.length}
                 tone="success"
               />
             )}
@@ -480,7 +498,9 @@ export default function AnalysisReport({
           <Section id="summary" title="Plain-English summary" icon={Sparkles}>
             <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-surface/20 p-6">
               <p className="text-base leading-relaxed text-foreground/95 whitespace-pre-line">
-                {result.overall_summary}
+                {result.overall_summary && result.overall_summary.trim().length > 0
+                  ? result.overall_summary
+                  : "The analyzer did not return a plain-English summary for this contract. Check the red flags and missing protections below for the specific findings."}
               </p>
             </div>
           </Section>
@@ -490,10 +510,10 @@ export default function AnalysisReport({
             id="flags"
             title="Red flags"
             icon={AlertTriangle}
-            count={result.red_flags.length}
+            count={redFlags.length}
           >
             <FlagList
-              flags={result.red_flags}
+              flags={redFlags}
               activeIndex={activeFlag}
               onSelect={(_f: RedFlag, i: number) => setActiveFlag(i)}
             />
@@ -504,9 +524,9 @@ export default function AnalysisReport({
             id="missing"
             title="Missing protections"
             icon={ShieldCheck}
-            count={result.missing_protections.length}
+            count={missingProtections.length}
           >
-            {result.missing_protections.length === 0 ? (
+            {missingProtections.length === 0 ? (
               <div className="rounded-xl border border-success/30 bg-success/10 p-5 flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-success" />
                 <p className="text-sm text-foreground">
@@ -516,7 +536,7 @@ export default function AnalysisReport({
               </div>
             ) : (
               <div className="rounded-xl border border-border bg-surface/70 divide-y divide-border/60 overflow-hidden">
-                {result.missing_protections.map((m, i) => (
+                {missingProtections.map((m, i) => (
                   <div key={i} className="flex items-start gap-3 px-5 py-4">
                     <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-warning/40 bg-warning/10 text-warning">
                       <AlertTriangle className="h-3.5 w-3.5" />
@@ -538,9 +558,9 @@ export default function AnalysisReport({
               id="green"
               title="In your favor"
               icon={CheckCircle2}
-              count={result.green_flags!.length}
+              count={greenFlags.length}
             >
-              <GreenFlagList flags={result.green_flags!} />
+              <GreenFlagList flags={greenFlags} />
             </Section>
           )}
 
@@ -551,7 +571,7 @@ export default function AnalysisReport({
             icon={MessageSquareQuote}
           >
             <NegotiationComposer
-              suggestions={result.negotiation_suggestions}
+              suggestions={negotiationSuggestions}
               contractType={result.contract_type}
             />
           </Section>
@@ -561,7 +581,7 @@ export default function AnalysisReport({
             {textPreview ? (
               <ClauseHighlighter
                 text={textPreview}
-                flags={result.red_flags}
+                flags={redFlags}
                 activeIndex={activeFlag}
               />
             ) : (

@@ -49,6 +49,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/Toast";
 import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
+import { normalizeJobStatus } from "@/lib/review";
 import { cn } from "@/lib/cn";
 
 type Mode = "file" | "text";
@@ -184,9 +185,18 @@ export default function AnalyzePage() {
           try { finalJob = await getJob(job_id); }
           catch { finalJob = job; }
 
+          // Normalize at the page boundary so every renderer below —
+          // AnalysisReport, ClauseHighlighter, NegotiationComposer,
+          // RiskGauge — receives guaranteed-shape arrays instead of
+          // `null`/`undefined`. Prevents the "Cannot read properties of
+          // undefined (reading 'filter')" crash that used to bubble up
+          // to the root error boundary when the backend returned a
+          // truncated or partially-populated AnalysisResult.
+          const normalized = normalizeJobStatus(finalJob) ?? finalJob;
+
           // Flip both scanner panels to "done" without unmounting.
           // Phase 2 renders while `busy` OR `completedJob && !showReport`.
-          setCompletedJob(finalJob);
+          setCompletedJob(normalized);
           setBusy(false);
 
           // ...then after 2 s, unmount Phase 2 and render Phase 3.

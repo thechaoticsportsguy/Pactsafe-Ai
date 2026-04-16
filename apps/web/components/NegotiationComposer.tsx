@@ -8,7 +8,12 @@ import { useToast } from "@/components/Toast";
 import { cn } from "@/lib/cn";
 
 interface NegotiationComposerProps {
-  suggestions: string[];
+  /**
+   * Accepts `undefined` / `null` so this component is safe to mount
+   * directly against a half-populated AnalysisResult from a rate-
+   * limited or truncated model response. Treated as an empty list.
+   */
+  suggestions?: string[] | null;
   contractType?: string;
   className?: string;
 }
@@ -35,11 +40,25 @@ export default function NegotiationComposer({
   className,
 }: NegotiationComposerProps) {
   const { toast } = useToast();
+  const safeSuggestions = React.useMemo<string[]>(
+    () =>
+      Array.isArray(suggestions)
+        ? suggestions.filter((s): s is string => typeof s === "string" && s.length > 0)
+        : [],
+    [suggestions],
+  );
   const [tone, setTone] = React.useState<Tone>("friendly");
   const [selected, setSelected] = React.useState<Set<number>>(
-    () => new Set(suggestions.map((_, i) => i)),
+    () => new Set(safeSuggestions.map((_, i) => i)),
   );
   const [copied, setCopied] = React.useState(false);
+
+  // Keep the "selected" set aligned with the current suggestions list so
+  // a late-arriving normalized payload doesn't leave stale indices
+  // pointing past the end of the array.
+  React.useEffect(() => {
+    setSelected(new Set(safeSuggestions.map((_, i) => i)));
+  }, [safeSuggestions]);
 
   const draft = React.useMemo(() => {
     const lines: string[] = [];
@@ -49,7 +68,7 @@ export default function NegotiationComposer({
     } else {
       lines.push("");
     }
-    const picks = suggestions.filter((_, i) => selected.has(i));
+    const picks = safeSuggestions.filter((_, i) => selected.has(i));
     if (picks.length > 0) {
       lines.push("Proposed revisions:");
       picks.forEach((s, i) => lines.push(`  ${i + 1}. ${s}`));
@@ -59,7 +78,7 @@ export default function NegotiationComposer({
     );
     lines.push("\nBest,");
     return lines.join("\n");
-  }, [tone, selected, suggestions, contractType]);
+  }, [tone, selected, safeSuggestions, contractType]);
 
   function toggle(i: number) {
     setSelected((prev) => {
@@ -89,7 +108,7 @@ export default function NegotiationComposer({
     }
   }
 
-  if (suggestions.length === 0) {
+  if (safeSuggestions.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-foreground-muted">
         No negotiation suggestions were generated.
@@ -139,7 +158,7 @@ export default function NegotiationComposer({
             Include points
           </p>
           <ul className="mt-3 space-y-2">
-            {suggestions.map((s, i) => (
+            {safeSuggestions.map((s, i) => (
               <li key={i}>
                 <label className="flex items-start gap-2.5 text-xs cursor-pointer group">
                   <input

@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import AnalysisReport from "@/components/AnalysisReport";
 import UploadProgress from "@/components/UploadProgress";
 import { getJob, subscribeToJob } from "@/lib/api";
+import { normalizeJobStatus } from "@/lib/review";
 import type { JobStatusResponse } from "@/lib/schemas";
 
 export default function AnalysisPage() {
@@ -36,22 +37,24 @@ export default function AnalysisPage() {
     (async () => {
       try {
         const j = await getJob(jobId);
-        setJob(j);
+        setJob(normalizeJobStatus(j) ?? j);
         if (j.status !== "completed" && j.status !== "failed") {
           cleanup = subscribeToJob(
             jobId,
             (ev) => {
-              setJob((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      status: ev.status,
-                      result: ev.partial ?? prev.result,
-                    }
-                  : prev,
-              );
+              setJob((prev) => {
+                if (!prev) return prev;
+                const merged: JobStatusResponse = {
+                  ...prev,
+                  status: ev.status,
+                  result: ev.partial ?? prev.result,
+                };
+                return normalizeJobStatus(merged) ?? merged;
+              });
               if (ev.status === "completed" || ev.status === "failed") {
-                getJob(jobId).then(setJob).catch(() => {});
+                getJob(jobId)
+                  .then((fresh) => setJob(normalizeJobStatus(fresh) ?? fresh))
+                  .catch(() => {});
               }
             },
             () => {},

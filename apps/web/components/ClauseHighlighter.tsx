@@ -6,8 +6,10 @@ import { severityColor } from "@/lib/severity";
 import { SEVERITY_ORDER, type RedFlag } from "@/lib/schemas";
 
 interface ClauseHighlighterProps {
-  text: string;
-  flags: RedFlag[];
+  /** Null-safe — a missing text preview just renders the header row. */
+  text?: string | null;
+  /** Null-safe — a missing flag list renders the plain text with no marks. */
+  flags?: RedFlag[] | null;
   activeIndex?: number | null;
   className?: string;
 }
@@ -89,10 +91,18 @@ export default function ClauseHighlighter({
   activeIndex,
   className,
 }: ClauseHighlighterProps) {
-  const segments = React.useMemo(() => buildSegments(text, flags), [
-    text,
-    flags,
-  ]);
+  const safeText = typeof text === "string" ? text : "";
+  const safeFlags = React.useMemo<RedFlag[]>(
+    () =>
+      Array.isArray(flags)
+        ? flags.filter((f): f is RedFlag => !!f && typeof f === "object")
+        : [],
+    [flags],
+  );
+  const segments = React.useMemo(
+    () => buildSegments(safeText, safeFlags),
+    [safeText, safeFlags],
+  );
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -125,7 +135,7 @@ export default function ClauseHighlighter({
           </span>
         </span>
         <span className="tabular-nums">
-          {text.length.toLocaleString()} characters
+          {safeText.length.toLocaleString()} characters
         </span>
       </div>
       <div
@@ -142,11 +152,12 @@ export default function ClauseHighlighter({
         )}
       >
         {segments.map((seg, idx) => {
-          const chunk = text.slice(seg.start, seg.end);
+          const chunk = safeText.slice(seg.start, seg.end);
           if (seg.flagIndex == null) {
             return <span key={idx}>{chunk}</span>;
           }
-          const flag = flags[seg.flagIndex];
+          const flag = safeFlags[seg.flagIndex];
+          if (!flag) return <span key={idx}>{chunk}</span>;
           const isActive = activeIndex === seg.flagIndex;
           return (
             <mark

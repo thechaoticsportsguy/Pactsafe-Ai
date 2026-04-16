@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
+import { normalizeJobStatus } from "@/lib/review";
 import ContractPreview from "@/components/ContractPreview";
 import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
@@ -228,6 +229,9 @@ function Hero() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Mount guard — a late poll / refetch resolving after unmount would
+  // otherwise call setState on a dead tree and throw a React warning.
+  const mountedRef = useRef(true);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -250,7 +254,9 @@ function Hero() {
   }
 
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       stopPolling();
       stopHold();
     };
@@ -305,6 +311,7 @@ function Hero() {
     pollRef.current = setInterval(async () => {
       try {
         const job = await getJob(jobId);
+        if (!mountedRef.current) return;
         setStatus(job.status);
 
         if (job.status === "extracting") {
@@ -313,20 +320,37 @@ function Hero() {
           setProgress((p) => Math.max(p, 0.65));
         } else if (job.status === "completed") {
           stopPolling();
+          // Refetch on completion — poll responses sometimes arrive with
+          // a partially-populated `result` (missing arrays, half-shaped
+          // object) because the worker flushes progress before the final
+          // payload settles. A fresh GET is authoritative. Mirrors the
+          // /analyze page's behavior so both flows converge on the same
+          // result shape.
+          let finalJob: JobStatusResponse;
+          try {
+            finalJob = await getJob(jobId);
+          } catch {
+            finalJob = job;
+          }
+          if (!mountedRef.current) return;
+          const normalized = normalizeJobStatus(finalJob) ?? finalJob;
           setStatus("completed");
           setProgress(1);
-          setCompletedJob(job);
+          setCompletedJob(normalized);
           setLoading(false);
           // Hold the "scan complete" frame for ~2 s before swapping in
           // the full report, matching /analyze's behavior.
           stopHold();
-          holdRef.current = setTimeout(() => setShowReport(true), 2000);
+          holdRef.current = setTimeout(() => {
+            if (mountedRef.current) setShowReport(true);
+          }, 2000);
         } else if (job.status === "failed") {
           stopPolling();
           setError(job.error || "Analysis failed.");
           setLoading(false);
         }
       } catch (err) {
+        if (!mountedRef.current) return;
         stopPolling();
         setError(err instanceof Error ? err.message : String(err));
         setLoading(false);
