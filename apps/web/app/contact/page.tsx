@@ -77,7 +77,7 @@ export default function ContactPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main className="flex-1">
         <section className="relative overflow-hidden bg-hero">
           <div

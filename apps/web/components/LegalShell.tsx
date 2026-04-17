@@ -25,7 +25,7 @@ export default function LegalShell({
 }: LegalShellProps) {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main className="flex-1 bg-section">
         <div className="container-app pt-16 md:pt-24 pb-6">
           <Badge tone="accent" size="xs">

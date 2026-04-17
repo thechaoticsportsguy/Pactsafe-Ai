@@ -99,7 +99,7 @@ export default function PactSafeLanding() {
         ctaLabel="See what's shipped"
         href="/changelog"
       />
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main id="main-content" className="flex-1">
         <Hero />
         <TrustBar />

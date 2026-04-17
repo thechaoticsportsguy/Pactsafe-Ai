@@ -141,7 +141,7 @@ export default function ChangelogPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main id="main-content" className="flex-1">
         <section className="relative overflow-hidden bg-hero">
           <div

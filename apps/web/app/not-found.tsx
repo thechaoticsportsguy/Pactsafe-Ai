@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main className="flex-1 bg-hero relative overflow-hidden">
         <div
           aria-hidden

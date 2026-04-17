@@ -8,7 +8,7 @@ export default function ShellLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="app" />
+      <TopNav variant="workspace" />
       <main
         id="main-content"
         className="container-app flex-1 py-10 md:py-14"

@@ -142,7 +142,7 @@ const SAMPLE_RESULT: AnalysisResult = {
 export default function DemoPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main id="main-content" className="flex-1">
         {/* Demo banner */}
         <div className="border-b border-accent/30 bg-accent/[0.08]">

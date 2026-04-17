@@ -210,7 +210,7 @@ export default function PricingPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <PricingProductJsonLd />
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main id="main-content" className="flex-1">
         <Hero />
         <TrustStrip />

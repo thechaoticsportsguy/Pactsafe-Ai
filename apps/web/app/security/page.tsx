@@ -75,7 +75,7 @@ const PILLARS: Pillar[] = [
 export default function SecurityPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <TopNav variant="marketing" />
+      <TopNav variant="editorial" />
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden bg-hero">
