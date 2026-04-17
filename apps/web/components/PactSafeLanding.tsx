@@ -815,7 +815,7 @@ function TrustBar() {
   const items = [
     { k: "Free", v: "no account required" },
     { k: "< 60 s", v: "average review time" },
-    { k: "50+", v: "risk patterns covered" },
+    { k: "6", v: "contract types supported" },
     { k: "0 %", v: "data sold or trained on" },
   ];
   return (
@@ -876,7 +876,7 @@ function HowItWorks() {
     {
       icon: ScanSearch,
       title: "AI scans every clause",
-      body: "Our model is trained on real freelance contract patterns: red flags, missing protections, and hidden gotchas.",
+      body: "Every risk we flag is tied to the exact clause in your contract — grounded citations, no hallucinations, verifiable against the document itself.",
     },
     {
       icon: FileCheck2,
@@ -1183,8 +1183,8 @@ function WhatWeCatch() {
       <div className="container-app">
         <SectionHeader
           eyebrow="Risk coverage"
-          title="We catch the traps freelancers actually hit"
-          subtitle="50+ risk patterns refined from real freelance, creative, and consulting contracts."
+          title="We catch the traps buried in the fine print."
+          subtitle="Tuned for the contracts people actually sign — contractor agreements, NDAs, employment offers, SaaS terms, service agreements, and freelance SOWs."
         />
         <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {traps.map((t, i) => (
