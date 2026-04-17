@@ -431,6 +431,11 @@ async def get_job(job_id: UUID, session: Session = Depends(get_session)) -> JobS
         created_at=job.created_at,
         updated_at=job.updated_at,
         text_preview=(job.text_preview or "")[:500] if job.text_preview else None,
+        # Full extracted text — the clause highlighter needs this so the
+        # v2 citations (section_number + quote) are visible in context.
+        # text_preview above stays capped at 500 chars for backwards compat
+        # with any consumer reading that field directly.
+        document_text=job.extracted_text,
         result=result,
         error=job.error,
     )

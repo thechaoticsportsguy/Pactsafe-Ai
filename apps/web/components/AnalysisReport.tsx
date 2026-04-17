@@ -124,8 +124,19 @@ export interface AnalysisReportProps {
   filename?: string | null;
   /** ISO timestamp. Formatted for display. */
   createdAt?: string | null;
-  /** Optional extracted text preview for the clause highlighter. */
+  /**
+   * Legacy preview (~500 chars) kept for back-compat. Used only if
+   * `documentText` is not provided. New call sites should pass both so
+   * the highlighter can render the full contract; this one is the
+   * fallback for older backend builds that don't expose the full text.
+   */
   textPreview?: string | null;
+  /**
+   * Full extracted document text for the clause highlighter. When
+   * present, takes precedence over `textPreview` so the full contract
+   * renders with v2 citations visible in context.
+   */
+  documentText?: string | null;
   /**
    * When true, renders a breadcrumb link back to `/history`. Hidden by
    * default so the inline analyze-page render stays clean.
@@ -152,10 +163,15 @@ export default function AnalysisReport({
   filename,
   createdAt,
   textPreview,
+  documentText,
   showBreadcrumb = false,
   copyWindowHref = true,
   className,
 }: AnalysisReportProps) {
+  // Prefer the full document when the backend ships it; fall back to the
+  // 500-char preview otherwise. Keeps the component functional on older
+  // backend builds that predate the `document_text` field.
+  const highlighterText = documentText ?? textPreview ?? null;
   const { toast } = useToast();
   const [activeFlag, setActiveFlag] = React.useState<number | null>(null);
   const [activeSection, setActiveSection] =
@@ -595,9 +611,9 @@ export default function AnalysisReport({
 
           {/* Clause highlighter */}
           <Section id="clauses" title="Clause highlighter" icon={FileText}>
-            {textPreview ? (
+            {highlighterText ? (
               <ClauseHighlighter
-                text={textPreview}
+                text={highlighterText}
                 flags={redFlags}
                 activeIndex={activeFlag}
               />

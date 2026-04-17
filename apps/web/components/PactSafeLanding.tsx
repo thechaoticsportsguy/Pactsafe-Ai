@@ -518,6 +518,7 @@ function Hero() {
               filename={completedJob.filename}
               createdAt={completedJob.created_at}
               textPreview={completedJob.text_preview}
+              documentText={completedJob.document_text}
               showBreadcrumb={false}
               copyWindowHref={false}
             />

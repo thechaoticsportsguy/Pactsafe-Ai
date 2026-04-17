@@ -141,12 +141,16 @@ export default function ClauseHighlighter({
       <div
         ref={containerRef}
         className={cn(
-          // No height trap — let the outer page scroll naturally.
-          // The clause highlighter flows inline with the rest of the
-          // results so users can scroll from the risk score down to
-          // the last finding without getting caught in a nested
-          // scroll container.
+          // Scrollable container — the backend now returns the full
+          // extracted document (not a 500-char preview), so long
+          // contracts need a local scroll to keep the surrounding
+          // report readable. `max-h-[600px]` is enough for about two
+          // pages of contract text on a laptop; `overflow-y-auto`
+          // shows a scrollbar only when needed. Without this, a 60k-
+          // char Handshake-style contract would push every section
+          // below it off the bottom of the viewport.
           "px-6 py-5",
+          "max-h-[600px] overflow-y-auto",
           "prose-contract whitespace-pre-wrap",
           className,
         )}

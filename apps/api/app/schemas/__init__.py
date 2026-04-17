@@ -127,6 +127,15 @@ class JobStatusResponse(BaseModel):
     text_preview: Optional[str] = Field(
         default=None, description="First ~500 chars of extracted text"
     )
+    # Full extracted text, returned by GET /api/jobs/{id} only (NOT by the
+    # list endpoint — returning 50 * 60k chars would balloon the history
+    # response). Used by the clause highlighter so citations v2 produces
+    # are visible in context. Optional for back-compat; older clients that
+    # don't know about this field keep working on text_preview.
+    document_text: Optional[str] = Field(
+        default=None,
+        description="Full extracted document text (single-job endpoint only)",
+    )
     result: Optional[AnalysisResult] = None
     error: Optional[str] = None
 

@@ -134,7 +134,21 @@ export interface JobStatusResponse {
   filename?: string | null;
   created_at: string;
   updated_at: string;
+  /**
+   * First ~500 chars of extracted text. Kept for back-compat with any
+   * consumer that reads this field directly; new UI should prefer
+   * `document_text` (returned by GET /api/jobs/{id} only) so the clause
+   * highlighter can render the full contract with v2 citations visible
+   * in context.
+   */
   text_preview?: string | null;
+  /**
+   * Full extracted document text. Returned by the single-job endpoint
+   * only (the history endpoint omits it to keep the list response fast).
+   * Optional — older backend builds that predate this field will have
+   * it undefined, so callers should fall back to `text_preview`.
+   */
+  document_text?: string | null;
   result?: AnalysisResult | null;
   error?: string | null;
 }

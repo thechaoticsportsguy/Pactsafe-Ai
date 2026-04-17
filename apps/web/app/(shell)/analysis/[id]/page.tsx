@@ -197,6 +197,7 @@ export default function AnalysisPage() {
         filename={job.filename}
         createdAt={job.created_at}
         textPreview={job.text_preview}
+        documentText={job.document_text}
         showBreadcrumb
         copyWindowHref
       />
