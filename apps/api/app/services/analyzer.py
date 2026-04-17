@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from typing import Optional
 
@@ -29,6 +30,21 @@ from app.services.ingestion import PageRange, find_page_for_offset
 from app.services.llm import LLMClient
 
 logger = logging.getLogger(__name__)
+
+
+def _v2_enabled() -> bool:
+    """Flip to ``True`` by setting USE_V2_ANALYZER=true in the env.
+
+    Read every call (not cached) so the flag can be flipped at runtime
+    without a worker restart during verification.
+    """
+
+    return os.getenv("USE_V2_ANALYZER", "false").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
 
 MAX_CONTRACT_CHARS = 60_000
 MIN_CONTRACT_CHARS = 50
@@ -319,6 +335,30 @@ class ContractAnalyzer:
             return validation_error
 
         safe_text, truncated = self._truncate(text.strip())
+
+        # v2 dispatch — gated by USE_V2_ANALYZER env var. The legacy path
+        # below is left fully intact so a flag flip is the entire rollback
+        # story. When v2 is verified in prod, the legacy path + the JSON
+        # repair helpers above can be deleted in a follow-up commit.
+        if _v2_enabled():
+            try:
+                # Imported locally so the legacy worker path doesn't pay
+                # the cost of importing google-genai when the flag is off.
+                from app.services.v2_pipeline import run_v2_pipeline
+
+                result = await run_v2_pipeline(safe_text)
+            except Exception as exc:
+                logger.exception("[analyzer] v2 pipeline failed")
+                return AnalysisResult(
+                    error=f"v2 analysis failed: {exc}",
+                    model_used="gemini-2.5-pro",
+                    provider="gemini",
+                    truncated=truncated,
+                )
+            result.truncated = truncated
+            if page_map and not result.error:
+                self._attach_page_numbers(result, text, page_map)
+            return result
 
         try:
             raw = await self._call_with_retry(safe_text, model=model)

@@ -37,6 +37,15 @@ class RedFlag(BaseModel):
     page: Optional[int] = Field(None, ge=1, description="1-indexed source page (PDF only)")
     start_offset: Optional[int] = Field(None, ge=0, description="Char offset in extracted text")
     end_offset: Optional[int] = Field(None, ge=0, description="Char offset end in extracted text")
+    # v2 citation grounding — populated only by the v2 analyzer pipeline.
+    # Legacy analyses leave these null so the frontend can render a citation
+    # block when present and skip it when absent.
+    section_number: Optional[str] = Field(
+        None, description="Section ID from the source document, e.g. '5.1', '14.2'"
+    )
+    quote: Optional[str] = Field(
+        None, max_length=500, description="Verbatim quote from the cited section"
+    )
 
 
 class GreenFlag(BaseModel):

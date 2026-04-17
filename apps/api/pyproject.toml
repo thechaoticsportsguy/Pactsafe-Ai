@@ -19,7 +19,14 @@ dependencies = [
     "anthropic>=0.87.0",  # <0.87.0 has CVE-2026-34450, CVE-2026-34452
     "cryptography>=46.0.7",  # <46.0.7 has CVE-2026-39892
     "groq>=0.9.0",
+    # Legacy SDK — used by services/llm/gemini_client.py (pre-v2 path).
+    # Removed in the cleanup commit after USE_V2_ANALYZER=true is verified.
     "google-generativeai>=0.5.0",
+    # New SDK — used by services/llm/gemini_v2.py for response_schema +
+    # thinking mode. Required by the v2 analyzer pipeline.
+    "google-genai>=1.0,<2.0",
+    # Fuzzy quote matching in services/citation_validator.py.
+    "rapidfuzz>=3.0,<4.0",
     "pdfplumber>=0.11.0",
     "pytesseract>=0.3.10",
     "pdf2image>=1.17.0",
