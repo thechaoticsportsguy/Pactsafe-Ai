@@ -11,7 +11,7 @@ interface RiskGaugeProps {
 }
 
 export default function RiskGauge({ score, className }: RiskGaugeProps) {
-  const clamped = Math.min(100, Math.max(0, Math.round(score)));
+  const clamped = Math.min(95, Math.max(0, Math.round(score)));
   const band = riskBand(clamped);
   const [displayed, setDisplayed] = React.useState(0);
 

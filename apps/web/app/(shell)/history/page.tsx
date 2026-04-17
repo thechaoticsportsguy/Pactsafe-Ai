@@ -252,7 +252,8 @@ export default function HistoryPage() {
           </div>
           <ul className="divide-y divide-border/60">
             {filtered.map((j) => {
-              const score = j.result?.risk_score;
+              const rawScore = j.result?.risk_score;
+              const score = rawScore != null ? Math.min(rawScore, 95) : undefined;
               const band = score != null ? riskBand(score) : null;
               return (
                 <li

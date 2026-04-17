@@ -113,12 +113,12 @@ export default function ComparePage() {
           <DeltaSummary left={left} right={right} />
           <div className="grid gap-4 md:grid-cols-2">
             <ComparePanel job={left} highlight={
-              (left.result?.risk_score ?? 100) < (right.result?.risk_score ?? 100)
+              Math.min(left.result?.risk_score ?? 100, 95) < Math.min(right.result?.risk_score ?? 100, 95)
                 ? "safer"
                 : undefined
             } />
             <ComparePanel job={right} highlight={
-              (right.result?.risk_score ?? 100) < (left.result?.risk_score ?? 100)
+              Math.min(right.result?.risk_score ?? 100, 95) < Math.min(left.result?.risk_score ?? 100, 95)
                 ? "safer"
                 : undefined
             } />
@@ -144,7 +144,9 @@ function DeltaSummary({
 }) {
   const l = left.result!;
   const r = right.result!;
-  const delta = l.risk_score - r.risk_score;
+  const lDisplay = Math.min(l.risk_score, 95);
+  const rDisplay = Math.min(r.risk_score, 95);
+  const delta = lDisplay - rDisplay;
   const absDelta = Math.abs(delta);
   const winner = delta === 0 ? null : delta < 0 ? "A" : "B";
   const winnerJob = winner === "A" ? left : winner === "B" ? right : null;
@@ -181,8 +183,8 @@ function DeltaSummary({
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         <DeltaStat
           label="Risk score"
-          a={l.risk_score}
-          b={r.risk_score}
+          a={lDisplay}
+          b={rDisplay}
           lowerIsBetter
         />
         <DeltaStat
@@ -312,7 +314,8 @@ function ComparePanel({
   highlight?: "safer";
 }) {
   const result = job.result as AnalysisResult;
-  const band = riskBand(result.risk_score);
+  const displayScore = Math.min(result.risk_score, 95);
+  const band = riskBand(displayScore);
   const countsBySeverity: Record<Severity, number> = {
     CRITICAL: 0,
     HIGH: 0,
@@ -355,7 +358,7 @@ function ComparePanel({
             backgroundColor: `${band.color}14`,
           }}
         >
-          {result.risk_score}
+          {displayScore}
         </span>
       </div>
 
