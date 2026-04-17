@@ -216,7 +216,7 @@ function MobileStickyCTA() {
 // where the real upload + scan flow lives.
 //
 // Design tokens intentionally diverge from the rest of the page:
-//   beige-100 background, ink-900 headlines, cream (beige-50) accents
+//   beige-100 background, ink-800 headlines, cream (beige-50) accents
 //   on the dark product preview. All corners are sharp (no rounded-*
 //   classes in this subtree). The rest of the landing sections still
 //   render with the old dark-mode tokens — they'll get their own
@@ -225,7 +225,7 @@ function MobileStickyCTA() {
 // ---------------------------------------------------------------------------
 function Hero() {
   return (
-    <section className="bg-beige-100 text-ink-900">
+    <section className="bg-beige-100 text-ink-800">
       <div className="container-app grid gap-12 py-16 md:grid-cols-2 md:items-center md:gap-16 md:py-24">
         <HeroCopy />
         <HeroScreenshot />
@@ -239,7 +239,7 @@ function HeroCopy() {
     <div className="max-w-xl">
       {/* Eyebrow pill — black bg / cream text, the only uppercase
           element in the headline cluster. */}
-      <div className="inline-flex items-center gap-2 bg-ink-900 px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest text-beige-50">
+      <div className="inline-flex items-center gap-2 bg-ink-800 px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest text-beige-50">
         <span className="h-1.5 w-1.5 rounded-full bg-beige-100" />
         Grounded AI · Every claim cited
       </div>
@@ -247,7 +247,7 @@ function HeroCopy() {
       {/* Headline — weight 500 keeps the editorial feel; 600+ reads
           heavy against the warm beige. Hard line breaks preserve the
           target rhythm regardless of viewport width. */}
-      <h1 className="mt-6 text-5xl font-medium leading-[1.05] tracking-[-0.03em] text-ink-900 md:text-7xl">
+      <h1 className="mt-6 text-5xl font-medium leading-[1.05] tracking-[-0.03em] text-ink-800 md:text-7xl">
         Read every
         <br />
         clause. Like
@@ -257,7 +257,7 @@ function HeroCopy() {
         would.
       </h1>
 
-      <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-800">
+      <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-700">
         Paste any contract. In under 60 seconds, get a plain-English
         risk report — every red flag tied to the exact clause in your
         document. No lawyer fees. No data retained.
@@ -269,22 +269,22 @@ function HeroCopy() {
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <Link
           href="/analyze"
-          className="inline-flex items-center gap-2 bg-ink-900 px-7 py-3.5 text-sm font-medium text-beige-50 transition-colors hover:bg-ink-800"
+          className="inline-flex items-center gap-2 bg-ink-800 px-7 py-3.5 text-sm font-medium text-beige-50 transition-colors hover:bg-ink-700"
         >
           Analyze a contract
           <ArrowRight className="h-4 w-4" />
         </Link>
         <Link
           href="/demo"
-          className="inline-flex items-center gap-2 border border-ink-900 px-7 py-3.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-900 hover:text-beige-50"
+          className="inline-flex items-center gap-2 border border-ink-800 px-7 py-3.5 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-800 hover:text-beige-50"
         >
           See sample report
         </Link>
       </div>
 
-      {/* Stats — 2 cols on mobile, 4 on desktop. 1-px ink-900 top
+      {/* Stats — 2 cols on mobile, 4 on desktop. 1-px ink-800 top
           border matches the nav's editorial rhythm. */}
-      <dl className="mt-12 grid max-w-[560px] grid-cols-2 gap-x-6 gap-y-6 border-t border-ink-900 pt-6 md:grid-cols-4">
+      <dl className="mt-12 grid max-w-[560px] grid-cols-2 gap-x-6 gap-y-6 border-t border-ink-800 pt-6 md:grid-cols-4">
         {[
           { k: "Free", v: "No account" },
           { k: "60s", v: "Avg scan" },
@@ -292,10 +292,10 @@ function HeroCopy() {
           { k: "0%", v: "Retained" },
         ].map((s) => (
           <div key={s.k}>
-            <dd className="text-2xl font-medium tracking-tight text-ink-900 tabular-nums">
+            <dd className="text-2xl font-medium tracking-tight text-ink-800 tabular-nums">
               {s.k}
             </dd>
-            <dt className="mt-1 text-[11px] font-medium uppercase tracking-widest text-ink-600">
+            <dt className="mt-1 text-[11px] font-medium uppercase tracking-widest text-ink-500">
               {s.v}
             </dt>
           </div>
@@ -312,7 +312,7 @@ function HeroScreenshot() {
   // safer default until we get real UX feedback on mobile.
   return (
     <div className="hidden md:block">
-      <div className="bg-ink-900 p-5 text-beige-50">
+      <div className="bg-ink-800 p-5 text-beige-50">
         {/* Status bar */}
         <div className="flex items-center justify-between border-b border-beige-50/10 pb-3 text-[11px] font-medium uppercase tracking-widest text-beige-50">
           <span className="inline-flex items-center gap-2">
@@ -324,24 +324,24 @@ function HeroScreenshot() {
 
         {/* Metric cards — beige tiles on dark bg, sharp corners. */}
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="bg-beige-100 p-4 text-ink-900">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-600">
+          <div className="bg-beige-100 p-4 text-ink-800">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-500">
               Risk score
             </p>
             <p className="mt-1 text-3xl font-medium tabular-nums">
               72
-              <span className="text-sm text-ink-600">/100</span>
+              <span className="text-sm text-ink-500">/100</span>
             </p>
             <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-[#ef4444]">
               High risk
             </p>
           </div>
-          <div className="bg-beige-100 p-4 text-ink-900">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-600">
+          <div className="bg-beige-100 p-4 text-ink-800">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-500">
               Flags found
             </p>
             <p className="mt-1 text-3xl font-medium tabular-nums">11</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-ink-600">
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-ink-500">
               2 critical · 5 high
             </p>
           </div>
@@ -354,7 +354,7 @@ function HeroScreenshot() {
           {FLAG_PREVIEWS.map((f) => (
             <div
               key={f.title}
-              className="flex gap-3 bg-beige-50 p-3 text-ink-900"
+              className="flex gap-3 bg-beige-50 p-3 text-ink-800"
             >
               <span
                 aria-hidden
@@ -370,15 +370,15 @@ function HeroScreenshot() {
                   >
                     {f.sev}
                   </span>
-                  <span className="text-[10px] text-ink-600">
+                  <span className="text-[10px] text-ink-500">
                     § {f.section}
                   </span>
                 </div>
-                <p className="mt-1 text-[13px] font-medium text-ink-900">
+                <p className="mt-1 text-[13px] font-medium text-ink-800">
                   {f.title}
                 </p>
                 {f.quote && (
-                  <p className="mt-1 text-[11px] italic leading-snug text-ink-600">
+                  <p className="mt-1 text-[11px] italic leading-snug text-ink-500">
                     &ldquo;{f.quote}&rdquo;
                   </p>
                 )}

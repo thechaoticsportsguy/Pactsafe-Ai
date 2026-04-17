@@ -1,13 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/Toast";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/StructuredData";
 
+// Canonical site fonts. Loaded by next/font so there are no CDN
+// requests at runtime. Both variables plug into tailwind.config.ts via
+// fontFamily: { sans: ['var(--font-sans)', ...] } — making the token
+// system the single source of truth for typography.
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -78,7 +88,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} dark`}>
+    <html lang="en" className={`${inter.variable} ${mono.variable} dark`}>
       <head>
         <OrganizationJsonLd />
         <WebSiteJsonLd />
