@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import {
   ArrowRight,
-  FileText,
-  Sparkles,
   X,
   Upload,
   ScanSearch,
@@ -19,7 +18,6 @@ import {
   AlertTriangle,
   AlertOctagon,
   Shield,
-  Quote,
   ChevronDown,
   Palette,
   PenLine,
@@ -32,11 +30,17 @@ import {
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
-import Reveal from "@/components/Reveal";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import { FaqJsonLd, SoftwareAppJsonLd } from "@/components/StructuredData";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  SectionEditorial,
+  SectionHeader,
+} from "@/components/primitives/Section";
+import {
+  Reveal,
+  fadeInUp,
+  staggerChildren,
+} from "@/components/primitives/Motion";
 
 // ---------------------------------------------------------------------------
 // Editorial hero — real red flags (trimmed) from the Handshake
@@ -120,7 +124,7 @@ export default function PactSafeLanding() {
 }
 
 // ---------------------------------------------------------------------------
-// Back to top — desktop-only floating button, appears after 70% scroll
+// Back to top — desktop-only floating button, appears after 50% scroll
 // ---------------------------------------------------------------------------
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -141,7 +145,7 @@ function BackToTop() {
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Back to top"
-      className="hidden md:flex fixed bottom-6 right-6 z-20 h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-bg-elevated/95 text-foreground shadow-card-lg backdrop-blur-xl ring-1 ring-accent/20 hover:ring-accent/40 hover:-translate-y-0.5 transition-all animate-fade-in"
+      className="hidden md:flex fixed bottom-6 right-6 z-20 h-11 w-11 items-center justify-center bg-ink-800 text-beige-50 shadow-panel hover:bg-ink-700 hover:-translate-y-0.5 transition-all animate-fade-in"
     >
       <svg
         width="16"
@@ -179,26 +183,27 @@ function MobileStickyCTA() {
   if (!show || dismissed) return null;
   return (
     <div className="md:hidden fixed inset-x-3 bottom-3 z-30 animate-fade-in-up">
-      <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-bg-elevated/95 p-2 shadow-card-lg backdrop-blur-xl ring-1 ring-accent/20">
+      <div className="flex items-center gap-2 border border-ink-800 bg-beige-50 p-2 shadow-panel">
         <div className="flex-1 pl-2">
-          <p className="text-[11px] font-semibold text-foreground">
+          <p className="text-[11px] font-medium text-ink-800">
             Ready to analyze?
           </p>
-          <p className="text-[10px] text-foreground-muted">
+          <p className="text-[10px] text-ink-500">
             Free · under 60 seconds
           </p>
         </div>
-        <Link href="/analyze" className="flex-shrink-0">
-          <Button size="sm">
-            Start now
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
+        <Link
+          href="/analyze"
+          className="inline-flex h-8 flex-shrink-0 items-center gap-1.5 bg-ink-800 px-3 text-xs font-medium text-beige-50 transition-colors hover:bg-ink-700"
+        >
+          Start now
+          <ArrowRight className="h-3.5 w-3.5" />
         </Link>
         <button
           type="button"
           onClick={() => setDismissed(true)}
           aria-label="Dismiss"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-foreground-muted hover:bg-surface-2 hover:text-foreground"
+          className="flex h-7 w-7 items-center justify-center text-ink-500 hover:bg-ink-800/5 hover:text-ink-800"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -215,13 +220,9 @@ function MobileStickyCTA() {
 // No state, no polling — clicking the primary CTA routes to /analyze
 // where the real upload + scan flow lives.
 //
-// Design tokens intentionally diverge from the rest of the page:
-//   beige-100 background, ink-800 headlines, cream (beige-50) accents
-//   on the dark product preview. All corners are sharp (no rounded-*
-//   classes in this subtree). The rest of the landing sections still
-//   render with the old dark-mode tokens — they'll get their own
-//   editorial restyle in a follow-up commit so this diff stays
-//   reviewable. Expect the seam to look jarring until then.
+// Unchanged from the Phase 3A editorial cut — the hero was already
+// converted when Phase 2 landed. Listed first in the file for reading
+// order; sub-sections below inherit the same palette.
 // ---------------------------------------------------------------------------
 function Hero() {
   return (
@@ -307,9 +308,7 @@ function HeroCopy() {
 
 function HeroScreenshot() {
   // Hidden on small screens — the dense card crowds narrow viewports
-  // and the marketing copy stands on its own without it. Step-6
-  // guardrail allows either simplifying or hiding; hidden is the
-  // safer default until we get real UX feedback on mobile.
+  // and the marketing copy stands on its own without it.
   return (
     <div className="hidden md:block">
       <div className="bg-ink-800 p-5 text-beige-50">
@@ -402,52 +401,56 @@ function TrustBar() {
     { k: "0 %", v: "data sold or trained on" },
   ];
   return (
-    <section className="border-y border-border-subtle/60 bg-bg-elevated/40">
-      <div className="container-app py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
-          {items.map((item) => (
-            <div key={item.k} className="text-center md:text-left">
-              <p className="text-2xl md:text-[32px] font-semibold tracking-tight text-foreground tabular-nums">
-                {item.k}
-              </p>
-              <p className="mt-1 text-xs md:text-sm text-foreground-muted">
-                {item.v}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Powered-by row */}
-        <div className="mt-8 pt-8 border-t border-border-subtle/60 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-subtle">
-            Powered by
-          </p>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-foreground-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
-              Anthropic Claude
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-accent" />
-              Groq · Llama&nbsp;3.3
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <GitFork className="h-3.5 w-3.5" />
-              Open source on GitHub
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Lock className="h-3.5 w-3.5 text-success" />
-              TLS 1.3 · AES-256
-            </span>
+    <SectionEditorial
+      tone="warm"
+      divider="both"
+      pad="md"
+      reveal={false}
+    >
+      <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-4">
+        {items.map((item) => (
+          <div key={item.k} className="text-center md:text-left">
+            <p className="text-2xl font-medium tracking-tight text-ink-800 tabular-nums md:text-[32px]">
+              {item.k}
+            </p>
+            <p className="mt-1 text-xs text-ink-500 md:text-sm">
+              {item.v}
+            </p>
           </div>
+        ))}
+      </div>
+
+      {/* Powered-by row */}
+      <div className="mt-8 flex flex-col gap-4 border-t border-ink-800/10 pt-8 md:flex-row md:items-center md:justify-between">
+        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
+          Powered by
+        </p>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-ink-700">
+          <span className="inline-flex items-center gap-1.5">
+            Anthropic Claude
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            Groq · Llama&nbsp;3.3
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <GitFork className="h-3.5 w-3.5" />
+            Open source on GitHub
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Lock className="h-3.5 w-3.5" />
+            TLS 1.3 · AES-256
+          </span>
         </div>
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
 // ---------------------------------------------------------------------------
-// How it works — 3 steps
+// How it works — 3 steps. Uses Framer Motion staggerChildren so the
+// row animates in as one coordinated group rather than three
+// independent Reveals. Card-level motion still respects
+// prefers-reduced-motion via the globals.css reset.
 // ---------------------------------------------------------------------------
 function HowItWorks() {
   const steps = [
@@ -468,219 +471,216 @@ function HowItWorks() {
     },
   ];
   return (
-    <section
-      id="how-it-works"
-      className="relative py-20 md:py-28 bg-section"
-    >
-      <div className="container-app">
-        <SectionHeader
-          eyebrow="How it works"
-          title="From contract to clarity in three steps"
-          subtitle="No legalese. No waiting on lawyers. No $500 bills."
-        />
+    <SectionEditorial id="how-it-works" tone="cream" divider="bottom">
+      <SectionHeader
+        eyebrow="How it works"
+        title="From contract to clarity in three steps"
+        body="No legalese. No waiting on lawyers. No $500 bills."
+      />
 
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
-          {steps.map((s, i) => (
-            <Reveal key={s.title} delay={i * 90}>
-              <div className="relative group surface-card p-6 md:p-7 transition-all hover:border-white/10 hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
-                    <s.icon className="h-5 w-5" strokeWidth={2} />
-                  </span>
-                  <span className="text-xs font-mono text-foreground-subtle">
-                    0{i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-5 text-lg font-semibold tracking-tight text-foreground">
-                  {s.title}
-                </h3>
-                <p className="mt-2 text-sm text-foreground-muted leading-relaxed">
-                  {s.body}
-                </p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
+      <motion.div
+        className="mt-14 grid gap-5 md:grid-cols-3"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={staggerChildren}
+      >
+        {steps.map((s, i) => (
+          <motion.div
+            key={s.title}
+            variants={fadeInUp}
+            className="group border border-ink-800/10 bg-beige-50 p-6 transition-colors hover:border-ink-800/30 md:p-7"
+          >
+            <div className="flex items-center justify-between">
+              <span className="inline-flex h-10 w-10 items-center justify-center border border-ink-800 bg-ink-800 text-beige-50">
+                <s.icon className="h-5 w-5" strokeWidth={1.75} />
+              </span>
+              <span className="font-mono text-xs text-ink-500">
+                0{i + 1}
+              </span>
+            </div>
+            <h3 className="mt-5 text-lg font-medium tracking-tight text-ink-800">
+              {s.title}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+              {s.body}
+            </p>
+          </motion.div>
+        ))}
+      </motion.div>
+    </SectionEditorial>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Sample report — fake demo of the output
+// Sample report — the product output, rendered as a dark "screenshot"
+// card on a beige section. The dark card is a deliberate editorial
+// choice: we want the product to read as the product wherever it
+// appears, and both the hero screenshot and /demo keep workspace-ish
+// palettes for the same reason. Framing around it is editorial.
 // ---------------------------------------------------------------------------
 function SampleReport() {
   return (
-    <section id="features" className="relative py-20 md:py-28">
-      <div className="container-app">
-        <SectionHeader
-          eyebrow="What you get"
-          title="A legal-grade report, built for humans"
-          subtitle="Risk score. Red flags. Missing protections. Negotiation language. All in one scannable view."
-        />
+    <SectionEditorial id="features" tone="warm" divider="bottom">
+      <SectionHeader
+        eyebrow="What you get"
+        title="A legal-grade report, built for humans"
+        body="Risk score. Red flags. Missing protections. Negotiation language. All in one scannable view."
+      />
 
-        <div className="mt-14 relative">
-          <div
-            aria-hidden
-            className="absolute -inset-x-10 -inset-y-12 -z-10 opacity-60"
-            style={{
-              background:
-                "radial-gradient(60% 50% at 50% 50%, rgba(124,92,252,0.15) 0%, transparent 60%)",
-            }}
-          />
+      <Reveal className="mt-14">
+        <div className="mx-auto max-w-5xl border border-ink-800 bg-ink-800 p-5 text-beige-50 md:p-7">
+          {/* window chrome */}
+          <div className="flex items-center gap-2 border-b border-beige-50/10 pb-4">
+            <div className="flex gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#eab308]/80" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#10b981]/80" />
+            </div>
+            <p className="ml-2 font-mono text-xs text-beige-50/60">
+              pactsafe.ai / analysis / freelance-services-agreement.pdf
+            </p>
+            <div className="ml-auto flex items-center gap-1.5 text-xs text-beige-50/70">
+              <CheckCircle2 className="h-3.5 w-3.5 text-[#10b981]" />
+              Complete
+            </div>
+          </div>
 
-          <Reveal className="mx-auto max-w-5xl" distance={28}>
-            <div className="surface-card-lg p-5 md:p-7">
-              {/* window chrome */}
-              <div className="flex items-center gap-2 pb-4 border-b border-white/5">
-                <div className="flex gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-severity-critical/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-severity-medium/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-severity-low/70" />
-                </div>
-                <p className="ml-2 text-xs font-mono text-foreground-subtle">
-                  pactsafe.ai / analysis / freelance-services-agreement.pdf
-                </p>
-                <div className="ml-auto flex items-center gap-1.5 text-xs text-foreground-muted">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                  Complete
-                </div>
+          {/* top row: score + summary */}
+          <div className="mt-5 grid gap-4 md:grid-cols-5">
+            <div className="bg-beige-100 p-5 text-ink-800 md:col-span-2">
+              <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-ink-500">
+                Overall risk
+              </p>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-4xl font-medium tabular-nums">72</span>
+                <span className="text-sm text-ink-500">/ 100</span>
+                <span className="ml-auto inline-flex items-center border border-[#f97316]/50 bg-[#f97316]/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#c2410c]">
+                  High risk
+                </span>
               </div>
-
-              {/* top row: score + summary */}
-              <div className="mt-5 grid gap-4 md:grid-cols-5">
-                <div className="md:col-span-2 rounded-xl border border-border bg-bg-elevated/60 p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
-                    Overall risk
-                  </p>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-4xl font-semibold tabular-nums">72</span>
-                    <span className="text-sm text-foreground-muted">/ 100</span>
-                    <Badge tone="high" className="ml-auto">
-                      High risk
-                    </Badge>
-                  </div>
-                  <div className="mt-4 h-2 w-full rounded-full bg-surface-3 overflow-hidden">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: "72%",
-                        background:
-                          "linear-gradient(90deg, #f97316, #ef4444)",
-                        boxShadow: "0 0 18px rgba(249,115,22,0.45)",
-                      }}
-                    />
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                    <div className="rounded-md bg-surface-2 px-2.5 py-2">
-                      <p className="text-foreground-muted">Red flags</p>
-                      <p className="mt-0.5 font-semibold tabular-nums">7</p>
-                    </div>
-                    <div className="rounded-md bg-surface-2 px-2.5 py-2">
-                      <p className="text-foreground-muted">Missing</p>
-                      <p className="mt-0.5 font-semibold tabular-nums">4</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="md:col-span-3 rounded-xl border border-border bg-bg-elevated/60 p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
-                    Plain-English summary
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/90">
-                    This agreement{" "}
-                    <mark className="rounded bg-severity-critical/20 text-severity-critical px-1">
-                      lets the client cancel at any time with no kill fee
-                    </mark>
-                    , grants them full IP ownership before you're even paid,
-                    and caps your liability at{" "}
-                    <mark className="rounded bg-severity-high/20 text-severity-high px-1">
-                      unlimited
-                    </mark>
-                    . Payment terms are net-60 with no late-fee protection.
-                    Negotiate before signing.
-                  </p>
-                </div>
+              <div className="mt-4 h-2 w-full overflow-hidden bg-ink-800/10">
+                <div
+                  className="h-full"
+                  style={{
+                    width: "72%",
+                    background:
+                      "linear-gradient(90deg, #f97316, #ef4444)",
+                  }}
+                />
               </div>
-
-              {/* flags */}
-              <div className="mt-5 grid gap-4 md:grid-cols-2" id="sample-flags">
-                <div className="rounded-xl border border-border bg-bg-elevated/60 p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                      Top red flags
-                    </h4>
-                    <Badge tone="critical" size="xs">
-                      2 critical
-                    </Badge>
-                  </div>
-                  <ul className="space-y-2.5">
-                    <SampleFlag
-                      tone="critical"
-                      title="Unlimited liability"
-                      body="Section 9 exposes you to unlimited damages with no cap."
-                    />
-                    <SampleFlag
-                      tone="critical"
-                      title="IP transfer before payment"
-                      body="Client owns all work on delivery, not on full payment."
-                    />
-                    <SampleFlag
-                      tone="high"
-                      title="Termination without kill fee"
-                      body="Client may cancel any time with no compensation for work done."
-                    />
-                    <SampleFlag
-                      tone="medium"
-                      title="Unlimited revisions"
-                      body="Scope says ‘until client is satisfied.’ No revision cap."
-                    />
-                  </ul>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-beige-50 px-2.5 py-2">
+                  <p className="text-ink-500">Red flags</p>
+                  <p className="mt-0.5 font-medium tabular-nums text-ink-800">
+                    7
+                  </p>
                 </div>
-
-                <div className="rounded-xl border border-border bg-bg-elevated/60 p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                      Missing protections
-                    </h4>
-                    <Badge tone="warning" size="xs">
-                      4 missing
-                    </Badge>
-                  </div>
-                  <ul className="space-y-2">
-                    {[
-                      "Late payment fee clause",
-                      "Upfront deposit (25–50%)",
-                      "Defined revision rounds",
-                      "Liability cap (fees paid)",
-                    ].map((m) => (
-                      <li
-                        key={m}
-                        className="flex items-start gap-2 text-sm text-foreground/85"
-                      >
-                        <span className="mt-1 h-1 w-1 rounded-full bg-warning flex-shrink-0" />
-                        {m}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-5 pt-4 border-t border-border/60">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted mb-2">
-                      Suggested negotiation
-                    </p>
-                    <div className="rounded-md bg-surface-2/70 p-3 text-[13px] leading-relaxed text-foreground/80 font-mono">
-                      "Before we proceed, we'll need a 50% upfront deposit, a
-                      liability cap equal to fees paid, and IP transfer on
-                      final payment rather than delivery."
-                    </div>
-                  </div>
+                <div className="bg-beige-50 px-2.5 py-2">
+                  <p className="text-ink-500">Missing</p>
+                  <p className="mt-0.5 font-medium tabular-nums text-ink-800">
+                    4
+                  </p>
                 </div>
               </div>
             </div>
-          </Reveal>
+
+            <div className="bg-beige-100 p-5 text-ink-800 md:col-span-3">
+              <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-ink-500">
+                Plain-English summary
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-700">
+                This agreement{" "}
+                <mark className="bg-[#ef4444]/15 px-1 text-[#991b1b]">
+                  lets the client cancel at any time with no kill fee
+                </mark>
+                , grants them full IP ownership before you&rsquo;re even
+                paid, and caps your liability at{" "}
+                <mark className="bg-[#f97316]/15 px-1 text-[#9a3412]">
+                  unlimited
+                </mark>
+                . Payment terms are net-60 with no late-fee protection.
+                Negotiate before signing.
+              </p>
+            </div>
+          </div>
+
+          {/* flags */}
+          <div className="mt-4 grid gap-4 md:grid-cols-2" id="sample-flags">
+            <div className="bg-beige-50 p-5 text-ink-800">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
+                  Top red flags
+                </h4>
+                <span className="inline-flex items-center border border-[#ef4444]/50 bg-[#ef4444]/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#991b1b]">
+                  2 critical
+                </span>
+              </div>
+              <ul className="space-y-2.5">
+                <SampleFlag
+                  tone="critical"
+                  title="Unlimited liability"
+                  body="Section 9 exposes you to unlimited damages with no cap."
+                />
+                <SampleFlag
+                  tone="critical"
+                  title="IP transfer before payment"
+                  body="Client owns all work on delivery, not on full payment."
+                />
+                <SampleFlag
+                  tone="high"
+                  title="Termination without kill fee"
+                  body="Client may cancel any time with no compensation for work done."
+                />
+                <SampleFlag
+                  tone="medium"
+                  title="Unlimited revisions"
+                  body="Scope says 'until client is satisfied.' No revision cap."
+                />
+              </ul>
+            </div>
+
+            <div className="bg-beige-50 p-5 text-ink-800">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
+                  Missing protections
+                </h4>
+                <span className="inline-flex items-center border border-[#eab308]/60 bg-[#eab308]/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#854d0e]">
+                  4 missing
+                </span>
+              </div>
+              <ul className="space-y-2">
+                {[
+                  "Late payment fee clause",
+                  "Upfront deposit (25–50%)",
+                  "Defined revision rounds",
+                  "Liability cap (fees paid)",
+                ].map((m) => (
+                  <li
+                    key={m}
+                    className="flex items-start gap-2 text-sm text-ink-700"
+                  >
+                    <span className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full bg-[#eab308]" />
+                    {m}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-5 border-t border-ink-800/10 pt-4">
+                <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.15em] text-ink-500">
+                  Suggested negotiation
+                </p>
+                <div className="bg-beige-100 p-3 font-mono text-[13px] leading-relaxed text-ink-800">
+                  &ldquo;Before we proceed, we&rsquo;ll need a 50% upfront
+                  deposit, a liability cap equal to fees paid, and IP
+                  transfer on final payment rather than delivery.&rdquo;
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </Reveal>
+    </SectionEditorial>
   );
 }
 
@@ -693,33 +693,36 @@ function SampleFlag({
   title: string;
   body: string;
 }) {
-  const toneMap = {
-    critical: "border-severity-critical/40 bg-severity-critical/[0.06]",
-    high: "border-severity-high/40 bg-severity-high/[0.06]",
-    medium: "border-severity-medium/40 bg-severity-medium/[0.06]",
-    low: "border-severity-low/40 bg-severity-low/[0.06]",
-  } as const;
-  const iconMap = {
-    critical: "text-severity-critical",
-    high: "text-severity-high",
-    medium: "text-severity-medium",
-    low: "text-severity-low",
-  } as const;
+  // Inline hex maps — these mini-flags sit inside the dark ink-800
+  // product screenshot on a beige-50 sub-surface, so we want the
+  // severity colors to read at high contrast against cream, not
+  // against the workspace palette's severity-*-text tokens (which are
+  // tuned for dark backgrounds).
+  const bar: Record<typeof tone, string> = {
+    critical: "bg-[#ef4444]",
+    high: "bg-[#f97316]",
+    medium: "bg-[#eab308]",
+    low: "bg-[#10b981]",
+  };
+  const icon: Record<typeof tone, string> = {
+    critical: "text-[#991b1b]",
+    high: "text-[#9a3412]",
+    medium: "text-[#854d0e]",
+    low: "text-[#166534]",
+  };
   return (
-    <li
-      className={cn(
-        "flex items-start gap-2.5 rounded-lg border px-3 py-2.5",
-        toneMap[tone],
-      )}
-    >
-      <AlertTriangle className={cn("h-4 w-4 mt-0.5 flex-shrink-0", iconMap[tone])} />
-      <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground leading-tight">
-          {title}
-        </p>
-        <p className="mt-0.5 text-xs text-foreground-muted leading-snug">
-          {body}
-        </p>
+    <li className="flex gap-3">
+      <span className={cn("w-0.5 flex-shrink-0", bar[tone])} />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <AlertTriangle
+            className={cn("h-3.5 w-3.5 flex-shrink-0", icon[tone])}
+          />
+          <p className="text-sm font-medium leading-tight text-ink-800">
+            {title}
+          </p>
+        </div>
+        <p className="mt-1 text-xs leading-snug text-ink-500">{body}</p>
       </div>
     </li>
   );
@@ -743,12 +746,12 @@ function WhatWeCatch() {
     {
       icon: ScanSearch,
       title: "Scope creep language",
-      body: "Detects unlimited revisions, vague deliverables, and ‘satisfaction’ clauses.",
+      body: "Detects unlimited revisions, vague deliverables, and 'satisfaction' clauses.",
     },
     {
       icon: Shield,
       title: "Liability & indemnity",
-      body: "Warns when you’re on the hook for unlimited damages or client-side mistakes.",
+      body: "Warns when you're on the hook for unlimited damages or client-side mistakes.",
     },
     {
       icon: AlertOctagon,
@@ -758,36 +761,35 @@ function WhatWeCatch() {
     {
       icon: Eye,
       title: "Missing protections",
-      body: "Tells you what a fair contract should have — and what’s quietly missing.",
+      body: "Tells you what a fair contract should have — and what's quietly missing.",
     },
   ];
   return (
-    <section className="relative py-20 md:py-28 bg-section">
-      <div className="container-app">
-        <SectionHeader
-          eyebrow="Risk coverage"
-          title="We catch the traps buried in the fine print."
-          subtitle="Tuned for the contracts people actually sign — contractor agreements, NDAs, employment offers, SaaS terms, service agreements, and freelance SOWs."
-        />
-        <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {traps.map((t, i) => (
-            <Reveal key={t.title} delay={i * 60}>
-              <div className="group h-full rounded-xl border border-border-subtle bg-surface/40 p-6 transition-all hover:border-accent/30 hover:bg-surface-2/50">
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20 transition-colors group-hover:bg-accent/15">
-                  <t.icon className="h-[18px] w-[18px]" strokeWidth={2} />
-                </span>
-                <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">
-                  {t.title}
-                </h3>
-                <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
-                  {t.body}
-                </p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+    <SectionEditorial tone="cream" divider="bottom">
+      <SectionHeader
+        eyebrow="Risk coverage"
+        title="We catch the traps buried in the fine print."
+        body="Tuned for the contracts people actually sign — contractor agreements, NDAs, employment offers, SaaS terms, service agreements, and freelance SOWs."
+      />
+      <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {traps.map((t) => (
+          <div
+            key={t.title}
+            className="h-full border border-ink-800/10 bg-beige-50 p-6 transition-colors hover:border-ink-800/30"
+          >
+            <span className="inline-flex h-10 w-10 items-center justify-center bg-ink-800 text-beige-50">
+              <t.icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+            </span>
+            <h3 className="mt-5 text-base font-medium tracking-tight text-ink-800">
+              {t.title}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+              {t.body}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
@@ -828,49 +830,40 @@ function UseCases() {
     },
   ];
   return (
-    <section id="use-cases" className="relative py-20 md:py-28">
-      <div className="container-app">
-        <SectionHeader
-          eyebrow="Built for independents"
-          title="Freelancers, creators, and small teams"
-          subtitle="PactSafe is tuned to the contracts you actually sign — not corporate M&A paperwork."
-        />
-        <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {personas.map((p, i) => (
-            <Reveal key={p.role} delay={i * 60}>
-              <div className="group relative h-full overflow-hidden rounded-xl border border-border-subtle bg-surface/40 p-6 transition-all hover:border-white/10">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background:
-                      "radial-gradient(300px 120px at 0% 0%, rgba(124,92,252,0.08), transparent 60%)",
-                  }}
-                />
-                <div className="relative flex items-start gap-4">
-                  <span className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-accent ring-1 ring-accent/20">
-                    <p.icon className="h-5 w-5" strokeWidth={2} />
-                  </span>
-                  <div>
-                    <h3 className="text-base font-semibold tracking-tight text-foreground">
-                      {p.role}
-                    </h3>
-                    <p className="mt-1 text-sm text-foreground-muted leading-relaxed">
-                      {p.line}
-                    </p>
-                  </div>
-                </div>
+    <SectionEditorial id="use-cases" tone="warm" divider="bottom">
+      <SectionHeader
+        eyebrow="Built for independents"
+        title="Freelancers, creators, and small teams"
+        body="PactSafe is tuned to the contracts you actually sign — not corporate M&A paperwork."
+      />
+      <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {personas.map((p) => (
+          <div
+            key={p.role}
+            className="h-full border border-ink-800/10 bg-beige-50 p-6 transition-colors hover:border-ink-800/30"
+          >
+            <div className="flex items-start gap-4">
+              <span className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center border border-ink-800 text-ink-800">
+                <p.icon className="h-5 w-5" strokeWidth={1.75} />
+              </span>
+              <div>
+                <h3 className="text-base font-medium tracking-tight text-ink-800">
+                  {p.role}
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink-600">
+                  {p.line}
+                </p>
               </div>
-            </Reveal>
-          ))}
-        </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Security — privacy reassurance
+// Security — privacy reassurance. Single big editorial card.
 // ---------------------------------------------------------------------------
 function Security() {
   const items = [
@@ -891,52 +884,43 @@ function Security() {
     },
   ];
   return (
-    <section className="relative py-20 md:py-28 bg-section">
-      <div className="container-app">
-        <div className="mx-auto max-w-5xl rounded-3xl border border-border bg-surface/40 p-8 md:p-14 relative overflow-hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-60"
-            style={{
-              background:
-                "radial-gradient(50% 40% at 0% 0%, rgba(124,92,252,0.12), transparent 55%), radial-gradient(50% 40% at 100% 100%, rgba(99,102,241,0.08), transparent 55%)",
-            }}
-          />
-          <div className="relative">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
-                <ShieldCheck className="h-5 w-5" strokeWidth={2} />
-              </span>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
-                  Privacy & security
-                </p>
-                <h2 className="mt-1 text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-                  Your contracts stay yours.
-                </h2>
-              </div>
-            </div>
-
-            <div className="mt-10 grid gap-8 md:grid-cols-3">
-              {items.map((it) => (
-                <div key={it.title}>
-                  <it.icon
-                    className="h-5 w-5 text-accent"
-                    strokeWidth={2}
-                  />
-                  <h3 className="mt-3 text-sm font-semibold text-foreground">
-                    {it.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-foreground-muted leading-relaxed">
-                    {it.body}
-                  </p>
-                </div>
-              ))}
-            </div>
+    <SectionEditorial tone="cream" divider="bottom">
+      <div className="mx-auto max-w-5xl border border-ink-800/10 bg-beige-50 p-8 md:p-14">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex h-10 w-10 items-center justify-center bg-ink-800 text-beige-50">
+            <ShieldCheck className="h-5 w-5" strokeWidth={1.75} />
+          </span>
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
+              Privacy & security
+            </p>
+            <h2 className="mt-1 text-2xl font-medium tracking-tight text-ink-800 md:text-3xl">
+              Your contracts stay yours.
+            </h2>
           </div>
         </div>
+
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
+          {items.map((it) => (
+            <div
+              key={it.title}
+              className="border-t border-ink-800/10 pt-6 md:border-t-0 md:pt-0"
+            >
+              <it.icon
+                className="h-5 w-5 text-ink-800"
+                strokeWidth={1.75}
+              />
+              <h3 className="mt-3 text-sm font-medium text-ink-800">
+                {it.title}
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-ink-600">
+                {it.body}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
@@ -1001,84 +985,97 @@ function RealClauses() {
     },
   ];
 
-  const toneMeta = {
+  // Severity accents on editorial cards — tinted hex picked to read
+  // on cream (not dark) surfaces. Border stays ink-800/10 on every
+  // card so the grid reads as one coherent set; the accent lives on
+  // the side bar + label text only.
+  type ClauseTone = "critical" | "high" | "medium";
+  const toneMeta: Record<
+    ClauseTone,
+    { chip: string; bar: string; label: string; chipBg: string; chipText: string }
+  > = {
     critical: {
       chip: "Critical",
-      badge: "critical" as const,
-      ring: "border-severity-critical/30",
-      bg: "bg-severity-critical/[0.05]",
-      label: "text-severity-critical",
+      bar: "bg-[#ef4444]",
+      label: "text-[#991b1b]",
+      chipBg: "bg-[#ef4444]/10 border-[#ef4444]/40",
+      chipText: "text-[#991b1b]",
     },
     high: {
       chip: "High",
-      badge: "high" as const,
-      ring: "border-severity-high/30",
-      bg: "bg-severity-high/[0.05]",
-      label: "text-severity-high",
+      bar: "bg-[#f97316]",
+      label: "text-[#9a3412]",
+      chipBg: "bg-[#f97316]/10 border-[#f97316]/40",
+      chipText: "text-[#9a3412]",
     },
     medium: {
       chip: "Medium",
-      badge: "medium" as const,
-      ring: "border-severity-medium/30",
-      bg: "bg-severity-medium/[0.05]",
-      label: "text-severity-medium",
+      bar: "bg-[#eab308]",
+      label: "text-[#854d0e]",
+      chipBg: "bg-[#eab308]/10 border-[#eab308]/50",
+      chipText: "text-[#854d0e]",
     },
   };
 
   return (
-    <section className="relative py-20 md:py-28">
-      <div className="container-app">
-        <SectionHeader
-          eyebrow="Real examples"
-          title="What PactSafe actually catches"
-          subtitle="Not marketing fluff — real clause patterns we flag, pulled from contracts we've analyzed in testing."
-        />
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {examples.map((ex, i) => {
-            const meta = toneMeta[ex.tone];
-            return (
-              <Reveal key={ex.label} delay={i * 60}>
-                <div
-                  className={cn(
-                    "group h-full rounded-xl border p-6 transition-all hover:-translate-y-0.5",
-                    meta.ring,
-                    meta.bg,
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <Badge tone={meta.badge} size="xs">
-                      {meta.chip}
-                    </Badge>
-                    <span className="text-[10px] uppercase tracking-wider text-foreground-subtle">
-                      {ex.contract}
-                    </span>
-                  </div>
-                  <p
+    <SectionEditorial tone="warm" divider="bottom">
+      <SectionHeader
+        eyebrow="Real examples"
+        title="What PactSafe actually catches"
+        body="Not marketing fluff — real clause patterns we flag, pulled from contracts we've analyzed in testing."
+      />
+      <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {examples.map((ex) => {
+          const meta = toneMeta[ex.tone];
+          return (
+            <div
+              key={ex.label}
+              className="flex h-full border border-ink-800/10 bg-beige-50"
+            >
+              <span
+                aria-hidden
+                className={cn("w-1 flex-shrink-0", meta.bar)}
+              />
+              <div className="flex-1 p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <span
                     className={cn(
-                      "mt-4 text-sm font-semibold tracking-tight",
-                      meta.label,
+                      "inline-flex items-center border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide",
+                      meta.chipBg,
+                      meta.chipText,
                     )}
                   >
-                    {ex.label}
-                  </p>
-                  <blockquote className="mt-3 text-[13px] font-mono leading-relaxed text-foreground/85 border-l-2 border-border pl-3">
-                    {ex.clause}
-                  </blockquote>
-                  <p className="mt-4 text-xs text-foreground-muted leading-relaxed">
-                    {ex.explanation}
-                  </p>
+                    {meta.chip}
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-ink-500">
+                    {ex.contract}
+                  </span>
                 </div>
-              </Reveal>
-            );
-          })}
-        </div>
-
-        <p className="mt-10 text-center text-xs text-foreground-subtle">
-          These are real clause patterns from sample contracts — not
-          customer quotes or testimonials.
-        </p>
+                <p
+                  className={cn(
+                    "mt-4 text-sm font-medium tracking-tight",
+                    meta.label,
+                  )}
+                >
+                  {ex.label}
+                </p>
+                <blockquote className="mt-3 border-l-2 border-ink-800/20 pl-3 font-mono text-[13px] leading-relaxed text-ink-800">
+                  {ex.clause}
+                </blockquote>
+                <p className="mt-4 text-xs leading-relaxed text-ink-600">
+                  {ex.explanation}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
-    </section>
+
+      <p className="mt-10 text-center text-xs text-ink-500">
+        These are real clause patterns from sample contracts — not
+        customer quotes or testimonials.
+      </p>
+    </SectionEditorial>
   );
 }
 
@@ -1138,121 +1135,83 @@ function FAQ() {
   ];
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section id="faq" className="relative py-20 md:py-28 bg-section">
-      <div className="container-app">
-        <SectionHeader
-          eyebrow="FAQ"
-          title="Answers, straight up"
-        />
-        <div className="mx-auto mt-12 max-w-3xl divide-y divide-border/50 rounded-xl border border-border bg-surface/40 overflow-hidden">
-          {faqs.map((f, i) => {
-            const isOpen = open === i;
-            return (
-              <div key={f.q}>
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-surface-2/50 transition-colors"
-                  aria-expanded={isOpen}
-                >
-                  <span className="text-sm font-medium text-foreground">
-                    {f.q}
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 text-foreground-muted transition-transform flex-shrink-0",
-                      isOpen && "rotate-180 text-accent",
-                    )}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 text-sm text-foreground-muted leading-relaxed animate-fade-in">
-                    {f.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+    <SectionEditorial id="faq" tone="cream" divider="bottom">
+      <SectionHeader eyebrow="FAQ" title="Answers, straight up" />
+      <div className="mx-auto mt-12 max-w-3xl divide-y divide-ink-800/10 border border-ink-800/10 bg-beige-50">
+        {faqs.map((f, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={f.q}>
+              <button
+                type="button"
+                onClick={() => setOpen(isOpen ? null : i)}
+                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-beige-100"
+                aria-expanded={isOpen}
+              >
+                <span className="text-sm font-medium text-ink-800">
+                  {f.q}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 flex-shrink-0 text-ink-500 transition-transform",
+                    isOpen && "rotate-180 text-ink-800",
+                  )}
+                />
+              </button>
+              {isOpen && (
+                <div className="animate-fade-in px-5 pb-5 text-sm leading-relaxed text-ink-600">
+                  {f.a}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Final CTA
+// Final CTA — inverted ink-800 section. Beige text and a beige-on-ink
+// primary CTA invert the hero's color relationship so the page reads
+// as a deliberate bookend rather than a continuation of the cream
+// surfaces above.
 // ---------------------------------------------------------------------------
 function FinalCTA() {
   return (
-    <section className="relative py-20 md:py-28">
-      <div className="container-app">
-        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-surface-2 to-surface p-10 md:p-16 text-center">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-60"
-            style={{
-              background:
-                "radial-gradient(60% 50% at 50% 0%, rgba(124,92,252,0.25), transparent 60%)",
-            }}
-          />
-          <div className="relative">
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
-              The next contract you sign
-              <br className="hidden md:block" />
-              <span className="text-gradient-accent"> shouldn’t cost you sleep.</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base text-foreground-muted">
-              Analyze your first contract in under a minute. No account, no
-              credit card, no catch.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/analyze">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Analyze a contract
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/#how-it-works">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  See how it works
-                </Button>
-              </Link>
-            </div>
-            <p className="mt-5 text-xs text-foreground-subtle">
-              PDF · DOCX · TXT · up to 10 MB · private by default
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Shared section header
-// ---------------------------------------------------------------------------
-function SectionHeader({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="mx-auto max-w-2xl text-center">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 text-3xl md:text-[40px] md:leading-[1.1] font-semibold tracking-tight text-gradient">
-        {title}
-      </h2>
-      {subtitle && (
-        <p className="mt-4 text-base text-foreground-muted leading-relaxed">
-          {subtitle}
+    <SectionEditorial tone="inverted" divider="none">
+      <div className="mx-auto max-w-4xl text-center">
+        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-beige-300">
+          One less thing to worry about
         </p>
-      )}
-    </div>
+        <h2 className="mt-4 text-3xl font-medium tracking-tight text-beige-50 md:text-h2">
+          The next contract you sign
+          <br className="hidden md:block" />
+          <span className="text-beige-300"> shouldn&rsquo;t cost you sleep.</span>
+        </h2>
+        <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-beige-200">
+          Analyze your first contract in under a minute. No account, no
+          credit card, no catch.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            href="/analyze"
+            className="inline-flex items-center justify-center gap-2 bg-beige-50 px-7 py-3.5 text-sm font-medium text-ink-800 transition-colors hover:bg-beige-100"
+          >
+            Analyze a contract
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/#how-it-works"
+            className="inline-flex items-center justify-center gap-2 border border-beige-50 px-7 py-3.5 text-sm font-medium text-beige-50 transition-colors hover:bg-beige-50 hover:text-ink-800"
+          >
+            See how it works
+          </Link>
+        </div>
+        <p className="mt-6 text-xs text-beige-300/80">
+          PDF · DOCX · TXT · up to 10 MB · private by default
+        </p>
+      </div>
+    </SectionEditorial>
   );
 }

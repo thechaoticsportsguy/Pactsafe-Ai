@@ -26,6 +26,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { LogoMark } from "@/components/primitives/LogoMark";
 
 export type TopNavVariant = "editorial" | "workspace";
 
@@ -53,14 +54,13 @@ const NAV_LINKS_WORKSPACE = [
 // ---------------------------------------------------------------------------
 // Palette — single table of every variant-dependent class. Anything
 // not here (structural: heights, gaps, flex) is shared across both.
+// Logo colors live in the LogoMark primitive so Footer renders the
+// same mark.
 // ---------------------------------------------------------------------------
 const palette: Record<
   TopNavVariant,
   {
     shell: string;
-    logoMark: string;
-    logoLetter: string;
-    wordmark: string;
     link: string;
     secondaryCta: string;
     primaryCta: string;
@@ -73,9 +73,6 @@ const palette: Record<
 > = {
   editorial: {
     shell: "bg-beige-100 border-b border-ink-800 text-ink-800",
-    logoMark: "bg-ink-800",
-    logoLetter: "text-beige-100",
-    wordmark: "text-ink-800",
     link: "text-ink-800 hover:text-ink-500",
     secondaryCta:
       "text-ink-800 hover:text-ink-500 transition-colors px-2 py-1",
@@ -89,9 +86,6 @@ const palette: Record<
   },
   workspace: {
     shell: "bg-surface-0 border-b border-white/5 text-zinc-100",
-    logoMark: "bg-accent-500",
-    logoLetter: "text-white",
-    wordmark: "text-zinc-100",
     link: "text-zinc-300 hover:text-white",
     secondaryCta:
       "text-zinc-400 hover:text-white transition-colors px-2 py-1",
@@ -104,41 +98,6 @@ const palette: Record<
     mobilePrimaryCta: "bg-accent-500 text-white hover:bg-accent-600",
   },
 };
-
-// ---------------------------------------------------------------------------
-// Logo mark — small solid square + wordmark. Inline so palette swaps
-// cleanly between variants without reaching into the shared Logo
-// component (which other surfaces like Footer still use).
-// ---------------------------------------------------------------------------
-function LogoMark({ variant }: { variant: TopNavVariant }) {
-  const p = palette[variant];
-  return (
-    <Link
-      href="/"
-      className="group inline-flex items-center gap-2.5"
-      aria-label="PactSafe AI home"
-    >
-      <span
-        aria-hidden
-        className={cn(
-          "flex h-7 w-7 items-center justify-center font-medium text-[14px]",
-          p.logoMark,
-          p.logoLetter,
-        )}
-      >
-        P
-      </span>
-      <span
-        className={cn(
-          "text-[15px] font-medium tracking-[-0.01em]",
-          p.wordmark,
-        )}
-      >
-        PactSafe
-      </span>
-    </Link>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Main component
@@ -157,7 +116,7 @@ export default function TopNav({
       className={cn("sticky top-0 z-40 w-full", p.shell, className)}
     >
       <div className="mx-auto flex h-14 max-w-[1200px] items-center px-8 md:px-12">
-        <LogoMark variant={variant} />
+        <LogoMark variant={variant} size={28} />
 
         <nav
           className="ml-10 hidden items-center gap-8 md:flex"
