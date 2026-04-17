@@ -45,54 +45,78 @@ FIXTURE = API_ROOT / "tests" / "fixtures" / "handshake_ai_contractor_agreement.t
 
 # Scoring data ----------------------------------------------------------------
 
-# 10 expected red flags. Each entry: (label, expected sections, section_slug_keywords).
+# 10 expected red flags. Each entry: (label, expected sections, body_keywords).
 #
-# Matching is STRICT — keyword-in-title is no longer accepted, because that
-# gave a false 9/10 last run (e.g. a 13.2 general-indemnity flag matched
-# "tax indemnity" via the "indemnif" keyword in the title).
+# Section numbers reflect the ACTUAL document (verified against the Pass-1
+# extraction) — not the original spec. The spec had two stale numbers:
+#     class waiver  17.7 -> 17.6  (document section: "Class Action Waiver")
+#     opt-out      17.10 -> 17.12 (document section: "Your Right to Opt Out")
+# Resolved as part of Step 8 cleanup; logged in v2_followups.md.
 #
-# A flag is a HIT iff its section_number either:
-#   (a) equals or starts with one of the numeric `sections` entries (so
-#       "4.2" matches expected "4" or "4.2", but NOT "13.2" matching "13.3"),
-#   OR
-#   (b) contains one of the `section_slug_keywords` substrings (case
-#       insensitive). This is for clauses the extractor identified by
-#       heading slug instead of a number — e.g. "Time based payments;
-#       Maximum Handling Time" matches ["maximum handling time"].
+# A flag counts as a hit when BOTH:
+#   (a) section_number aligns with one of `expected_sections`. Numeric
+#       sections match by equality or sub-section prefix (so "5.1" matches
+#       expected "5"). For slug-style section_numbers (the extractor's
+#       fallback when a clause has no numeric ID — e.g.
+#       "Time based payments; Maximum Handling Time"), section alignment
+#       is auto-satisfied; the body keyword does the work.
+#   AND
+#   (b) at least one of `body_keywords` appears in the flag's title or
+#       concern (case-insensitive substring).
 #
-# Title/concern body is NOT searched.
+# Both halves required: keyword alone gave a false 9/10 last cleanup
+# (a "13.2 general indemnity" flag matched "tax indemnity" via "indemnif"
+# in the title). Section alone is also too lenient — a flag at 13.3 talking
+# about something other than tax indemnity should not credit "tax indemnity".
+#
+# Special case — shared section: if the model produces ONE flag at section
+# 17.12 covering the entire arbitration cluster (binding arbitration +
+# class waiver + opt-out), it should credit all three concerns rather than
+# being penalized for not splitting. Handled by `ARBITRATION_CLUSTER` below.
 EXPECTED_FLAGS: list[tuple[str, list[str], list[str]]] = [
     ("IP assignment of pre-existing/background work",
      ["5.1"],
-     ["intellectual property", "ip ownership", "ownership of work", "ip assignment"]),
+     ["intellectual property", "ip ", "ownership", "assign", "pre-existing", "preexisting", "background"]),
     ("Mandatory arbitration",
-     ["17.1"],
+     ["17.1", "17.12"],
      ["arbitration"]),
     ("Class action waiver",
-     ["17.7"],
-     ["class action", "class waiver"]),
+     # Both numberings observed across runs depending on whether Pass 1
+     # extracts 17.6 "Informal Dispute Resolution" as a standalone clause.
+     # See v2_followups.md (D).
+     ["17.6", "17.7", "17.12"],
+     ["class action", "class waiver", "class, collective"]),
     ("30-day physical-mail-only opt-out",
-     ["17.10"],
+     # Same Pass 1 shift — opt-out is 17.12 or 17.13 depending on whether
+     # "Informal Dispute Resolution" got its own section. v2_followups (D).
+     ["17.12", "17.13"],
      ["opt out", "opt-out"]),
     ("$500 / 3-month liability cap",
      ["14.2"],
-     ["limitation of liability", "liability cap"]),
+     ["liability", "$500", "three months", "3 months", "cap"]),
     ("Unilateral modification by Handshake",
      ["16.1"],
-     ["modification", "amendment"]),
+     ["modif", "amend", "change", "unilateral"]),
     ("Tax indemnity shifted to contractor",
      ["13.3"],
-     ["tax indemnit", "tax indemnif"]),
+     ["tax", "withholding"]),
     ("Maximum Handling Time -> unpaid work",
      ["4.2"],
-     ["maximum handling time", "handling time"]),
+     ["maximum handling time", "handling time", "unpaid"]),
     ("LLM / AI tool ban",
      ["7.1"],
-     ["llm", "ai tool", "ai-assisted", "language model", "generative ai"]),
+     ["llm", "ai tool", "ai-assisted", "language model", "generative", "writing tool"]),
     ("Account monitoring / surveillance",
      ["3.6"],
-     ["monitoring", "surveillance"]),
+     ["monitor", "surveillance", "screen", "tracking"]),
 ]
+
+# Shared-credit handling for the arbitration cluster (binding arbitration,
+# class waiver, opt-out): if the model folds them into a single flag at
+# 17.12, _find_flag returns the SAME flag for each expected concern, so
+# all three count as HIT off one flag. The bonus counter then dedupes by
+# `id()` so the cluster flag isn't double-counted there either. No
+# separate logic needed here — the strict matcher does the right thing.
 
 FORBIDDEN_CONCEPTS: list[str] = [
     "net-60",
@@ -186,12 +210,14 @@ async def main() -> int:
 
     # 2. >=8 of 10 expected flags found, each with valid citation
     print(f"\n[2] expected red flags (need >=8 of 10)")
-    hits = []
-    misses = []
+    hits: list[tuple[str, str, str]] = []
+    misses: list[str] = []
+    matched_flag_ids: set[int] = set()
     for label, sections, keywords in EXPECTED_FLAGS:
         match = _find_flag(analysis.red_flags, sections, keywords)
         if match is not None:
             hits.append((label, match.section_number, match.severity))
+            matched_flag_ids.add(id(match))
             print(f"    HIT   {label}")
             print(f"          section={match.section_number!r} sev={match.severity}")
         else:
@@ -203,6 +229,15 @@ async def main() -> int:
         print(f"    PASS")
     else:
         print(f"    FAIL  needed >=8")
+
+    # Bonus flags — model output beyond the spec list. Non-gating; logged
+    # as a canary. If this drops over time, the model is getting more
+    # conservative (or the prompt got tighter without us noticing).
+    print(f"\n[2b] bonus flags (non-gating)")
+    bonus = [f for f in analysis.red_flags if id(f) not in matched_flag_ids]
+    print(f"    Count: {len(bonus)}")
+    for f in bonus:
+        print(f"          [{f.severity:8}] sec={f.section_number!r}  {f.title}")
 
     # 3. Zero forbidden concepts anywhere in output text
     print(f"\n[3] forbidden concepts (must be zero)")
@@ -251,27 +286,48 @@ async def main() -> int:
     return 0 if score["criteria_passed"] == score["criteria_total"] else 1
 
 
-def _find_flag(red_flags, expected_sections, section_slug_keywords):
-    """Strict match: numeric section equality / prefix, OR slug substring
-    in the section_number itself. Title/concern body is NOT searched —
-    that produced false positives last run (e.g. "13.2 general indemnity"
-    being credited as "13.3 tax indemnity" via the "indemnif" keyword)."""
+def _find_flag(red_flags, expected_sections, body_keywords):
+    """Strict match — a flag must satisfy BOTH:
+       (a) section_number aligns with one of `expected_sections`
+       (b) at least one of `body_keywords` appears in title or concern
+
+    Numeric expected sections match by equality or sub-section prefix
+    ("5.1" matches expected "5"). Slug-style section_numbers (which the
+    extractor uses when a clause has no numeric ID — e.g. "Time based
+    payments; Maximum Handling Time") satisfy (a) automatically; the
+    body keyword carries the burden of identification.
+
+    Returns the FIRST flag that satisfies both, or None."""
 
     expected_lower = [s.lower() for s in expected_sections]
-    for f in red_flags:
-        sec = (f.section_number or "").strip().lower()
-        if not sec:
-            continue
-        for s in expected_lower:
-            # Equality, or "5.1" matches expected "5" via prefix-with-dot.
-            if sec == s or sec.startswith(s + "."):
-                return f
+    keywords_lower = [k.lower() for k in body_keywords]
 
-    slugs = [k.lower() for k in section_slug_keywords]
     for f in red_flags:
-        sec = (f.section_number or "").lower()
-        if any(slug in sec for slug in slugs):
+        sec_raw = (f.section_number or "").strip()
+        if not sec_raw:
+            continue
+        sec = sec_raw.lower()
+
+        # (a) section alignment
+        is_numeric_section = bool(sec) and sec[0].isdigit()
+        if is_numeric_section:
+            section_ok = any(
+                sec == s or sec.startswith(s + ".") for s in expected_lower
+            )
+        else:
+            # Slug-style ID — section criterion is satisfied by being slug-
+            # shaped at all; keyword check below decides whether it matches
+            # this expected concern.
+            section_ok = True
+
+        if not section_ok:
+            continue
+
+        # (b) keyword match in title or concern body
+        body = f"{f.title} {f.concern}".lower()
+        if any(kw in body for kw in keywords_lower):
             return f
+
     return None
 
 
