@@ -10,8 +10,9 @@ import {
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/primitives/Badge";
+import { Button } from "@/components/primitives/Button";
+import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "Changelog",
@@ -121,14 +122,35 @@ const ENTRIES: Entry[] = [
   },
 ];
 
+// Tone for kind pills on cream backgrounds. Darker text variants
+// keep contrast legible against beige-50; the border reads as a thin
+// tint rather than a glow. Matches RealClauses pattern on /landing.
 const KIND_META: Record<
   EntryKind,
-  { label: string; icon: React.ElementType; tone: "accent" | "success" | "warning" | "danger" }
+  { label: string; icon: React.ElementType; tintClass: string }
 > = {
-  feature: { label: "New", icon: Sparkles, tone: "accent" },
-  improvement: { label: "Improved", icon: Rocket, tone: "success" },
-  fix: { label: "Fixed", icon: Wrench, tone: "warning" },
-  security: { label: "Security", icon: Shield, tone: "danger" },
+  feature: {
+    label: "New",
+    icon: Sparkles,
+    // Use the solid ink eyebrow for "feature" — it reads as a headline
+    // stamp on the card, matching the section hero eyebrow.
+    tintClass: "bg-ink-800 text-beige-50 border-ink-800",
+  },
+  improvement: {
+    label: "Improved",
+    icon: Rocket,
+    tintClass: "bg-[#10b981]/10 text-[#166534] border-[#10b981]/40",
+  },
+  fix: {
+    label: "Fixed",
+    icon: Wrench,
+    tintClass: "bg-[#eab308]/10 text-[#854d0e] border-[#eab308]/40",
+  },
+  security: {
+    label: "Security",
+    icon: Shield,
+    tintClass: "bg-[#ef4444]/10 text-[#991b1b] border-[#ef4444]/40",
+  },
 };
 
 export default function ChangelogPage() {
@@ -142,21 +164,15 @@ export default function ChangelogPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav variant="editorial" />
-      <main id="main-content" className="flex-1">
-        <section className="relative overflow-hidden bg-hero">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.035] bg-grid-dot"
-          />
-          <div className="container-app pt-16 md:pt-24 pb-10">
-            <Badge tone="accent" size="xs">
-              <Sparkles className="h-3 w-3" />
-              Changelog
-            </Badge>
-            <h1 className="mt-4 text-3xl md:text-[48px] md:leading-[1.05] font-semibold tracking-tight text-gradient max-w-3xl">
+      <main id="main-content" className="flex-1 bg-beige-100">
+        {/* Hero */}
+        <section className="relative">
+          <div className="container-app pt-16 pb-12 md:pt-24">
+            <Badge variant="eyebrow">Changelog</Badge>
+            <h1 className="mt-5 max-w-3xl text-3xl font-medium tracking-tightest text-ink-800 md:text-h1 md:leading-[1.05]">
               What we&rsquo;ve shipped
             </h1>
-            <p className="mt-5 max-w-2xl text-base text-foreground-muted leading-relaxed">
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-body-lg">
               Every release, hand-written from real commits. No spin. No
               roadmap fiction. If it&rsquo;s here, it&rsquo;s live.
             </p>
@@ -166,13 +182,13 @@ export default function ChangelogPage() {
                 target="_blank"
                 rel="noreferrer"
               >
-                <Button variant="outline" size="sm">
+                <Button palette="editorial" variant="secondary" size="sm">
                   <GitFork className="h-3.5 w-3.5" />
                   View on GitHub
                 </Button>
               </a>
               <Link href="/analyze">
-                <Button size="sm">
+                <Button palette="editorial" variant="primary" size="sm">
                   Try the latest
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
@@ -181,21 +197,22 @@ export default function ChangelogPage() {
           </div>
         </section>
 
-        <section className="relative py-14">
+        {/* Entries */}
+        <section className="relative border-t border-ink-800/10 py-14">
           <div className="container-app">
             <div className="mx-auto max-w-3xl">
               {dates.map((date) => {
                 const dateEntries = grouped[date];
                 return (
                   <div key={date} className="mb-12 last:mb-0">
-                    <div className="sticky top-20 z-10 flex items-center gap-3 -mx-1 px-1 py-2 bg-background/80 backdrop-blur-xl mb-5">
+                    <div className="sticky top-14 z-10 -mx-1 mb-5 flex items-center gap-3 bg-beige-100 px-1 py-2">
                       <time
                         dateTime={date}
-                        className="text-xs font-semibold uppercase tracking-wider text-foreground-muted tabular-nums"
+                        className="text-[11px] font-medium uppercase tracking-[0.15em] tabular-nums text-ink-500"
                       >
                         {formatDate(date)}
                       </time>
-                      <div className="h-px flex-1 bg-border-subtle/60" />
+                      <div className="h-px flex-1 bg-ink-800/10" />
                     </div>
                     <div className="space-y-4">
                       {dateEntries.map((e) => {
@@ -203,10 +220,10 @@ export default function ChangelogPage() {
                         return (
                           <article
                             key={e.title}
-                            className="group rounded-xl border border-border-subtle bg-surface/40 p-6 transition-colors hover:bg-surface-2/40"
+                            className="group border border-ink-800/10 bg-beige-50 p-6 transition-colors hover:bg-beige-50/80"
                           >
                             <div className="flex items-start gap-4">
-                              <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
+                              <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center bg-ink-800 text-beige-50">
                                 <meta.icon
                                   className="h-4 w-4"
                                   strokeWidth={2}
@@ -214,19 +231,27 @@ export default function ChangelogPage() {
                               </span>
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <Badge tone={meta.tone} size="xs">
+                                  <span
+                                    className={cn(
+                                      "inline-flex items-center border px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.15em]",
+                                      meta.tintClass,
+                                    )}
+                                  >
                                     {meta.label}
-                                  </Badge>
+                                  </span>
                                   {e.tags?.map((t) => (
-                                    <Badge key={t} tone="neutral" size="xs">
+                                    <span
+                                      key={t}
+                                      className="inline-flex items-center border border-ink-800/10 bg-beige-100 px-2 py-0.5 text-[10px] font-medium text-ink-600"
+                                    >
                                       {t}
-                                    </Badge>
+                                    </span>
                                   ))}
                                 </div>
-                                <h2 className="mt-2 text-base font-semibold tracking-tight text-foreground">
+                                <h2 className="mt-2 text-base font-medium tracking-tight text-ink-800">
                                   {e.title}
                                 </h2>
-                                <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
+                                <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
                                   {e.body}
                                 </p>
                               </div>
@@ -240,26 +265,26 @@ export default function ChangelogPage() {
               })}
             </div>
 
-            <div className="mx-auto mt-14 max-w-3xl rounded-2xl border border-border bg-surface/40 p-6 text-center">
-              <p className="text-sm text-foreground">
+            <div className="mx-auto mt-14 max-w-3xl border border-ink-800/10 bg-beige-50 p-6 text-center">
+              <p className="text-sm text-ink-800">
                 Want to follow along as we ship?
               </p>
-              <p className="mt-1.5 text-xs text-foreground-muted">
+              <p className="mt-1.5 text-xs text-ink-500">
                 Star the repo on GitHub or drop us a line.
               </p>
-              <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+              <div className="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
                 <a
                   href="https://github.com/thechaoticsportsguy/Pactsafe-Ai"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <Button variant="outline" size="sm">
+                  <Button palette="editorial" variant="secondary" size="sm">
                     <GitFork className="h-3.5 w-3.5" />
                     Star on GitHub
                   </Button>
                 </a>
                 <Link href="/contact">
-                  <Button size="sm">
+                  <Button palette="editorial" variant="primary" size="sm">
                     Request a feature
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Button>

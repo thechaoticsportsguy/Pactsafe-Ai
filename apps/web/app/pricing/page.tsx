@@ -15,8 +15,12 @@ import {
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
 import { PricingProductJsonLd } from "@/components/StructuredData";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/primitives/Button";
+import { Badge } from "@/components/primitives/Badge";
+import {
+  SectionEditorial,
+  SectionHeader,
+} from "@/components/primitives/Section";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
@@ -226,24 +230,19 @@ export default function PricingPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Hero
+// Hero — cream band, centered headline, no purple glow.
 // ---------------------------------------------------------------------------
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-hero">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.035] bg-grid-dot"
-      />
-      <div className="container-app pt-16 md:pt-24 pb-12 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent">
-          <Sparkles className="h-3 w-3" />
-          Simple, honest pricing
+    <section className="relative bg-beige-100">
+      <div className="container-app pt-16 pb-10 md:pt-24 md:pb-14 text-center">
+        <div className="inline-flex">
+          <Badge variant="eyebrow">Simple, honest pricing</Badge>
         </div>
-        <h1 className="mx-auto mt-6 max-w-3xl text-4xl md:text-[54px] md:leading-[1.05] font-semibold tracking-tightest text-gradient">
+        <h1 className="mx-auto mt-5 max-w-3xl text-3xl font-medium tracking-tightest text-ink-800 md:text-h1 md:leading-[1.05]">
           Free forever for your first few contracts.
         </h1>
-        <p className="mx-auto mt-5 max-w-xl text-base md:text-lg text-foreground-muted leading-relaxed">
+        <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-600 md:text-body-lg">
           Pay only if you sign a lot of deals. No seat minimums on Pro, no
           annual lock-in, no surprise overages.
         </p>
@@ -253,7 +252,7 @@ function Hero() {
 }
 
 // ---------------------------------------------------------------------------
-// Trust strip — small badges under the hero
+// Trust strip — 3 reassurances sitting directly below the hero.
 // ---------------------------------------------------------------------------
 function TrustStrip() {
   const items = [
@@ -274,19 +273,23 @@ function TrustStrip() {
     },
   ];
   return (
-    <section className="relative pt-2 pb-10">
+    <section className="relative bg-beige-100 pb-10">
       <div className="container-app">
-        <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-2xl border border-border-subtle bg-surface/40 p-5">
-          {items.map((it) => (
-            <div key={it.title} className="flex items-start gap-3">
-              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-0 border border-ink-800/10 bg-beige-50 sm:grid-cols-3">
+          {items.map((it, i) => (
+            <div
+              key={it.title}
+              className={cn(
+                "flex items-start gap-3 p-5",
+                i > 0 && "sm:border-l sm:border-ink-800/10",
+              )}
+            >
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center bg-ink-800 text-beige-50">
                 <it.icon className="h-4 w-4" strokeWidth={2} />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  {it.title}
-                </p>
-                <p className="mt-0.5 text-xs text-foreground-muted leading-relaxed">
+                <p className="text-sm font-medium text-ink-800">{it.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-600">
                   {it.body}
                 </p>
               </div>
@@ -299,95 +302,134 @@ function TrustStrip() {
 }
 
 // ---------------------------------------------------------------------------
-// Tiers
+// Tiers — three editorial cards, Pro inverted to ink-800.
 // ---------------------------------------------------------------------------
 function Tiers() {
   return (
-    <section className="relative pb-20">
-      <div className="container-app">
-        <div className="grid gap-5 md:grid-cols-3">
-          {TIERS.map((t) => (
-            <TierCard key={t.name} tier={t} />
-          ))}
-        </div>
-        <p className="mt-8 text-center text-xs text-foreground-subtle">
-          Prices in USD. VAT may apply. All plans include encryption in transit
-          & at rest and a strict no-training policy on your contracts.
-        </p>
+    <SectionEditorial tone="cream" divider="top" pad="lg">
+      <div className="grid gap-5 md:grid-cols-3">
+        {TIERS.map((t) => (
+          <TierCard key={t.name} tier={t} />
+        ))}
       </div>
-    </section>
+      <p className="mt-8 text-center text-xs text-ink-500">
+        Prices in USD. VAT may apply. All plans include encryption in transit
+        &amp; at rest and a strict no-training policy on your contracts.
+      </p>
+    </SectionEditorial>
   );
 }
 
 function TierCard({ tier }: { tier: Tier }) {
   const Icon = tier.icon;
+  const dark = !!tier.highlighted;
+
   return (
     <div
       className={cn(
-        "relative flex flex-col rounded-2xl border p-7 transition-all",
-        tier.highlighted
-          ? "border-accent/40 bg-gradient-to-b from-accent/[0.08] via-surface/80 to-surface shadow-glow-lg"
-          : "border-border bg-surface/60 hover:border-white/10",
+        "relative flex flex-col border p-7",
+        dark
+          ? "border-ink-800 bg-ink-800 text-beige-50"
+          : "border-ink-800/10 bg-beige-50 text-ink-800",
       )}
     >
-      {tier.highlighted && (
+      {dark && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge tone="accent" size="sm">
+          <span className="inline-flex items-center bg-beige-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.15em] text-ink-800">
             Most popular
-          </Badge>
+          </span>
         </div>
       )}
 
       <div className="flex items-center gap-3">
         <span
           className={cn(
-            "inline-flex h-10 w-10 items-center justify-center rounded-lg ring-1",
-            tier.highlighted
-              ? "bg-accent/15 text-accent ring-accent/30"
-              : "bg-accent/10 text-accent ring-accent/20",
+            "inline-flex h-10 w-10 items-center justify-center",
+            dark
+              ? "bg-beige-50/10 text-beige-50"
+              : "bg-ink-800 text-beige-50",
           )}
         >
           <Icon className="h-5 w-5" strokeWidth={2} />
         </span>
-        <h3 className="text-lg font-semibold tracking-tight">{tier.name}</h3>
+        <h3
+          className={cn(
+            "text-lg font-medium tracking-tight",
+            dark ? "text-beige-50" : "text-ink-800",
+          )}
+        >
+          {tier.name}
+        </h3>
       </div>
 
-      <p className="mt-4 text-sm text-foreground-muted leading-relaxed min-h-[40px]">
+      <p
+        className={cn(
+          "mt-4 min-h-[40px] text-sm leading-relaxed",
+          dark ? "text-beige-200" : "text-ink-600",
+        )}
+      >
         {tier.blurb}
       </p>
 
       <div className="mt-6 flex items-baseline gap-2">
-        <span className="text-4xl font-semibold tracking-tight tabular-nums">
+        <span
+          className={cn(
+            "text-4xl font-medium tracking-tight tabular-nums",
+            dark ? "text-beige-50" : "text-ink-800",
+          )}
+        >
           {tier.price}
         </span>
         {tier.period && (
-          <span className="text-sm text-foreground-muted">{tier.period}</span>
+          <span
+            className={cn(
+              "text-sm",
+              dark ? "text-beige-200" : "text-ink-500",
+            )}
+          >
+            {tier.period}
+          </span>
         )}
       </div>
 
-      <Link href={tier.cta.href} className="mt-6">
-        <Button
-          variant={tier.highlighted ? "primary" : "outline"}
-          size="md"
-          className="w-full"
-        >
-          {tier.cta.label}
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+      <Link href={tier.cta.href} className="mt-6 w-full">
+        {dark ? (
+          // Inverted CTA on the dark card: beige solid with ink text
+          <button
+            type="button"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 bg-beige-50 px-5 text-[13px] font-medium text-ink-800 transition-colors hover:bg-beige-100"
+          >
+            {tier.cta.label}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        ) : (
+          <Button
+            palette="editorial"
+            variant="secondary"
+            size="md"
+            className="w-full"
+          >
+            {tier.cta.label}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
       </Link>
 
       <ul className="mt-7 space-y-2.5">
         {tier.features.map((f) => (
           <li
             key={f}
-            className="flex items-start gap-2.5 text-sm text-foreground/90"
+            className={cn(
+              "flex items-start gap-2.5 text-sm",
+              dark ? "text-beige-100" : "text-ink-700",
+            )}
           >
             <span
               className={cn(
-                "mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full",
-                tier.highlighted
-                  ? "bg-accent/15 text-accent"
-                  : "bg-success/15 text-success",
+                "mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center",
+                dark
+                  ? "bg-beige-50 text-ink-800"
+                  : "bg-ink-800 text-beige-50",
               )}
             >
               <Check className="h-2.5 w-2.5" strokeWidth={3.5} />
@@ -398,7 +440,14 @@ function TierCard({ tier }: { tier: Tier }) {
       </ul>
 
       {tier.footer && (
-        <p className="mt-6 pt-5 border-t border-border/50 text-xs text-foreground-subtle">
+        <p
+          className={cn(
+            "mt-6 pt-5 text-xs",
+            dark
+              ? "border-t border-beige-50/15 text-beige-200"
+              : "border-t border-ink-800/10 text-ink-500",
+          )}
+        >
           {tier.footer}
         </p>
       )}
@@ -407,45 +456,35 @@ function TierCard({ tier }: { tier: Tier }) {
 }
 
 // ---------------------------------------------------------------------------
-// Comparison table
+// Comparison table — beige-50 inside warm band.
 // ---------------------------------------------------------------------------
 function Comparison() {
   return (
-    <section className="relative py-20 md:py-28 bg-section">
-      <div className="container-app">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
-            Every feature, side by side
-          </p>
-          <h2 className="mt-3 text-3xl md:text-[40px] md:leading-[1.1] font-semibold tracking-tight text-gradient">
-            Compare plans in detail
-          </h2>
-        </div>
+    <SectionEditorial tone="warm" divider="top" pad="lg">
+      <SectionHeader
+        align="center"
+        eyebrow="Every feature, side by side"
+        title="Compare plans in detail"
+      />
 
-        <div className="mt-14 overflow-x-auto overflow-y-hidden rounded-2xl border border-border bg-surface/40 no-scrollbar">
-          <div className="min-w-[720px]">
+      <div className="no-scrollbar mt-12 overflow-x-auto overflow-y-hidden border border-ink-800/10 bg-beige-50">
+        <div className="min-w-[720px]">
           {/* Header row */}
-          <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center px-6 py-5 border-b border-border/70">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+          <div className="grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center border-b border-ink-800/10 px-6 py-5">
+            <div className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
               Feature
             </div>
             {TIERS.map((t) => (
-              <div
-                key={t.name}
-                className={cn(
-                  "text-center",
-                  t.highlighted && "text-accent",
-                )}
-              >
+              <div key={t.name} className="text-center">
                 <p
                   className={cn(
-                    "text-sm font-semibold",
-                    t.highlighted ? "text-accent" : "text-foreground",
+                    "text-sm font-medium",
+                    t.highlighted ? "text-ink-800" : "text-ink-700",
                   )}
                 >
                   {t.name}
                 </p>
-                <p className="text-[10px] text-foreground-subtle mt-0.5 tabular-nums">
+                <p className="mt-0.5 text-[10px] tabular-nums text-ink-500">
                   {t.price}
                   {t.period ? ` / ${t.period.replace("per ", "")}` : ""}
                 </p>
@@ -455,17 +494,17 @@ function Comparison() {
 
           {COMPARISON.map((section) => (
             <div key={section.section}>
-              <div className="bg-surface/60 px-6 py-2.5 border-t border-border/60 border-b border-border/40">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-subtle">
+              <div className="border-t border-ink-800/10 bg-beige-100 px-6 py-2.5">
+                <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-ink-500">
                   {section.section}
                 </p>
               </div>
               {section.rows.map((row) => (
                 <div
                   key={row.label}
-                  className="grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center px-6 py-3.5 border-t border-border/40 hover:bg-surface-2/30 transition-colors"
+                  className="grid grid-cols-[1.6fr_1fr_1fr_1fr] items-center border-t border-ink-800/10 px-6 py-3.5"
                 >
-                  <div className="text-sm text-foreground/90">{row.label}</div>
+                  <div className="text-sm text-ink-700">{row.label}</div>
                   <Cell v={row.free} />
                   <Cell v={row.pro} highlighted />
                   <Cell v={row.team} />
@@ -473,13 +512,12 @@ function Comparison() {
               ))}
             </div>
           ))}
-          </div>
         </div>
-        <p className="mt-3 md:hidden text-center text-[11px] text-foreground-subtle">
-          ← Scroll horizontally to compare →
-        </p>
       </div>
-    </section>
+      <p className="mt-3 text-center text-[11px] text-ink-500 md:hidden">
+        ← Scroll horizontally to compare →
+      </p>
+    </SectionEditorial>
   );
 }
 
@@ -496,16 +534,16 @@ function Cell({
         v ? (
           <span
             className={cn(
-              "inline-flex h-5 w-5 items-center justify-center rounded-full",
+              "inline-flex h-5 w-5 items-center justify-center",
               highlighted
-                ? "bg-accent/15 text-accent"
-                : "bg-success/15 text-success",
+                ? "bg-ink-800 text-beige-50"
+                : "bg-ink-800/10 text-ink-800",
             )}
           >
             <Check className="h-3 w-3" strokeWidth={3.5} />
           </span>
         ) : (
-          <span className="inline-flex h-5 w-5 items-center justify-center text-foreground-subtle">
+          <span className="inline-flex h-5 w-5 items-center justify-center text-ink-400">
             <Minus className="h-3 w-3" />
           </span>
         )
@@ -513,7 +551,7 @@ function Cell({
         <span
           className={cn(
             "text-xs font-medium tabular-nums",
-            highlighted ? "text-accent" : "text-foreground/85",
+            highlighted ? "text-ink-800" : "text-ink-700",
           )}
         >
           {v}
@@ -524,7 +562,7 @@ function Cell({
 }
 
 // ---------------------------------------------------------------------------
-// Guarantees row
+// Guarantees row — 3 reassurances in cream.
 // ---------------------------------------------------------------------------
 function Guarantees() {
   const items = [
@@ -545,121 +583,108 @@ function Guarantees() {
     },
   ];
   return (
-    <section className="relative py-20 md:py-24">
-      <div className="container-app">
-        <div className="grid gap-5 md:grid-cols-3">
-          {items.map((i) => (
-            <div
-              key={i.title}
-              className="rounded-xl border border-border-subtle bg-surface/40 p-6"
-            >
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
-                <i.icon className="h-5 w-5" strokeWidth={2} />
-              </span>
-              <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">
-                {i.title}
-              </h3>
-              <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
-                {i.body}
-              </p>
-            </div>
-          ))}
-        </div>
+    <SectionEditorial tone="cream" divider="top" pad="lg">
+      <div className="grid gap-5 md:grid-cols-3">
+        {items.map((i) => (
+          <div
+            key={i.title}
+            className="border border-ink-800/10 bg-beige-50 p-6"
+          >
+            <span className="inline-flex h-10 w-10 items-center justify-center bg-ink-800 text-beige-50">
+              <i.icon className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <h3 className="mt-4 text-base font-medium tracking-tight text-ink-800">
+              {i.title}
+            </h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+              {i.body}
+            </p>
+          </div>
+        ))}
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
 // ---------------------------------------------------------------------------
-// FAQ
+// FAQ — beige-50 accordion cards on a warm band.
 // ---------------------------------------------------------------------------
 function FAQ() {
   return (
-    <section className="relative py-20 md:py-28 bg-section">
-      <div className="container-app">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
-            Billing FAQ
-          </p>
-          <h2 className="mt-3 text-3xl md:text-[40px] md:leading-[1.1] font-semibold tracking-tight text-gradient">
-            Still got questions?
-          </h2>
-        </div>
-        <div className="mx-auto mt-12 max-w-3xl grid gap-3">
-          {PRICING_FAQS.map((f) => (
-            <details
-              key={f.q}
-              className="group rounded-xl border border-border bg-surface/40 overflow-hidden"
-            >
-              <summary className="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer text-sm font-medium text-foreground marker:content-none hover:bg-surface-2/50 transition-colors">
-                {f.q}
-                <span className="ml-auto text-foreground-muted group-open:rotate-180 transition-transform">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </span>
-              </summary>
-              <div className="px-5 pb-5 text-sm text-foreground-muted leading-relaxed">
-                {f.a}
-              </div>
-            </details>
-          ))}
-        </div>
+    <SectionEditorial tone="warm" divider="top" pad="lg">
+      <SectionHeader
+        align="center"
+        eyebrow="Billing FAQ"
+        title="Still got questions?"
+      />
+      <div className="mx-auto mt-12 grid max-w-3xl gap-3">
+        {PRICING_FAQS.map((f) => (
+          <details
+            key={f.q}
+            className="group overflow-hidden border border-ink-800/10 bg-beige-50"
+          >
+            <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-ink-800 transition-colors marker:content-none hover:bg-beige-100">
+              {f.q}
+              <span className="ml-auto text-ink-500 transition-transform group-open:rotate-180">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </span>
+            </summary>
+            <div className="px-5 pb-5 text-sm leading-relaxed text-ink-600">
+              {f.a}
+            </div>
+          </details>
+        ))}
       </div>
-    </section>
+    </SectionEditorial>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Final CTA
+// Final CTA — inverted ink-800, matches FinalCTA pattern on landing.
 // ---------------------------------------------------------------------------
 function CTA() {
   return (
-    <section className="relative py-20 md:py-28">
-      <div className="container-app">
-        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-surface-2 to-surface p-10 md:p-14 text-center">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-60"
-            style={{
-              background:
-                "radial-gradient(60% 50% at 50% 0%, rgba(124,92,252,0.25), transparent 60%)",
-            }}
-          />
-          <div className="relative">
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
-              Start free. Upgrade when it's worth it.
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base text-foreground-muted">
-              No trial clock, no credit card, no catch. Just a cleaner contract
-              review the next time you need one.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/analyze">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Analyze a contract
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/#how-it-works">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  See how it works
-                </Button>
-              </Link>
-            </div>
-          </div>
+    <SectionEditorial tone="inverted" pad="xl">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-3xl font-medium tracking-tightest text-beige-50 md:text-h2 md:leading-[1.05]">
+          Start free. Upgrade when it&rsquo;s worth it.
+        </h2>
+        <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-beige-200">
+          No trial clock, no credit card, no catch. Just a cleaner contract
+          review the next time you need one.
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link href="/analyze">
+            <button
+              type="button"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 bg-beige-50 px-7 text-[15px] font-medium text-ink-800 transition-colors hover:bg-beige-100 sm:w-auto"
+            >
+              Analyze a contract
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </Link>
+          <Link href="/#how-it-works">
+            <button
+              type="button"
+              className="inline-flex h-12 w-full items-center justify-center gap-2 border border-beige-50/40 px-7 text-[15px] font-medium text-beige-50 transition-colors hover:border-beige-50 hover:bg-beige-50/5 sm:w-auto"
+            >
+              See how it works
+            </button>
+          </Link>
         </div>
       </div>
-    </section>
+    </SectionEditorial>
   );
 }

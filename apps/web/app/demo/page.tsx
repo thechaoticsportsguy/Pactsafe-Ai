@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/primitives/Button";
+import { Badge } from "@/components/primitives/Badge";
+import { Badge as LegacyBadge } from "@/components/ui/badge";
 import RiskGauge from "@/components/RiskGauge";
 import FlagList from "@/components/FlagList";
 import GreenFlagList from "@/components/GreenFlagList";
@@ -64,7 +65,7 @@ const SAMPLE_RED_FLAGS: RedFlag[] = [
     clause:
       "Contractor shall provide revisions as reasonably requested by Client until Client is satisfied with the final deliverable.",
     explanation:
-      "‘Until satisfied’ is a black hole. Every fair SOW caps revisions at 2–3 rounds, with hourly fees beyond that.",
+      "\u2018Until satisfied\u2019 is a black hole. Every fair SOW caps revisions at 2\u20133 rounds, with hourly fees beyond that.",
     severity: "HIGH",
     page: 2,
   },
@@ -110,7 +111,7 @@ const SAMPLE_RESULT: AnalysisResult = {
     "This contract heavily favors the client. It transfers IP ownership before payment, caps your liability at unlimited, lets the client walk away with no kill fee, and requires unlimited revisions 'until satisfied'. Payment terms are Net-60 with no late-fee protection. The 12-month non-compete is likely unenforceable for an independent contractor but should still be negotiated out. Do not sign without pushing back on at least the critical items.",
   red_flags: SAMPLE_RED_FLAGS,
   missing_protections: [
-    "Upfront deposit (25–50% typical for freelance SOWs)",
+    "Upfront deposit (25\u201350% typical for freelance SOWs)",
     "Liability cap equal to fees paid",
     "Defined revision rounds with hourly rate for overages",
     "Kill fee or termination-for-convenience compensation",
@@ -144,23 +145,29 @@ export default function DemoPage() {
     <div className="flex min-h-screen flex-col">
       <TopNav variant="editorial" />
       <main id="main-content" className="flex-1">
+        {/* -------------------------------------------------------------
+           EDITORIAL CHROME — banner + page header
+           ------------------------------------------------------------- */}
+
         {/* Demo banner */}
-        <div className="border-b border-accent/30 bg-accent/[0.08]">
+        <div className="border-b border-ink-800/10 bg-beige-200">
           <div className="container-app flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-3">
-              <BookOpen className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
+              <span className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center bg-ink-800 text-beige-50">
+                <BookOpen className="h-4 w-4" strokeWidth={2} />
+              </span>
               <div>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-sm font-medium text-ink-800">
                   This is a sample report.
                 </p>
-                <p className="mt-0.5 text-xs text-foreground-muted leading-relaxed">
+                <p className="mt-0.5 text-xs leading-relaxed text-ink-600">
                   Rendered from pre-baked data so you can explore the full
                   output without waiting for an analysis.
                 </p>
               </div>
             </div>
             <Link href="/analyze" className="flex-shrink-0">
-              <Button size="sm">
+              <Button palette="editorial" variant="primary" size="sm">
                 Try with your contract
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
@@ -168,186 +175,219 @@ export default function DemoPage() {
           </div>
         </div>
 
-        <div className="container-app py-10 md:py-14">
-          <div className="space-y-8">
-            {/* Header */}
+        {/* Page header — editorial */}
+        <section className="relative bg-beige-100">
+          <div className="container-app py-10 md:py-14">
             <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Badge tone="accent" size="xs">
-                    <Sparkles className="h-3 w-3" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="eyebrow">
                     {SAMPLE_RESULT.contract_type}
                   </Badge>
-                  <Badge tone="neutral" size="xs">
-                    sample
-                  </Badge>
+                  <span className="inline-flex items-center border border-ink-800/10 bg-beige-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.15em] text-ink-600">
+                    Sample
+                  </span>
                 </div>
-                <h1 className="mt-3 text-2xl md:text-[28px] font-semibold tracking-tight truncate max-w-2xl">
+                <h1 className="mt-4 max-w-2xl truncate text-2xl font-medium tracking-tight text-ink-800 md:text-[28px]">
                   sample-freelance-agreement.pdf
                 </h1>
-                <p className="mt-1.5 text-xs text-foreground-muted flex items-center gap-1.5">
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-500">
                   <Clock className="h-3 w-3" />
                   Analyzed in 47 seconds
                 </p>
               </div>
               <div className="flex flex-shrink-0 gap-2">
-                <Button variant="outline" size="sm" disabled>
+                <Button
+                  palette="editorial"
+                  variant="secondary"
+                  size="sm"
+                  disabled
+                >
                   <Download className="h-3.5 w-3.5" />
                   Export PDF
                 </Button>
                 <Link href="/analyze">
-                  <Button size="sm">
+                  <Button palette="editorial" variant="primary" size="sm">
                     Try it yourself
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </Link>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Top strip */}
-            <div className="grid gap-4 lg:grid-cols-3">
-              <RiskGauge
-                score={SAMPLE_RESULT.risk_score}
-                className="lg:col-span-2"
-              />
-              <div className="rounded-xl border border-border bg-surface/70 p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
-                  At a glance
-                </p>
-                <dl className="mt-4 space-y-3">
-                  <StatRow
-                    label="Red flags"
-                    value={SAMPLE_RESULT.red_flags.length}
-                    tone="critical"
-                  />
-                  <StatRow label="Critical issues" value={2} tone="critical" />
-                  <StatRow label="High severity" value={2} tone="high" />
-                  <StatRow
-                    label="Missing protections"
-                    value={SAMPLE_RESULT.missing_protections.length}
-                    tone="warning"
-                  />
-                  <StatRow
-                    label="In your favor"
-                    value={SAMPLE_RESULT.green_flags!.length}
-                    tone="success"
-                  />
-                </dl>
-              </div>
-            </div>
+        {/* -------------------------------------------------------------
+           WORKSPACE REPORT BODY — unchanged palette.
+           This is the product screenshot. Architecturally honest: the
+           report should read as the workspace product.
+           ------------------------------------------------------------- */}
 
-            {SAMPLE_RESULT.sub_scores && (
-              <ScoreBreakdown scores={SAMPLE_RESULT.sub_scores} />
-            )}
-
-            {/* Sections */}
-            <div className="space-y-10">
-              {/* Summary */}
-              <section>
-                <SectionHeader icon={Sparkles} title="Plain-English summary" />
-                <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-surface/20 p-6">
-                  <p className="text-base leading-relaxed text-foreground/95">
-                    {SAMPLE_RESULT.overall_summary}
-                  </p>
-                </div>
-              </section>
-
-              {/* Red flags */}
-              <section>
-                <SectionHeader
-                  icon={AlertTriangle}
-                  title="Red flags"
-                  count={SAMPLE_RESULT.red_flags.length}
-                />
-                <FlagList flags={SAMPLE_RESULT.red_flags} />
-              </section>
-
-              {/* Missing protections */}
-              <section>
-                <SectionHeader
-                  icon={ShieldCheck}
-                  title="Missing protections"
-                  count={SAMPLE_RESULT.missing_protections.length}
-                />
-                <div className="rounded-xl border border-border bg-surface/70 divide-y divide-border/60 overflow-hidden">
-                  {SAMPLE_RESULT.missing_protections.map((m, i) => (
-                    <div key={i} className="flex items-start gap-3 px-5 py-4">
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-warning/40 bg-warning/10 text-warning">
-                        <AlertTriangle className="h-3.5 w-3.5" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm text-foreground/90 leading-relaxed">
-                          {m}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* Green flags */}
-              <section>
-                <SectionHeader
-                  icon={CheckCircle2}
-                  title="In your favor"
-                  count={SAMPLE_RESULT.green_flags!.length}
-                />
-                <GreenFlagList flags={SAMPLE_RESULT.green_flags!} />
-              </section>
-
-              {/* Negotiation */}
-              <section>
-                <SectionHeader
-                  icon={MessageSquareQuote}
-                  title="Negotiation suggestions"
-                  count={SAMPLE_RESULT.negotiation_suggestions.length}
+        <section className="bg-surface-0">
+          <div className="container-app py-10 md:py-14">
+            <div className="space-y-8">
+              {/* Top strip */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                <RiskGauge
+                  score={SAMPLE_RESULT.risk_score}
+                  className="lg:col-span-2"
                 />
                 <div className="rounded-xl border border-border bg-surface/70 p-5">
-                  <ul className="space-y-2.5">
-                    {SAMPLE_RESULT.negotiation_suggestions.map((s, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-2.5 text-sm text-foreground/90"
-                      >
-                        <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold text-accent ring-1 ring-accent/20 tabular-nums">
-                          {i + 1}
-                        </span>
-                        <span>{s}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+                    At a glance
+                  </p>
+                  <dl className="mt-4 space-y-3">
+                    <StatRow
+                      label="Red flags"
+                      value={SAMPLE_RESULT.red_flags.length}
+                      tone="critical"
+                    />
+                    <StatRow label="Critical issues" value={2} tone="critical" />
+                    <StatRow label="High severity" value={2} tone="high" />
+                    <StatRow
+                      label="Missing protections"
+                      value={SAMPLE_RESULT.missing_protections.length}
+                      tone="warning"
+                    />
+                    <StatRow
+                      label="In your favor"
+                      value={SAMPLE_RESULT.green_flags!.length}
+                      tone="success"
+                    />
+                  </dl>
                 </div>
-              </section>
-            </div>
-          </div>
+              </div>
 
-          {/* Footer CTA */}
-          <div className="mt-16 rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-surface-2 to-surface p-8 md:p-10 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
-              Your turn
-            </p>
-            <h2 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-              See what PactSafe flags in your contract.
-            </h2>
-            <p className="mt-3 max-w-xl mx-auto text-sm text-foreground-muted leading-relaxed">
-              Free to start. No account required. Get a full report like this
-              one in under a minute.
-            </p>
-            <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/analyze">
-                <Button size="lg" className="w-full sm:w-auto">
-                  Analyze a contract
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  See pricing
-                </Button>
-              </Link>
+              {SAMPLE_RESULT.sub_scores && (
+                <ScoreBreakdown scores={SAMPLE_RESULT.sub_scores} />
+              )}
+
+              {/* Sections */}
+              <div className="space-y-10">
+                {/* Summary */}
+                <section>
+                  <SectionHeader icon={Sparkles} title="Plain-English summary" />
+                  <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-surface/20 p-6">
+                    <p className="text-base leading-relaxed text-foreground/95">
+                      {SAMPLE_RESULT.overall_summary}
+                    </p>
+                  </div>
+                </section>
+
+                {/* Red flags */}
+                <section>
+                  <SectionHeader
+                    icon={AlertTriangle}
+                    title="Red flags"
+                    count={SAMPLE_RESULT.red_flags.length}
+                  />
+                  <FlagList flags={SAMPLE_RESULT.red_flags} />
+                </section>
+
+                {/* Missing protections */}
+                <section>
+                  <SectionHeader
+                    icon={ShieldCheck}
+                    title="Missing protections"
+                    count={SAMPLE_RESULT.missing_protections.length}
+                  />
+                  <div className="rounded-xl border border-border bg-surface/70 divide-y divide-border/60 overflow-hidden">
+                    {SAMPLE_RESULT.missing_protections.map((m, i) => (
+                      <div key={i} className="flex items-start gap-3 px-5 py-4">
+                        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-warning/40 bg-warning/10 text-warning">
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm text-foreground/90 leading-relaxed">
+                            {m}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Green flags */}
+                <section>
+                  <SectionHeader
+                    icon={CheckCircle2}
+                    title="In your favor"
+                    count={SAMPLE_RESULT.green_flags!.length}
+                  />
+                  <GreenFlagList flags={SAMPLE_RESULT.green_flags!} />
+                </section>
+
+                {/* Negotiation */}
+                <section>
+                  <SectionHeader
+                    icon={MessageSquareQuote}
+                    title="Negotiation suggestions"
+                    count={SAMPLE_RESULT.negotiation_suggestions.length}
+                  />
+                  <div className="rounded-xl border border-border bg-surface/70 p-5">
+                    <ul className="space-y-2.5">
+                      {SAMPLE_RESULT.negotiation_suggestions.map((s, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2.5 text-sm text-foreground/90"
+                        >
+                          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-[10px] font-semibold text-accent ring-1 ring-accent/20 tabular-nums">
+                            {i + 1}
+                          </span>
+                          <span>{s}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* -------------------------------------------------------------
+           EDITORIAL FOOTER CTA — flipped to cream to bookend the report.
+           ------------------------------------------------------------- */}
+
+        <section className="relative border-t border-ink-800/10 bg-beige-100 py-16 md:py-20">
+          <div className="container-app">
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
+                Your turn
+              </p>
+              <h2 className="mt-4 text-3xl font-medium tracking-tight text-ink-800 md:text-h2 md:leading-[1.05]">
+                See what PactSafe flags in your contract.
+              </h2>
+              <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-600">
+                Free to start. No account required. Get a full report like
+                this one in under a minute.
+              </p>
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                <Link href="/analyze">
+                  <Button
+                    palette="editorial"
+                    variant="primary"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    Analyze a contract
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/pricing">
+                  <Button
+                    palette="editorial"
+                    variant="secondary"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    See pricing
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>
@@ -355,7 +395,8 @@ export default function DemoPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Local helpers
+// Local helpers — these belong to the workspace report body and keep the
+// workspace palette. Do not flip them to editorial.
 // ---------------------------------------------------------------------------
 
 function SectionHeader({
@@ -374,9 +415,9 @@ function SectionHeader({
       </span>
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
       {typeof count === "number" && (
-        <Badge tone="neutral" size="xs">
+        <LegacyBadge tone="neutral" size="xs">
           {count}
-        </Badge>
+        </LegacyBadge>
       )}
     </div>
   );

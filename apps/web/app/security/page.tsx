@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/primitives/Badge";
+import {
+  SectionEditorial,
+  SectionHeader,
+} from "@/components/primitives/Section";
 
 export const metadata: Metadata = {
   title: "Security",
@@ -40,7 +44,7 @@ const PILLARS: Pillar[] = [
   {
     icon: Eye,
     title: "Never used for training",
-    body: "Your contracts don’t end up in anyone’s training set.",
+    body: "Your contracts don\u2019t end up in anyone\u2019s training set.",
     items: [
       "Zero-retention flags set on all Anthropic & Groq API calls",
       "No internal training corpus built from customer data",
@@ -72,27 +76,40 @@ const PILLARS: Pillar[] = [
   },
 ];
 
+const SECURITY_FAQS = [
+  {
+    q: "Are you SOC 2 certified?",
+    a: "Not yet — we're in a pre-audit phase. In the meantime, the infrastructure we build on (Vercel, Fly.io, Neon) is SOC 2 Type II certified, and we follow SOC 2-aligned practices internally.",
+  },
+  {
+    q: "Do you train models on my contracts?",
+    a: "No. Zero-retention flags are set on all LLM API calls, and we do not build internal training corpuses from customer data. This is a hard rule.",
+  },
+  {
+    q: "Where are my contracts stored?",
+    a: "In an encrypted database in the US region of our cloud provider. Backups are encrypted and also stored in the US. If you need EU data residency, contact us before uploading.",
+  },
+  {
+    q: "How long do you keep my data?",
+    a: "As long as your account is active and you haven't deleted the analysis. Deleting an analysis triggers a purge within 24 hours; closing an account triggers a full purge within 30 days.",
+  },
+];
+
 export default function SecurityPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav variant="editorial" />
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-hero">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 opacity-[0.035] bg-grid-dot"
-          />
-          <div className="container-app pt-16 md:pt-24 pb-12">
-            <Badge tone="accent" size="xs">
-              Security & privacy
-            </Badge>
-            <h1 className="mt-4 text-3xl md:text-[52px] md:leading-[1.05] font-semibold tracking-tight text-gradient max-w-3xl">
+        <section className="relative bg-beige-100">
+          <div className="container-app pt-16 pb-12 md:pt-24">
+            <Badge variant="eyebrow">Security &amp; privacy</Badge>
+            <h1 className="mt-5 max-w-3xl text-3xl font-medium tracking-tightest text-ink-800 md:text-h1 md:leading-[1.05]">
               Your contracts are serious.
               <br />
               We treat them that way.
             </h1>
-            <p className="mt-5 max-w-2xl text-base md:text-lg text-foreground-muted leading-relaxed">
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-600 md:text-body-lg">
               Nothing you send us ever ends up in a training set, a
               third-party log, or a data broker&rsquo;s inbox. Here&rsquo;s
               exactly what we do, and how you can verify it.
@@ -101,147 +118,129 @@ export default function SecurityPage() {
         </section>
 
         {/* Pillars */}
-        <section className="relative py-16 md:py-20">
-          <div className="container-app">
-            <div className="grid gap-5 md:grid-cols-2">
-              {PILLARS.map((p) => (
-                <div
-                  key={p.title}
-                  className="rounded-2xl border border-border bg-surface/60 p-7"
-                >
-                  <div className="flex items-start gap-4">
-                    <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
-                      <p.icon className="h-5 w-5" strokeWidth={2} />
-                    </span>
-                    <div className="min-w-0">
-                      <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                        {p.title}
-                      </h2>
-                      <p className="mt-1 text-sm text-foreground-muted leading-relaxed">
-                        {p.body}
-                      </p>
-                    </div>
+        <SectionEditorial tone="cream" divider="top" pad="lg">
+          <div className="grid gap-5 md:grid-cols-2">
+            {PILLARS.map((p) => (
+              <div
+                key={p.title}
+                className="border border-ink-800/10 bg-beige-50 p-7"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center bg-ink-800 text-beige-50">
+                    <p.icon className="h-5 w-5" strokeWidth={2} />
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-medium tracking-tight text-ink-800">
+                      {p.title}
+                    </h2>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-600">
+                      {p.body}
+                    </p>
                   </div>
-                  <ul className="mt-5 space-y-2.5">
-                    {p.items.map((it) => (
-                      <li
-                        key={it}
-                        className="flex items-start gap-2.5 text-sm text-foreground/90"
-                      >
-                        <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-success" />
-                        {it}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              ))}
-            </div>
+                <ul className="mt-5 space-y-2.5">
+                  {p.items.map((it) => (
+                    <li
+                      key={it}
+                      className="flex items-start gap-2.5 text-sm text-ink-700"
+                    >
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-ink-800" />
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        </section>
+        </SectionEditorial>
 
         {/* Responsible disclosure */}
-        <section className="relative py-16 md:py-24 bg-section">
-          <div className="container-app">
-            <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-surface/60 p-8 md:p-10">
-              <div className="flex items-start gap-4">
-                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-severity-medium/10 text-severity-medium ring-1 ring-severity-medium/30">
-                  <AlertOctagon className="h-5 w-5" strokeWidth={2} />
-                </span>
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                    Found a vulnerability?
-                  </h2>
-                  <p className="mt-2 text-sm text-foreground-muted leading-relaxed">
-                    We welcome responsible disclosure. Email{" "}
-                    <a
-                      href="mailto:security@pactsafe.ai"
-                      className="text-accent hover:underline underline-offset-2"
-                    >
-                      security@pactsafe.ai
-                    </a>{" "}
-                    with details and a proof of concept. We&rsquo;ll respond
-                    within 48 hours, fix valid issues promptly, and credit you
-                    publicly (with your consent).
-                  </p>
-                  <ul className="mt-4 space-y-1.5 text-xs text-foreground-muted">
-                    <li>• Please don&rsquo;t run automated scanners.</li>
-                    <li>
-                      • Please don&rsquo;t access other users&rsquo; data, even
-                      if you find a way.
-                    </li>
-                    <li>
-                      • Please give us a reasonable window to fix before
-                      public disclosure.
-                    </li>
-                  </ul>
-                </div>
+        <SectionEditorial tone="warm" divider="top" pad="lg">
+          <div className="mx-auto max-w-3xl border border-ink-800/10 bg-beige-50 p-8 md:p-10">
+            <div className="flex items-start gap-4">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center border border-[#eab308]/40 bg-[#eab308]/10 text-[#854d0e]">
+                <AlertOctagon className="h-5 w-5" strokeWidth={2} />
+              </span>
+              <div>
+                <h2 className="text-xl font-medium tracking-tight text-ink-800">
+                  Found a vulnerability?
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                  We welcome responsible disclosure. Email{" "}
+                  <a
+                    href="mailto:security@pactsafe.ai"
+                    className="text-ink-800 underline decoration-ink-800/35 underline-offset-2 hover:decoration-ink-800/85"
+                  >
+                    security@pactsafe.ai
+                  </a>{" "}
+                  with details and a proof of concept. We&rsquo;ll respond
+                  within 48 hours, fix valid issues promptly, and credit you
+                  publicly (with your consent).
+                </p>
+                <ul className="mt-4 space-y-1.5 text-xs text-ink-600">
+                  <li>• Please don&rsquo;t run automated scanners.</li>
+                  <li>
+                    • Please don&rsquo;t access other users&rsquo; data, even
+                    if you find a way.
+                  </li>
+                  <li>
+                    • Please give us a reasonable window to fix before
+                    public disclosure.
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
-        </section>
+        </SectionEditorial>
 
         {/* FAQ strip */}
-        <section className="relative py-16 md:py-20">
-          <div className="container-app">
-            <div className="mx-auto max-w-3xl grid gap-3">
-              {[
-                {
-                  q: "Are you SOC 2 certified?",
-                  a: "Not yet — we're in a pre-audit phase. In the meantime, the infrastructure we build on (Vercel, Fly.io, Neon) is SOC 2 Type II certified, and we follow SOC 2-aligned practices internally.",
-                },
-                {
-                  q: "Do you train models on my contracts?",
-                  a: "No. Zero-retention flags are set on all LLM API calls, and we do not build internal training corpuses from customer data. This is a hard rule.",
-                },
-                {
-                  q: "Where are my contracts stored?",
-                  a: "In an encrypted database in the US region of our cloud provider. Backups are encrypted and also stored in the US. If you need EU data residency, contact us before uploading.",
-                },
-                {
-                  q: "How long do you keep my data?",
-                  a: "As long as your account is active and you haven't deleted the analysis. Deleting an analysis triggers a purge within 24 hours; closing an account triggers a full purge within 30 days.",
-                },
-              ].map((f) => (
-                <details
-                  key={f.q}
-                  className="group rounded-xl border border-border bg-surface/40 overflow-hidden"
-                >
-                  <summary className="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer text-sm font-medium text-foreground marker:content-none hover:bg-surface-2/50 transition-colors">
-                    {f.q}
-                    <span className="ml-auto text-foreground-muted group-open:rotate-180 transition-transform">
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
-                    </span>
-                  </summary>
-                  <div className="px-5 pb-5 text-sm text-foreground-muted leading-relaxed">
-                    {f.a}
-                  </div>
-                </details>
-              ))}
-            </div>
-            <p className="mt-10 text-center text-xs text-foreground-subtle">
-              Questions? Email{" "}
-              <Link
-                href="/contact"
-                className="text-accent hover:underline underline-offset-2"
+        <SectionEditorial tone="cream" divider="top" pad="lg">
+          <SectionHeader
+            align="center"
+            eyebrow="Common questions"
+            title="Answers to the things people ask"
+          />
+          <div className="mx-auto mt-12 grid max-w-3xl gap-3">
+            {SECURITY_FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="group overflow-hidden border border-ink-800/10 bg-beige-50"
               >
-                our team
-              </Link>
-              .
-            </p>
+                <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-ink-800 transition-colors marker:content-none hover:bg-beige-100">
+                  {f.q}
+                  <span className="ml-auto text-ink-500 transition-transform group-open:rotate-180">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </span>
+                </summary>
+                <div className="px-5 pb-5 text-sm leading-relaxed text-ink-600">
+                  {f.a}
+                </div>
+              </details>
+            ))}
           </div>
-        </section>
+          <p className="mt-10 text-center text-xs text-ink-500">
+            Questions? Email{" "}
+            <Link
+              href="/contact"
+              className="text-ink-800 underline decoration-ink-800/35 underline-offset-2 hover:decoration-ink-800/85"
+            >
+              our team
+            </Link>
+            .
+          </p>
+        </SectionEditorial>
       </main>
       <Footer />
     </div>
