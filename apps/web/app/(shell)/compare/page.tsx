@@ -24,6 +24,7 @@ import {
   severityColor,
 } from "@/lib/severity";
 import { SEVERITY_ORDER, type Severity } from "@/lib/schemas";
+import { getDocumentTypeLabel } from "@/lib/document-type-labels";
 import { cn } from "@/lib/cn";
 
 export default function ComparePage() {
@@ -295,7 +296,7 @@ function JobPicker({
             >
               {(j.filename ?? "(text)") +
                 " · " +
-                (j.result?.contract_type ?? "") +
+                getDocumentTypeLabel(j.result?.metadata?.document_type) +
                 " · " +
                 new Date(j.created_at).toLocaleDateString()}
             </option>
@@ -347,7 +348,7 @@ function ComparePanel({
             {job.filename ?? "(text)"}
           </p>
           <h3 className="mt-1.5 text-lg font-semibold tracking-tight truncate">
-            {result.contract_type}
+            {getDocumentTypeLabel(result.metadata?.document_type)}
           </h3>
         </div>
         <span

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { listJobs, exportPdfUrl } from "@/lib/api";
 import type { JobStatusResponse } from "@/lib/schemas";
 import { riskBand } from "@/lib/severity";
+import { getDocumentTypeLabel } from "@/lib/document-type-labels";
 import { cn } from "@/lib/cn";
 
 type RiskFilter = "all" | "low" | "medium" | "high" | "critical";
@@ -272,11 +273,11 @@ export default function HistoryPage() {
                         {j.filename ?? "Pasted contract"}
                       </p>
                       <p className="mt-0.5 text-xs text-foreground-muted flex items-center gap-2 truncate">
-                        {j.result?.contract_type && (
+                        {j.result && (
                           <>
                             <span className="inline-flex items-center gap-1">
                               <Sparkles className="h-2.5 w-2.5" />
-                              {j.result.contract_type}
+                              {getDocumentTypeLabel(j.result.metadata?.document_type)}
                             </span>
                             <span className="text-foreground-subtle">·</span>
                           </>

@@ -10,6 +10,7 @@
  */
 
 import type {
+  AnalysisMetadata,
   AnalysisResult,
   GreenFlag,
   HighlightSpan,
@@ -56,6 +57,15 @@ export function normalizeAnalysisResult(
         (h): h is HighlightSpan => !!h && typeof h === "object",
       )
     : undefined;
+  const metadata: AnalysisMetadata | undefined =
+    raw.metadata && typeof raw.metadata === "object"
+      ? {
+          document_type:
+            typeof raw.metadata.document_type === "string"
+              ? raw.metadata.document_type
+              : undefined,
+        }
+      : undefined;
 
   return {
     contract_type:
@@ -88,6 +98,7 @@ export function normalizeAnalysisResult(
       ? { sub_scores: raw.sub_scores }
       : {}),
     ...(highlightMap !== undefined ? { highlight_map: highlightMap } : {}),
+    ...(metadata !== undefined ? { metadata } : {}),
   };
 }
 

@@ -86,6 +86,15 @@ export interface HighlightSpan {
   suggested_fix?: string | null;
 }
 
+/**
+ * v2-pipeline metadata — the typed enum, kept alongside the human label in
+ * `contract_type`. Frontend uses `document_type` to pick its own display
+ * label via `getDocumentTypeLabel`. Absent on legacy responses.
+ */
+export interface AnalysisMetadata {
+  document_type?: string;
+}
+
 export interface AnalysisResult {
   contract_type: string;
   risk_score: number;
@@ -106,6 +115,12 @@ export interface AnalysisResult {
    * product roadmap. Absent on older backends.
    */
   highlight_map?: HighlightSpan[];
+  /**
+   * v2 pipeline metadata. Absent on legacy (non-v2) responses — callers
+   * should treat `undefined` as "not available" and fall back to the
+   * generic "Contract" label.
+   */
+  metadata?: AnalysisMetadata;
 }
 
 export interface JobCreateResponse {

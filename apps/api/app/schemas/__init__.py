@@ -60,6 +60,25 @@ class GreenFlag(BaseModel):
     end_offset: Optional[int] = Field(None, ge=0)
 
 
+class AnalysisMetadata(BaseModel):
+    """v2 pipeline metadata — carries the typed enum alongside the human
+    label so the frontend can control display formatting without parsing
+    ``contract_type`` back into an enum.
+
+    Optional on the response: absent on legacy (non-v2) analyses.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    document_type: Optional[str] = Field(
+        None,
+        description=(
+            "v2 document_type enum value, e.g. 'contractor_platform'. "
+            "Matches app.schemas.clause_extraction.DocumentType."
+        ),
+    )
+
+
 class AnalysisResult(BaseModel):
     """Top-level contract analysis result."""
 
@@ -78,6 +97,9 @@ class AnalysisResult(BaseModel):
     provider: Optional[str] = None
     error: Optional[str] = None
     truncated: bool = False
+    # v2-only: carries the document_type enum so the frontend can pick
+    # its own display label. Absent on legacy responses.
+    metadata: Optional[AnalysisMetadata] = None
 
 
 # ---------------------------------------------------------------------------

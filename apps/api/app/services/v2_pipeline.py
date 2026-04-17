@@ -20,6 +20,7 @@ from __future__ import annotations
 import logging
 
 from app.schemas import (
+    AnalysisMetadata,
     AnalysisResult,
     GreenFlag,
     RedFlag as PublicRedFlag,
@@ -153,6 +154,9 @@ def _to_public_result(
         negotiation_suggestions=negotiation_suggestions,
         model_used=ANALYSIS_MODEL,
         provider="gemini",
+        metadata=AnalysisMetadata(
+            document_type=extraction.metadata.document_type,
+        ),
     )
 
 

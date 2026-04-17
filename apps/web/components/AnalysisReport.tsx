@@ -55,6 +55,7 @@ import {
   normalizeAnalysisResult,
 } from "@/lib/review";
 import type { AnalysisResult, RedFlag } from "@/lib/schemas";
+import { getDocumentTypeLabel } from "@/lib/document-type-labels";
 import { cn } from "@/lib/cn";
 
 // ---------------------------------------------------------------------------
@@ -339,7 +340,7 @@ export default function AnalysisReport({
           <div className="flex items-center gap-2 flex-wrap">
             <Badge tone="accent" size="xs">
               <Sparkles className="h-3 w-3" />
-              {result.contract_type || "Contract analysis"}
+              {getDocumentTypeLabel(result.metadata?.document_type)}
             </Badge>
             {result.provider && (
               <Badge tone="neutral" size="xs">
@@ -588,7 +589,7 @@ export default function AnalysisReport({
           >
             <NegotiationComposer
               suggestions={negotiationSuggestions}
-              contractType={result.contract_type}
+              contractType={getDocumentTypeLabel(result.metadata?.document_type)}
             />
           </Section>
 
