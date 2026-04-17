@@ -173,7 +173,19 @@ export default function AnalysisReport({
   // backend builds that predate the `document_text` field.
   const highlighterText = documentText ?? textPreview ?? null;
   const { toast } = useToast();
-  const [activeFlag, setActiveFlag] = React.useState<number | null>(null);
+  /**
+   * The "selected" flag. `source` tracks which side the user clicked so
+   * the scroll+flash effect below knows which side is the target (card
+   * clicks jump to the highlight; highlight clicks jump to the card).
+   * Storing the timestamp lets us re-trigger the effect when the user
+   * re-clicks the same flag — the index alone wouldn't change.
+   */
+  const [activeFlag, setActiveFlag] = React.useState<{
+    index: number;
+    source: "card" | "mark";
+    ts: number;
+  } | null>(null);
+  const activeFlagIndex = activeFlag?.index ?? null;
   const [activeSection, setActiveSection] =
     React.useState<SectionKey>("summary");
   const [linkCopied, setLinkCopied] = React.useState(false);
@@ -251,6 +263,54 @@ export default function AnalysisReport({
     window.scrollTo({ top: y, behavior: "smooth" });
     setActiveSection(key);
   }
+
+  // Bidirectional jump — when a user clicks a flag card in the sidebar we
+  // scroll the matching highlight into view and flash it; clicking a
+  // highlight does the inverse and flashes the card. The flash class is
+  // defined in app/globals.css and self-removes after 1500ms so repeated
+  // clicks re-trigger the animation cleanly.
+  React.useEffect(() => {
+    if (!activeFlag) return;
+    const targetId =
+      activeFlag.source === "card"
+        ? `highlight-flag-${activeFlag.index}`
+        : `card-flag-${activeFlag.index}`;
+    const el = document.getElementById(targetId);
+    if (!el) {
+      // No jump target — the quote wasn't locatable for this flag. Fall
+      // back to scrolling the clause-highlighter section into view so the
+      // user at least lands in the right neighbourhood and can scan by
+      // eye. (Card-side miss is impossible: every flag renders a card.)
+      if (activeFlag.source === "card") {
+        const section = document.getElementById("section-clauses");
+        section?.scrollIntoView({ behavior: "smooth", block: "start" });
+        toast({
+          tone: "info",
+          message: "Couldn't pin the exact clause",
+          description:
+            "We know which section the risk lives in, but couldn't locate the verbatim quote. Scan the highlighted text for the matching phrase.",
+        });
+      }
+      return;
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("flag-flash");
+    const t = window.setTimeout(() => {
+      el.classList.remove("flag-flash");
+    }, 1500);
+    return () => {
+      window.clearTimeout(t);
+      el.classList.remove("flag-flash");
+    };
+  }, [activeFlag, toast]);
+
+  const handleCardClick = React.useCallback((_f: RedFlag, i: number) => {
+    setActiveFlag({ index: i, source: "card", ts: Date.now() });
+  }, []);
+
+  const handleMarkClick = React.useCallback((i: number) => {
+    setActiveFlag({ index: i, source: "mark", ts: Date.now() });
+  }, []);
 
   async function copyShareLink() {
     try {
@@ -547,8 +607,8 @@ export default function AnalysisReport({
           >
             <FlagList
               flags={redFlags}
-              activeIndex={activeFlag}
-              onSelect={(_f: RedFlag, i: number) => setActiveFlag(i)}
+              activeIndex={activeFlagIndex}
+              onSelect={handleCardClick}
             />
           </Section>
 
@@ -615,7 +675,8 @@ export default function AnalysisReport({
               <ClauseHighlighter
                 text={highlighterText}
                 flags={redFlags}
-                activeIndex={activeFlag}
+                activeIndex={activeFlagIndex}
+                onMarkClick={handleMarkClick}
               />
             ) : (
               <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-foreground-muted">

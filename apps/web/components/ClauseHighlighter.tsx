@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/lib/cn";
-import { severityColor } from "@/lib/severity";
 import { SEVERITY_ORDER, type RedFlag } from "@/lib/schemas";
+import { locateQuote } from "@/lib/locate-quote";
 
 interface ClauseHighlighterProps {
   /** Null-safe — a missing text preview just renders the header row. */
@@ -11,6 +11,12 @@ interface ClauseHighlighterProps {
   /** Null-safe — a missing flag list renders the plain text with no marks. */
   flags?: RedFlag[] | null;
   activeIndex?: number | null;
+  /**
+   * Fires when the user clicks a highlighted span. Lets the parent
+   * (AnalysisReport) drive the inverse mark→card scroll+flash without
+   * this component owning any cross-section DOM knowledge.
+   */
+  onMarkClick?: (flagIndex: number) => void;
   className?: string;
 }
 
@@ -28,8 +34,20 @@ const SEVERITY_HL: Record<string, string> = {
 };
 
 /**
- * Builds non-overlapping segments from offsets. If offsets are missing or
- * overlap, higher-severity flags win.
+ * Build non-overlapping severity-tinted segments from the red-flag list.
+ *
+ * Prefers explicit character offsets when the backend supplies them
+ * (`start_offset` / `end_offset`). When both are absent — as in every v2
+ * flag, which carries a `quote` instead — falls back to locating the
+ * verbatim quote inside the document via `locateQuote`. Flags whose
+ * quote can't be located are skipped with a `console.warn`; the caller
+ * still renders the flag card, just without a jump target.
+ *
+ * Overlap resolution: sort by `start` then by severity (Critical first),
+ * then drop any later span that overlaps a previously kept one. The
+ * higher-severity span wins its range via the tiebreaker; losing one
+ * highlight is acceptable when two flags genuinely cite the same text
+ * (rare, and the sidebar still surfaces both flag cards).
  */
 function buildSegments(text: string, flags: RedFlag[]): Segment[] {
   const spans: Array<{
@@ -38,7 +56,9 @@ function buildSegments(text: string, flags: RedFlag[]): Segment[] {
     flagIndex: number;
     sev: number;
   }> = [];
+
   flags.forEach((f, i) => {
+    // Prefer explicit character offsets when both are present and valid.
     if (
       f.start_offset != null &&
       f.end_offset != null &&
@@ -52,6 +72,30 @@ function buildSegments(text: string, flags: RedFlag[]): Segment[] {
         flagIndex: i,
         sev: SEVERITY_ORDER[f.severity],
       });
+      return;
+    }
+    // v2 fallback: locate the verbatim quote in the document text.
+    if (f.quote) {
+      const loc = locateQuote(text, f.quote);
+      if (loc) {
+        spans.push({
+          start: loc.start,
+          end: loc.end,
+          flagIndex: i,
+          sev: SEVERITY_ORDER[f.severity],
+        });
+        return;
+      }
+      // Don't block render — the flag card still appears in the sidebar,
+      // just without a jump target.
+      console.warn(
+        `[ClauseHighlighter] Could not locate quote for flag #${i}`,
+        {
+          section: f.section_number,
+          title: f.clause,
+          quote: f.quote.slice(0, 120),
+        },
+      );
     }
   });
 
@@ -89,6 +133,7 @@ export default function ClauseHighlighter({
   text,
   flags,
   activeIndex,
+  onMarkClick,
   className,
 }: ClauseHighlighterProps) {
   const safeText = typeof text === "string" ? text : "";
@@ -103,15 +148,6 @@ export default function ClauseHighlighter({
     () => buildSegments(safeText, safeFlags),
     [safeText, safeFlags],
   );
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (activeIndex == null || !containerRef.current) return;
-    const el = containerRef.current.querySelector<HTMLElement>(
-      `[data-flag-index="${activeIndex}"]`,
-    );
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeIndex]);
 
   return (
     <div className="rounded-xl border border-border bg-surface/70 overflow-hidden">
@@ -139,7 +175,6 @@ export default function ClauseHighlighter({
         </span>
       </div>
       <div
-        ref={containerRef}
         className={cn(
           // Scrollable container — the backend now returns the full
           // extracted document (not a 500-char preview), so long
@@ -163,13 +198,23 @@ export default function ClauseHighlighter({
           const flag = safeFlags[seg.flagIndex];
           if (!flag) return <span key={idx}>{chunk}</span>;
           const isActive = activeIndex === seg.flagIndex;
+          const flagIdx = seg.flagIndex;
           return (
             <mark
               key={idx}
-              data-flag-index={seg.flagIndex}
+              // `highlight-flag-${i}` is the jump target AnalysisReport
+              // scrolls+flashes when a card is clicked in the sidebar.
+              id={`highlight-flag-${flagIdx}`}
+              // Kept for any external consumer that queries by attr (the
+              // scroll-spy used to, before we centralized it in the
+              // parent). Harmless duplicate of the `id`.
+              data-flag-index={flagIdx}
+              data-severity={flag.severity}
+              data-section={flag.section_number ?? undefined}
               title={flag.explanation}
+              onClick={() => onMarkClick?.(flagIdx)}
               className={cn(
-                "rounded px-0.5 cursor-help transition-all",
+                "rounded px-0.5 cursor-pointer transition-all",
                 SEVERITY_HL[flag.severity],
                 isActive &&
                   "ring-2 ring-accent ring-offset-1 ring-offset-background",

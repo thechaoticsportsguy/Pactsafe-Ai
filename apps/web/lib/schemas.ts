@@ -21,6 +21,21 @@ export interface RedFlag {
   page?: number | null;
   start_offset?: number | null;
   end_offset?: number | null;
+  /**
+   * Section identifier from the source document ("5.1", "14.2", etc.)
+   * Populated only by the v2 analyzer. Legacy (non-v2) analyses leave
+   * this null — callers should render the citation block only when both
+   * `section_number` and `quote` are present.
+   */
+  section_number?: string | null;
+  /**
+   * Verbatim quote from the cited section (≤500 chars, may contain
+   * ellipses for omitted middle text). The backend's citation validator
+   * has already confirmed this quote appears in the source at
+   * rapidfuzz partial_ratio ≥85, so the frontend can reliably locate it
+   * via `locateQuote` in lib/locate-quote.ts. Populated only by v2.
+   */
+  quote?: string | null;
 }
 
 /**

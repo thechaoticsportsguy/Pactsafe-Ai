@@ -446,6 +446,34 @@ kbd {
   }
 }
 
+/* ----- Flag flash (sidebar ↔ highlighter jump) ------------------- */
+/* Applied by AnalysisReport's scroll effect for 1500ms when the user
+   clicks a flag card (the matching highlight flashes) or a highlight
+   (the matching flag card flashes). `box-shadow` gives the pulse shape
+   on both inline <mark> and block <button> elements; background pulses
+   the accent tint on top of whatever severity color is already there.
+   @media prefers-reduced-motion already disables animations globally
+   via the reset at the top of this file. */
+
+@keyframes flag-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 252, 0.7);
+  }
+  30% {
+    box-shadow: 0 0 0 6px rgba(124, 92, 252, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 252, 0);
+  }
+}
+
+.flag-flash {
+  /* outline-style pulse — works cleanly on both inline <mark> and
+     block <button> without overriding their severity tint. */
+  animation: flag-flash 1500ms ease-out;
+  border-radius: 6px;
+}
+
 /* ----- Dots flow loader ------------------------------------------ */
 
 .dots-loader span {

@@ -104,6 +104,11 @@ export default function FlagList({
                   <li key={`${sev}-${originalIndex}`}>
                     <button
                       type="button"
+                      // `card-flag-${i}` is the jump target AnalysisReport
+                      // scrolls+flashes when a highlight in the clause
+                      // viewer is clicked. Index is paired with
+                      // `highlight-flag-${i}` on the mark side.
+                      id={`card-flag-${originalIndex}`}
                       onClick={() => onSelect?.(flag, originalIndex)}
                       className={cn(
                         "group w-full text-left rounded-xl border p-4 transition-all",
