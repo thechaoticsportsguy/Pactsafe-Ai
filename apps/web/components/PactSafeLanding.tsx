@@ -1,22 +1,11 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
-import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
-import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
-import { normalizeJobStatus } from "@/lib/review";
-import ContractPreview from "@/components/ContractPreview";
-import LiveScanSidebar from "@/components/LiveScanSidebar";
-import AnalysisReport from "@/components/AnalysisReport";
-import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import {
-  Paperclip,
-  ArrowUp,
   ArrowRight,
-  Shield,
   FileText,
-  Scale,
   Sparkles,
   X,
   Upload,
@@ -29,6 +18,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   AlertOctagon,
+  Shield,
   Quote,
   ChevronDown,
   Palette,
@@ -39,7 +29,6 @@ import {
   Code2,
   ShieldCheck,
   GitFork,
-  ClipboardPaste,
 } from "lucide-react";
 import TopNav from "@/components/TopNav";
 import Footer from "@/components/Footer";
@@ -50,38 +39,50 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 // ---------------------------------------------------------------------------
-// Quick-action samples (prefill contract types)
+// Editorial hero — real red flags (trimmed) from the Handshake
+// ground-truth fixture. Used only by the right-column product
+// screenshot card so the marketing visual matches actual analyzer
+// output rather than stock copy.
 // ---------------------------------------------------------------------------
-interface QuickAction {
-  icon: React.ReactNode;
-  label: string;
-  sample: string;
+interface FlagPreview {
+  sev: "Critical" | "High";
+  /** Tailwind bg class for the left severity bar. */
+  sevBar: string;
+  /** Tailwind text class for the severity label. */
+  sevText: string;
+  title: string;
+  /** Short excerpt from the verbatim quote. null hides the italic line. */
+  quote: string | null;
+  /** "5.1 · Ownership of Work Product" — section number + heading. */
+  section: string;
 }
 
-const QUICK_ACTIONS: QuickAction[] = [
+const FLAG_PREVIEWS: FlagPreview[] = [
   {
-    icon: <Shield className="h-3.5 w-3.5" />,
-    label: "NDA",
-    sample:
-      'NON-DISCLOSURE AGREEMENT\n\nThis Non-Disclosure Agreement (the "Agreement") is entered into as of the date last signed below between the parties for the purpose of preventing the unauthorized disclosure of Confidential Information...',
+    sev: "Critical",
+    sevBar: "bg-[#ef4444]",
+    sevText: "text-[#ef4444]",
+    title: "IP covers pre-existing work",
+    quote:
+      "…created, conceived of or otherwise developed… prior to the Effective Date",
+    section: "5.1 · Ownership of Work Product",
   },
   {
-    icon: <FileText className="h-3.5 w-3.5" />,
-    label: "Freelance SOW",
-    sample:
-      'FREELANCE SERVICES AGREEMENT\n\nThis Freelance Services Agreement ("Agreement") is made between Client and Contractor for the provision of design, development, and related creative services as described in the Statement of Work...',
+    sev: "High",
+    sevBar: "bg-[#f97316]",
+    sevText: "text-[#f97316]",
+    title: "$500 liability cap favors platform",
+    quote:
+      "…exceeding in the aggregate the greater of… during the 3-month period…",
+    section: "14.2 · General Damages",
   },
   {
-    icon: <Scale className="h-3.5 w-3.5" />,
-    label: "SaaS MSA",
-    sample:
-      'MASTER SUBSCRIPTION AGREEMENT\n\nThis Master Subscription Agreement ("MSA") governs Customer\'s access to and use of the Service, including all exhibits, order forms, and statements of work incorporated herein...',
-  },
-  {
-    icon: <FileCheck2 className="h-3.5 w-3.5" />,
-    label: "Consulting",
-    sample:
-      'INDEPENDENT CONSULTING AGREEMENT\n\nThis Consulting Agreement is entered into between the Company and Consultant for the performance of consulting services, subject to the terms and conditions set forth herein...',
+    sev: "High",
+    sevBar: "bg-[#f97316]",
+    sevText: "text-[#f97316]",
+    title: "Mandatory arbitration, 30-day opt-out",
+    quote: null,
+    section: "17.12 · Your Right to Opt Out",
   },
 ];
 
@@ -207,605 +208,186 @@ function MobileStickyCTA() {
 }
 
 // ---------------------------------------------------------------------------
-// Hero — eyebrow, headline, inline upload card, quick pills, trust row
+// Hero — editorial two-column marketing block. Left: eyebrow pill,
+// headline, subhead, CTA row, and a 4-cell stats row. Right: dark
+// product-screenshot card showing three real red flags from the
+// Handshake ground-truth fixture so the visual matches actual output.
+// No state, no polling — clicking the primary CTA routes to /analyze
+// where the real upload + scan flow lives.
+//
+// Design tokens intentionally diverge from the rest of the page:
+//   beige-100 background, ink-900 headlines, cream (beige-50) accents
+//   on the dark product preview. All corners are sharp (no rounded-*
+//   classes in this subtree). The rest of the landing sections still
+//   render with the old dark-mode tokens — they'll get their own
+//   editorial restyle in a follow-up commit so this diff stays
+//   reviewable. Expect the seam to look jarring until then.
 // ---------------------------------------------------------------------------
 function Hero() {
-  const [text, setText] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [pasted, setPasted] = useState(false);
-
-  // Live-scan state — mirrors the /analyze page's three-phase flow but
-  // keeps the landing layout (nav / hero copy) visible above.
-  const [status, setStatus] = useState<JobStatus>("queued");
-  const [progress, setProgress] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [completedJob, setCompletedJob] =
-    useState<JobStatusResponse | null>(null);
-  const [showReport, setShowReport] = useState(false);
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const holdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Mount guard — a late poll / refetch resolving after unmount would
-  // otherwise call setState on a dead tree and throw a React warning.
-  const mountedRef = useRef(true);
-  // Completion lock — once we've captured a normalized completed result,
-  // any late poll response (in-flight tick that predated stopPolling, or
-  // a rogue retry) must be ignored. Locking prevents partial data from
-  // clobbering the final payload.
-  const hasFinalResultRef = useRef(false);
-
-  const adjustHeight = useCallback(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "64px";
-    el.style.height = Math.min(el.scrollHeight, 220) + "px";
-  }, []);
-
-  function stopPolling() {
-    if (pollRef.current !== null) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }
-  function stopHold() {
-    if (holdRef.current !== null) {
-      clearTimeout(holdRef.current);
-      holdRef.current = null;
-    }
-  }
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      stopPolling();
-      stopHold();
-    };
-  }, []);
-
-  // Elapsed counter — runs while polling.
-  useEffect(() => {
-    if (!loading) return;
-    const startTime = Date.now();
-    const id = window.setInterval(
-      () => setElapsed(Math.floor((Date.now() - startTime) / 1000)),
-      1000,
-    );
-    return () => window.clearInterval(id);
-  }, [loading]);
-
-  const handleSubmit = async () => {
-    setError(null);
-    if (!file && !text.trim()) return;
-    if (!file && text.trim().length < 50) {
-      setError("Paste at least 50 characters of contract text.");
-      return;
-    }
-
-    setLoading(true);
-    setStatus("queued");
-    setProgress(0.08);
-    setElapsed(0);
-    setCompletedJob(null);
-    setShowReport(false);
-    hasFinalResultRef.current = false;
-    stopHold();
-
-    let jobId: string;
-    try {
-      // Home-page preview uses the fast "flash" tier for near-instant
-      // feedback. The dedicated /analyze page uses "pro".
-      const job = file
-        ? await createJobFromFile(file, "flash")
-        : await createJobFromText(text.trim(), "flash");
-      jobId = job.job_id;
-      setProgress(0.15);
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Could not reach the backend. Is it running?",
-      );
-      setLoading(false);
-      return;
-    }
-
-    pollRef.current = setInterval(async () => {
-      try {
-        const job = await getJob(jobId);
-        if (!mountedRef.current) return;
-        // Completion lock — a late poll firing after we've already
-        // captured the final result must not overwrite the UI state.
-        if (hasFinalResultRef.current) return;
-        setStatus(job.status);
-
-        if (job.status === "extracting") {
-          setProgress((p) => Math.max(p, 0.35));
-        } else if (job.status === "analyzing") {
-          setProgress((p) => Math.max(p, 0.65));
-        } else if (job.status === "completed") {
-          hasFinalResultRef.current = true;
-          stopPolling();
-          // Refetch on completion — poll responses sometimes arrive with
-          // a partially-populated `result` (missing arrays, half-shaped
-          // object) because the worker flushes progress before the final
-          // payload settles. A fresh GET is authoritative. Mirrors the
-          // /analyze page's behavior so both flows converge on the same
-          // result shape.
-          let finalJob: JobStatusResponse;
-          try {
-            finalJob = await getJob(jobId);
-          } catch {
-            finalJob = job;
-          }
-          if (!mountedRef.current) return;
-          const normalized = normalizeJobStatus(finalJob) ?? finalJob;
-          setStatus("completed");
-          setProgress(1);
-          setCompletedJob(normalized);
-          setLoading(false);
-          // Hold the "scan complete" frame for ~2 s before swapping in
-          // the full report, matching /analyze's behavior.
-          stopHold();
-          holdRef.current = setTimeout(() => {
-            if (mountedRef.current) setShowReport(true);
-          }, 2000);
-        } else if (job.status === "failed") {
-          stopPolling();
-          setError(job.error || "Analysis failed.");
-          setLoading(false);
-        }
-      } catch (err) {
-        if (!mountedRef.current) return;
-        stopPolling();
-        setError(err instanceof Error ? err.message : String(err));
-        setLoading(false);
-      }
-    }, 1500);
-  };
-
-  const resetAnalysis = () => {
-    stopPolling();
-    stopHold();
-    hasFinalResultRef.current = false;
-    setLoading(false);
-    setError(null);
-    setCompletedJob(null);
-    setShowReport(false);
-    setProgress(0);
-    setElapsed(0);
-    setFile(null);
-    setText("");
-  };
-
-  // Gates for the three phases — mirrors AnalyzePage so both flows stay
-  // visually consistent. "scanning" covers both the live run and the
-  // ~2 s post-complete hold.
-  const inScanningPhase = loading || (completedJob !== null && !showReport);
-  const inReportPhase =
-    completedJob !== null && completedJob.result != null && showReport;
-
-  const acceptFile = (f: File) => {
-    const ALLOWED = /\.(pdf|docx|doc|txt|md)$/i;
-    if (!ALLOWED.test(f.name)) {
-      setError("Only PDF, DOCX, or TXT files are supported.");
-      return;
-    }
-    if (f.size > 10 * 1024 * 1024) {
-      setError("File exceeds the 10 MB limit.");
-      return;
-    }
-    setFile(f);
-    setText("");
-    setError(null);
-  };
-
-  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    acceptFile(f);
-    e.target.value = "";
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const f = e.dataTransfer.files?.[0];
-    if (f) acceptFile(f);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!isDragging) setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (e.currentTarget === e.target) setIsDragging(false);
-  };
-
-  const pasteFromClipboard = async () => {
-    setError(null);
-    try {
-      const clipText = await navigator.clipboard.readText();
-      if (!clipText || clipText.trim().length === 0) {
-        setError("Clipboard is empty.");
-        return;
-      }
-      setFile(null);
-      setText(clipText);
-      setTimeout(adjustHeight, 0);
-      textareaRef.current?.focus();
-      setPasted(true);
-      setTimeout(() => setPasted(false), 1400);
-    } catch {
-      setError(
-        "Couldn't read clipboard. Paste directly with ⌘V or Ctrl+V.",
-      );
-    }
-  };
-
-  const clearFile = () => {
-    setFile(null);
-    setText("");
-  };
-
-  const prefill = (sample: string) => {
-    setFile(null);
-    setText(sample);
-    setTimeout(adjustHeight, 0);
-    textareaRef.current?.focus();
-  };
-
-  const canSubmit = !loading && (!!file || text.trim().length > 0);
-
-  // ── Phase 3 — full report renders in place of the input card.
-  if (inReportPhase && completedJob?.result) {
-    return (
-      <section className="relative overflow-hidden bg-hero">
-        <div className="container-app py-12 md:py-16 space-y-8">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-success inline-flex items-center gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Live scan complete
-              </div>
-              <h1 className="mt-2 text-2xl md:text-3xl font-semibold tracking-tight text-gradient">
-                Your contract analysis
-              </h1>
-            </div>
-            <button
-              type="button"
-              onClick={resetAnalysis}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-surface/60 px-3 text-xs font-medium text-foreground-muted hover:text-foreground hover:bg-surface-2 transition-colors"
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Analyze another
-            </button>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-[1fr_340px]">
-            <ContractPreview
-              frozen
-              status="completed"
-              progress={1}
-              text={file ? null : text}
-              filename={completedJob.filename ?? file?.name ?? null}
-              elapsed={elapsed}
-              done
-            />
-            <LiveScanSidebar
-              frozen
-              status="completed"
-              progress={1}
-              filename={completedJob.filename ?? file?.name ?? null}
-              elapsed={elapsed}
-              clausesFound={Math.max(0, Math.round(1 * 16))}
-              risksIdentified={Math.max(0, Math.round(1 * 7))}
-              done
-            />
-          </div>
-
-          <AnalysisErrorBoundary onRetry={resetAnalysis}>
-            <AnalysisReport
-              jobId={completedJob.job_id}
-              result={completedJob.result}
-              filename={completedJob.filename}
-              createdAt={completedJob.created_at}
-              textPreview={completedJob.text_preview}
-              documentText={completedJob.document_text}
-              showBreadcrumb={false}
-              copyWindowHref={false}
-            />
-          </AnalysisErrorBoundary>
-        </div>
-      </section>
-    );
-  }
-
-  // ── Phase 2 — live scanner replaces the input card while work is in flight.
-  if (inScanningPhase) {
-    const isDone = status === "completed" || completedJob !== null;
-    return (
-      <section className="relative overflow-hidden bg-hero">
-        <div className="container-app py-12 md:py-16">
-          <div className="mx-auto max-w-3xl text-center mb-8 animate-fade-in-up">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent">
-              <Sparkles className="h-3 w-3 animate-pulse" />
-              Analyzing with Gemini Flash · fast preview
-            </div>
-            <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gradient">
-              Scanning your contract…
-            </h1>
-            <p className="mx-auto mt-3 max-w-xl text-sm text-foreground-muted">
-              Watch the live scan on the left. Your full report appears below
-              as soon as the scan finishes.
-            </p>
-          </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_340px]">
-            <ContractPreview
-              status={status}
-              progress={progress}
-              text={file ? null : text}
-              filename={file?.name ?? null}
-              elapsed={elapsed}
-              done={isDone}
-            />
-            <LiveScanSidebar
-              status={status}
-              progress={progress}
-              filename={file?.name ?? null}
-              elapsed={elapsed}
-              clausesFound={Math.max(0, Math.round(progress * 16))}
-              risksIdentified={Math.max(0, Math.round(progress * 7))}
-              done={isDone}
-            />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="relative overflow-hidden bg-hero">
-      {/* subtle grid */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.035] bg-grid-dot"
-      />
-      {/* top fade */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent"
-      />
-
-      <div className="container-app pt-16 pb-20 md:pt-24 md:pb-28">
-        <div className="mx-auto max-w-3xl text-center animate-fade-in-up">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent">
-            <Sparkles className="h-3 w-3" />
-            AI contract review · built for freelancers
-          </div>
-
-          <h1 className="text-[40px] leading-[1.05] md:text-[58px] md:leading-[1.02] font-semibold tracking-tightest text-gradient">
-            Never sign a bad contract again.
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-xl text-base md:text-lg text-foreground-muted leading-relaxed">
-            Drop a freelance contract, NDA, or SOW. In under a minute, get a
-            risk score, plain-English red flags, and ready-to-send negotiation
-            edits.
-          </p>
-
-          {/* Reassurance row */}
-          <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-foreground-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              No signup required
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              No credit card
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              Free on your first few
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-              Private by default
-            </span>
-          </div>
-        </div>
-
-        {/* Input card */}
-        <div
-          className="mx-auto mt-10 max-w-3xl animate-fade-in-up"
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          <div
-            className={cn(
-              "relative rounded-2xl border bg-surface/80 p-1.5 shadow-card-lg backdrop-blur-xl transition-all",
-              error
-                ? "border-severity-critical/50"
-                : isDragging
-                  ? "border-accent/70 scale-[1.01] shadow-glow-lg"
-                  : "border-white/10 hover:border-white/15",
-            )}
-          >
-            {isDragging && (
-              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-accent/10 backdrop-blur-sm">
-                <div className="flex flex-col items-center gap-2">
-                  <Upload className="h-7 w-7 text-accent" strokeWidth={1.75} />
-                  <p className="text-sm font-medium text-accent">
-                    Drop it here
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="rounded-[14px] bg-bg-elevated/70 ring-1 ring-white/5">
-              <div className="px-4 pt-4">
-                {file ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/10 px-3 py-3">
-                    <FileText className="h-4 w-4 flex-shrink-0 text-accent" />
-                    <span className="flex-1 truncate text-sm font-medium text-accent">
-                      {file.name}
-                    </span>
-                    <span className="text-xs text-foreground-muted">
-                      {(file.size / 1024 / 1024).toFixed(1)} MB
-                    </span>
-                    <button
-                      type="button"
-                      onClick={clearFile}
-                      className="ml-1 rounded p-0.5 text-foreground-muted hover:bg-accent/20 hover:text-accent"
-                      aria-label="Remove file"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <textarea
-                    ref={textareaRef}
-                    value={text}
-                    onChange={(e) => {
-                      setText(e.target.value);
-                      adjustHeight();
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault();
-                        handleSubmit();
-                      }
-                    }}
-                    placeholder="Paste a contract here — or attach a PDF / DOCX below"
-                    disabled={loading}
-                    className="w-full resize-none bg-transparent text-[15px] text-foreground placeholder:text-foreground-muted focus:outline-none disabled:opacity-60"
-                    style={{ minHeight: 64, maxHeight: 220, overflow: "auto" }}
-                  />
-                )}
-              </div>
-
-              <div className="flex items-center justify-between px-3 pb-3 pt-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.docx,.txt"
-                    className="hidden"
-                    onChange={handleFilePick}
-                    disabled={loading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={loading}
-                    aria-label="Attach file"
-                    className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-foreground-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:opacity-40"
-                  >
-                    <Paperclip className="h-3.5 w-3.5" />
-                    Attach
-                  </button>
-                  <button
-                    type="button"
-                    onClick={pasteFromClipboard}
-                    disabled={loading}
-                    aria-label="Paste from clipboard"
-                    className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-foreground-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:opacity-40"
-                  >
-                    {pasted ? (
-                      <>
-                        <CheckCircle2 className="h-3.5 w-3.5 text-success" />
-                        Pasted
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardPaste className="h-3.5 w-3.5" />
-                        Paste
-                      </>
-                    )}
-                  </button>
-                  <span className="hidden md:block text-xs text-foreground-muted">
-                    {file
-                      ? `${(file.size / 1024 / 1024).toFixed(1)} MB attached`
-                      : "PDF · DOCX · TXT · 10 MB"}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className={cn(
-                    "inline-flex h-9 items-center gap-1.5 rounded-lg px-4 text-sm font-medium transition-all",
-                    "bg-accent text-white shadow-glow",
-                    "hover:bg-accent-hover active:translate-y-px",
-                    "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none",
-                  )}
-                >
-                  {loading ? (
-                    <>
-                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Analyzing
-                    </>
-                  ) : (
-                    <>
-                      Analyze
-                      <ArrowUp className="h-3.5 w-3.5" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="mt-2 flex items-start gap-2 rounded-lg border border-severity-critical/30 bg-severity-critical/10 px-3 py-2 text-xs text-severity-critical">
-                <AlertOctagon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Hint + quick samples */}
-          <div className="mt-4 flex flex-col items-center gap-3">
-            <p className="text-xs text-foreground-muted">
-              Press <kbd>⌘</kbd> <kbd>Enter</kbd> to analyze ·{" "}
-              <span className="inline-flex items-center gap-1">
-                <Lock className="h-3 w-3" /> Encrypted & never sold
-              </span>
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <span className="text-xs text-foreground-subtle">Try a sample:</span>
-              {QUICK_ACTIONS.map((qa) => (
-                <button
-                  key={qa.label}
-                  type="button"
-                  onClick={() => prefill(qa.sample)}
-                  className="inline-flex h-7 items-center gap-1.5 rounded-full border border-border bg-surface/60 px-3 text-xs text-foreground-muted transition-all hover:border-accent/40 hover:bg-surface-2 hover:text-foreground"
-                >
-                  {qa.icon}
-                  {qa.label}
-                </button>
-              ))}
-            </div>
-
-            <Link
-              href="/demo"
-              className="mt-2 inline-flex items-center gap-1.5 text-xs text-accent hover:underline underline-offset-2"
-            >
-              Or see a full sample report without signing up
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
+    <section className="bg-beige-100 text-ink-900">
+      <div className="container-app grid gap-12 py-16 md:grid-cols-2 md:items-center md:gap-16 md:py-24">
+        <HeroCopy />
+        <HeroScreenshot />
       </div>
     </section>
+  );
+}
+
+function HeroCopy() {
+  return (
+    <div className="max-w-xl">
+      {/* Eyebrow pill — black bg / cream text, the only uppercase
+          element in the headline cluster. */}
+      <div className="inline-flex items-center gap-2 bg-ink-900 px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest text-beige-50">
+        <span className="h-1.5 w-1.5 rounded-full bg-beige-100" />
+        Grounded AI · Every claim cited
+      </div>
+
+      {/* Headline — weight 500 keeps the editorial feel; 600+ reads
+          heavy against the warm beige. Hard line breaks preserve the
+          target rhythm regardless of viewport width. */}
+      <h1 className="mt-6 text-5xl font-medium leading-[1.05] tracking-[-0.03em] text-ink-900 md:text-7xl">
+        Read every
+        <br />
+        clause. Like
+        <br />
+        a lawyer
+        <br />
+        would.
+      </h1>
+
+      <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-800">
+        Paste any contract. In under 60 seconds, get a plain-English
+        risk report — every red flag tied to the exact clause in your
+        document. No lawyer fees. No data retained.
+      </p>
+
+      {/* CTAs — sharp corners, primary filled black, secondary
+          bordered. Both link to real routes (no inline textarea on
+          the marketing page; the full upload flow lives at /analyze). */}
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <Link
+          href="/analyze"
+          className="inline-flex items-center gap-2 bg-ink-900 px-7 py-3.5 text-sm font-medium text-beige-50 transition-colors hover:bg-ink-800"
+        >
+          Analyze a contract
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+        <Link
+          href="/demo"
+          className="inline-flex items-center gap-2 border border-ink-900 px-7 py-3.5 text-sm font-medium text-ink-900 transition-colors hover:bg-ink-900 hover:text-beige-50"
+        >
+          See sample report
+        </Link>
+      </div>
+
+      {/* Stats — 2 cols on mobile, 4 on desktop. 1-px ink-900 top
+          border matches the nav's editorial rhythm. */}
+      <dl className="mt-12 grid max-w-[560px] grid-cols-2 gap-x-6 gap-y-6 border-t border-ink-900 pt-6 md:grid-cols-4">
+        {[
+          { k: "Free", v: "No account" },
+          { k: "60s", v: "Avg scan" },
+          { k: "Cited", v: "Every claim" },
+          { k: "0%", v: "Retained" },
+        ].map((s) => (
+          <div key={s.k}>
+            <dd className="text-2xl font-medium tracking-tight text-ink-900 tabular-nums">
+              {s.k}
+            </dd>
+            <dt className="mt-1 text-[11px] font-medium uppercase tracking-widest text-ink-600">
+              {s.v}
+            </dt>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function HeroScreenshot() {
+  // Hidden on small screens — the dense card crowds narrow viewports
+  // and the marketing copy stands on its own without it. Step-6
+  // guardrail allows either simplifying or hiding; hidden is the
+  // safer default until we get real UX feedback on mobile.
+  return (
+    <div className="hidden md:block">
+      <div className="bg-ink-900 p-5 text-beige-50">
+        {/* Status bar */}
+        <div className="flex items-center justify-between border-b border-beige-50/10 pb-3 text-[11px] font-medium uppercase tracking-widest text-beige-50">
+          <span className="inline-flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#10b981]" />
+            Analysis complete
+          </span>
+          <span className="text-beige-50/60">18s · 78 clauses</span>
+        </div>
+
+        {/* Metric cards — beige tiles on dark bg, sharp corners. */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="bg-beige-100 p-4 text-ink-900">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-600">
+              Risk score
+            </p>
+            <p className="mt-1 text-3xl font-medium tabular-nums">
+              72
+              <span className="text-sm text-ink-600">/100</span>
+            </p>
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-[#ef4444]">
+              High risk
+            </p>
+          </div>
+          <div className="bg-beige-100 p-4 text-ink-900">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-600">
+              Flags found
+            </p>
+            <p className="mt-1 text-3xl font-medium tabular-nums">11</p>
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-ink-600">
+              2 critical · 5 high
+            </p>
+          </div>
+        </div>
+
+        {/* Mini flag cards — content lifted from the Handshake
+            ground-truth fixture, trimmed to fit. Real output, not
+            stock copy. */}
+        <div className="mt-4 space-y-2">
+          {FLAG_PREVIEWS.map((f) => (
+            <div
+              key={f.title}
+              className="flex gap-3 bg-beige-50 p-3 text-ink-900"
+            >
+              <span
+                aria-hidden
+                className={cn("w-0.5 flex-shrink-0", f.sevBar)}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "text-[9px] font-medium uppercase tracking-widest",
+                      f.sevText,
+                    )}
+                  >
+                    {f.sev}
+                  </span>
+                  <span className="text-[10px] text-ink-600">
+                    § {f.section}
+                  </span>
+                </div>
+                <p className="mt-1 text-[13px] font-medium text-ink-900">
+                  {f.title}
+                </p>
+                {f.quote && (
+                  <p className="mt-1 text-[11px] italic leading-snug text-ink-600">
+                    &ldquo;{f.quote}&rdquo;
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

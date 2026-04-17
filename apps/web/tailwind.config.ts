@@ -57,6 +57,20 @@ const config: Config = {
           high: "#f97316",
           critical: "#ef4444",
         },
+        // Editorial hero palette — beige/black/cream. Used by the
+        // marketing hero (Harvey.ai / Legly-inspired). Kept additive
+        // alongside the dark-mode tokens above so the rest of the
+        // app (report UI, analyze flow, history) keeps working.
+        beige: {
+          50: "#F7F3EB",
+          100: "#EFE9DD", // hero background
+          200: "#E4DCC9",
+        },
+        ink: {
+          900: "#111111", // headlines
+          800: "#1a1a1a", // body
+          600: "#444444", // muted
+        },
       },
       fontFamily: {
         sans: [
