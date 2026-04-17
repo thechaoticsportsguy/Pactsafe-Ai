@@ -12,8 +12,8 @@ import {
   Equal,
   Trophy,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/primitives/Button";
+import { Badge } from "@/components/primitives/Badge";
 import { listJobs } from "@/lib/api";
 import type {
   AnalysisResult,
@@ -55,14 +55,14 @@ export default function ComparePage() {
   return (
     <div className="space-y-8">
       <div>
-        <Badge tone="accent" size="xs" className="mb-3">
+        <Badge className="mb-3 gap-1 border-accent/40 bg-accent/10 text-accent">
           <GitCompare className="h-3 w-3" />
           Side by side
         </Badge>
-        <h1 className="text-3xl font-semibold tracking-tight">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">
           Compare contracts
         </h1>
-        <p className="mt-2 text-sm text-foreground-muted max-w-2xl">
+        <p className="mt-2 text-sm text-zinc-400 max-w-2xl">
           Pick two completed analyses to see risk scores, flag counts, and
           missing protections side by side — great for comparing two versions
           of the same deal.
@@ -70,20 +70,20 @@ export default function ComparePage() {
       </div>
 
       {jobs.length < 2 ? (
-        <div className="rounded-2xl border border-border bg-surface/40 px-6 py-16 text-center">
+        <div className="rounded-lg border border-white/5 bg-surface-1 px-6 py-16 text-center">
           <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent ring-1 ring-accent/20">
             <Layers className="h-6 w-6" />
           </div>
-          <h3 className="mt-5 text-base font-semibold text-foreground">
+          <h3 className="mt-5 text-base font-semibold text-zinc-100">
             Need at least two analyses to compare
           </h3>
-          <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
+          <p className="mt-2 text-sm text-zinc-400 max-w-sm mx-auto">
             Once you have two completed contracts in your history, come back
             here to see them side by side.
           </p>
           <div className="mt-6">
             <Link href="/analyze">
-              <Button>
+              <Button palette="workspace" variant="primary" radius="md">
                 Analyze a contract
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
@@ -128,7 +128,7 @@ export default function ComparePage() {
       )}
 
       {(leftId || rightId) && !(left && right) && jobs.length >= 2 && (
-        <p className="text-xs text-foreground-muted">
+        <p className="text-xs text-zinc-400">
           Pick both contracts to see the comparison.
         </p>
       )}
@@ -153,29 +153,29 @@ function DeltaSummary({
   const winnerJob = winner === "A" ? left : winner === "B" ? right : null;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface/60 p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+    <div className="rounded-lg border border-white/5 bg-surface-1 p-6">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
         Verdict
       </p>
       {winnerJob && l && r ? (
         <div className="mt-3">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+          <h2 className="text-xl font-semibold tracking-tight text-zinc-100 flex items-center gap-2">
             <Trophy className="h-5 w-5 text-success" />
             Contract {winner} is the safer bet
           </h2>
-          <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
+          <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed">
             {winnerJob.filename ?? "Pasted contract"} scores{" "}
-            <strong className="text-foreground">{absDelta} points</strong>{" "}
+            <strong className="text-zinc-100">{absDelta} points</strong>{" "}
             lower on overall risk.
           </p>
         </div>
       ) : (
         <div className="mt-3">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <Equal className="h-5 w-5 text-foreground-muted" />
+          <h2 className="text-xl font-semibold tracking-tight text-zinc-100 flex items-center gap-2">
+            <Equal className="h-5 w-5 text-zinc-400" />
             These contracts are comparable
           </h2>
-          <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed">
+          <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed">
             Risk scores are identical. Compare the flag breakdowns below.
           </p>
         </div>
@@ -221,8 +221,8 @@ function DeltaStat({
   const bBetter = lowerIsBetter ? diff > 0 : diff < 0;
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-elevated/40 p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-subtle">
+    <div className="rounded-md border border-white/5 bg-surface-2 p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
         {label}
       </p>
       <div className="mt-2 flex items-center justify-between gap-3 text-sm">
@@ -232,14 +232,14 @@ function DeltaStat({
             aBetter && "font-semibold text-success",
           )}
         >
-          <p className="text-[10px] text-foreground-subtle uppercase tracking-wider">
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
             A
           </p>
           <p className="mt-0.5 tabular-nums text-base">{a}</p>
         </div>
         <div className="flex-shrink-0">
           {diff === 0 ? (
-            <Equal className="h-4 w-4 text-foreground-subtle" />
+            <Equal className="h-4 w-4 text-zinc-500" />
           ) : aBetter ? (
             <TrendingDown className="h-4 w-4 text-success" />
           ) : (
@@ -252,7 +252,7 @@ function DeltaStat({
             bBetter && "font-semibold text-success",
           )}
         >
-          <p className="text-[10px] text-foreground-subtle uppercase tracking-wider">
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
             B
           </p>
           <p className="mt-0.5 tabular-nums text-base">{b}</p>
@@ -276,16 +276,16 @@ function JobPicker({
   disabledValue: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface/60 p-5">
-      <label className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+    <div className="rounded-md border border-white/5 bg-surface-1 p-5">
+      <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
         {label}
       </label>
       <div className="relative mt-2">
-        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-muted pointer-events-none" />
+        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-full appearance-none rounded-lg border border-border bg-surface pl-9 pr-9 text-sm text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-colors"
+          className="h-11 w-full appearance-none rounded-md border border-white/10 bg-surface-2 pl-9 pr-9 text-sm text-zinc-100 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-colors"
         >
           <option value="">— choose an analysis —</option>
           {jobs.map((j) => (
@@ -328,15 +328,15 @@ function ComparePanel({
   return (
     <div
       className={cn(
-        "relative rounded-2xl border bg-surface/70 p-6 transition-all",
+        "relative rounded-lg border bg-surface-1 p-6 transition-all",
         highlight === "safer"
           ? "border-success/40 ring-2 ring-success/20"
-          : "border-border",
+          : "border-white/5",
       )}
     >
       {highlight === "safer" && (
         <div className="absolute -top-3 left-6">
-          <Badge tone="success" size="xs">
+          <Badge className="gap-1 border-success/40 bg-success/10 text-success">
             <Trophy className="h-3 w-3" />
             Safer choice
           </Badge>
@@ -344,10 +344,10 @@ function ComparePanel({
       )}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted truncate">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 truncate">
             {job.filename ?? "(text)"}
           </p>
-          <h3 className="mt-1.5 text-lg font-semibold tracking-tight truncate">
+          <h3 className="mt-1.5 text-lg font-semibold tracking-tight text-zinc-100 truncate">
             {getDocumentTypeLabel(result.metadata?.document_type)}
           </h3>
         </div>
@@ -363,12 +363,12 @@ function ComparePanel({
         </span>
       </div>
 
-      <p className="mt-4 text-sm leading-relaxed text-foreground/85 line-clamp-4">
+      <p className="mt-4 text-sm leading-relaxed text-zinc-200 line-clamp-4">
         {result.overall_summary}
       </p>
 
       <div className="mt-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           Flags by severity
         </p>
         <ul className="mt-3 space-y-2">
@@ -386,10 +386,10 @@ function ComparePanel({
                   )}
                   aria-hidden
                 />
-                <span className="capitalize text-foreground/85">
+                <span className="capitalize text-zinc-200">
                   {sev.toLowerCase()}
                 </span>
-                <span className="ml-auto tabular-nums font-medium text-foreground">
+                <span className="ml-auto tabular-nums font-medium text-zinc-100">
                   {countsBySeverity[sev]}
                 </span>
               </li>
@@ -398,17 +398,17 @@ function ComparePanel({
       </div>
 
       <div className="mt-6">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           Missing protections
         </p>
         {result.missing_protections.length === 0 ? (
-          <p className="mt-2 text-sm text-foreground-muted">
+          <p className="mt-2 text-sm text-zinc-400">
             None flagged.
           </p>
         ) : (
           <ul className="mt-2 space-y-1.5 text-sm">
             {result.missing_protections.slice(0, 6).map((m, i) => (
-              <li key={i} className="flex gap-2 text-foreground/85">
+              <li key={i} className="flex gap-2 text-zinc-200">
                 <span aria-hidden className="mt-1.5 h-1 w-1 rounded-full bg-warning flex-shrink-0" />
                 <span>{m}</span>
               </li>
@@ -419,7 +419,7 @@ function ComparePanel({
 
       {result.truncated && (
         <div className="mt-5">
-          <Badge tone="warning" size="xs">
+          <Badge className="gap-1 border-warning/40 bg-warning/10 text-warning">
             Truncated
           </Badge>
         </div>

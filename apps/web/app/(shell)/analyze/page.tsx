@@ -44,9 +44,9 @@ import ContractPreview from "@/components/ContractPreview";
 import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
 import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/primitives/Button";
 import { TextArea } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/primitives/Badge";
 import { useToast } from "@/components/Toast";
 import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
@@ -335,17 +335,18 @@ export default function AnalyzePage() {
   if (inReportPhase && completedJob?.result) {
     return (
       <div className="space-y-10">
-        {/* Sticky frozen scanner banner — breaks out horizontally so the
-            backdrop-blur covers the full viewport width, then re-insets
-            its inner grid with matching padding. */}
-        <div className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-border/50 bg-background/95 backdrop-blur-xl md:-mx-8 md:-mt-14">
+        {/* Sticky frozen scanner banner — solid fill matches the Phase 1
+            workspace surface system (no backdrop-blur); horizontal break-
+            out keeps the bar flush to the viewport edge with its inner
+            grid re-inset. */}
+        <div className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-white/5 bg-surface-0/95 md:-mx-8 md:-mt-14">
           <div className="px-5 pt-4 md:px-8">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-success">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Live scan complete
               </div>
-              <Button variant="outline" size="sm" onClick={reset}>
+              <Button palette="workspace" variant="secondary" size="sm" radius="md" onClick={reset}>
                 <Plus className="h-3.5 w-3.5" />
                 Analyze another
               </Button>
@@ -448,13 +449,13 @@ export default function AnalyzePage() {
           aria-hidden
           className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none animate-fade-in"
         >
-          <div className="absolute inset-4 rounded-3xl border-2 border-dashed border-accent/60 bg-accent/[0.08] backdrop-blur-sm" />
-          <div className="relative flex flex-col items-center gap-3 rounded-2xl border border-accent/40 bg-bg-elevated/95 px-8 py-6 shadow-card-lg ring-1 ring-accent/30">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-accent/25 to-accent/5 text-accent ring-1 ring-accent/30">
+          <div className="absolute inset-4 rounded-lg border-2 border-dashed border-accent/60 bg-accent/[0.08]" />
+          <div className="relative flex flex-col items-center gap-3 rounded-md border border-accent/40 bg-surface-2 px-8 py-6 shadow-elevated ring-1 ring-accent/30">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-accent/25 to-accent/5 text-accent ring-1 ring-accent/30">
               <Upload className="h-6 w-6" strokeWidth={1.75} />
             </span>
-            <p className="text-sm font-semibold text-foreground">Drop your contract anywhere</p>
-            <p className="text-xs text-foreground-muted">PDF · DOCX · TXT · up to 10 MB</p>
+            <p className="text-sm font-semibold text-zinc-100">Drop your contract anywhere</p>
+            <p className="text-xs text-zinc-400">PDF · DOCX · TXT · up to 10 MB</p>
           </div>
         </div>
       )}
@@ -462,14 +463,14 @@ export default function AnalyzePage() {
       {/* Main column */}
       <div className="min-w-0 space-y-8">
         <div>
-          <Badge tone="accent" size="xs" className="mb-3">
+          <Badge className="mb-3 gap-1 border-accent/40 bg-accent/10 text-accent">
             <Zap className="h-3 w-3" />
             New analysis
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">
             Analyze a contract
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground-muted">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
             Upload a PDF, DOCX, or TXT — or paste raw text. We&rsquo;ll extract
             it, flag risks, and give you ready-to-send negotiation language.
             Your full report appears right here when the scan finishes.
@@ -478,7 +479,7 @@ export default function AnalyzePage() {
 
         {/* Mode toggle + clipboard paste */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface/60 p-1">
+          <div className="inline-flex items-center gap-1 rounded-md border border-white/5 bg-surface-1 p-1">
             {(
               [
                 ["file", "Upload file", Upload],
@@ -492,8 +493,8 @@ export default function AnalyzePage() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
                   mode === m
-                    ? "bg-accent text-white shadow-glow"
-                    : "text-foreground-muted hover:text-foreground",
+                    ? "bg-accent text-white shadow-glow-accent"
+                    : "text-zinc-400 hover:text-zinc-100",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -501,7 +502,7 @@ export default function AnalyzePage() {
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={pasteFromClipboard}>
+          <Button palette="workspace" variant="secondary" size="sm" radius="md" onClick={pasteFromClipboard}>
             <ClipboardPaste className="h-3.5 w-3.5" />
             Paste from clipboard
           </Button>
@@ -510,7 +511,7 @@ export default function AnalyzePage() {
         {mode === "file" && <Dropzone onFile={onFile} />}
 
         {mode === "text" && (
-          <div className="rounded-xl border border-border bg-surface/60 p-5">
+          <div className="rounded-md border border-white/5 bg-surface-1 p-5">
             <TextArea
               placeholder="Paste your contract text here (at least 50 characters)…"
               value={text}
@@ -522,9 +523,10 @@ export default function AnalyzePage() {
                 }
               }}
               rows={14}
+              className="rounded-md border-white/10 bg-surface-2 text-zinc-100"
             />
             <div className="mt-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 text-xs text-foreground-muted">
+              <div className="flex items-center gap-3 text-xs text-zinc-400">
                 <span className="tabular-nums">
                   {text.trim().length.toLocaleString()} characters
                 </span>
@@ -536,10 +538,13 @@ export default function AnalyzePage() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="hidden text-xs text-foreground-subtle sm:inline">
+                <span className="hidden text-xs text-zinc-500 sm:inline">
                   <kbd>⌘</kbd> <kbd>Enter</kbd>
                 </span>
                 <Button
+                  palette="workspace"
+                  variant="primary"
+                  radius="md"
                   onClick={onAnalyzeText}
                   disabled={text.trim().length < 50}
                 >
@@ -555,7 +560,7 @@ export default function AnalyzePage() {
         {error && (
           <div
             role="alert"
-            className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-5"
+            className="rounded-md border border-severity-critical/40 bg-severity-critical/10 p-5"
           >
             <div className="flex items-start gap-3">
               <AlertOctagon className="mt-0.5 h-5 w-5 flex-shrink-0 text-severity-critical" />
@@ -563,9 +568,9 @@ export default function AnalyzePage() {
                 <p className="text-sm font-semibold text-severity-critical">
                   Something went wrong
                 </p>
-                <p className="mt-1 text-xs text-foreground/85">{error}</p>
+                <p className="mt-1 text-xs text-zinc-200">{error}</p>
                 <div className="mt-3">
-                  <Button variant="outline" size="sm" onClick={reset}>
+                  <Button palette="workspace" variant="secondary" size="sm" radius="md" onClick={reset}>
                     <RefreshCw className="h-3.5 w-3.5" />
                     Start over
                   </Button>
@@ -576,7 +581,7 @@ export default function AnalyzePage() {
         )}
 
         {jobId && !busy && !error && !completedJob && (
-          <p className="text-xs text-foreground-muted">
+          <p className="text-xs text-zinc-400">
             Job ID: <span className="font-mono">{jobId}</span>
           </p>
         )}
@@ -584,12 +589,12 @@ export default function AnalyzePage() {
 
       {/* Side reassurance panel */}
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-xl border border-border bg-surface/60 p-5">
+        <div className="rounded-md border border-white/5 bg-surface-1 p-5">
           <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent">
             <ShieldCheck className="h-3.5 w-3.5" />
             Private by default
           </p>
-          <ul className="mt-4 space-y-3 text-xs leading-relaxed text-foreground-muted">
+          <ul className="mt-4 space-y-3 text-xs leading-relaxed text-zinc-400">
             <li className="flex items-start gap-2">
               <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
               <span>Uploads are encrypted in transit and at rest.</span>
@@ -605,28 +610,28 @@ export default function AnalyzePage() {
           </ul>
         </div>
 
-        <div className="rounded-xl border border-border bg-surface/60 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+        <div className="rounded-md border border-white/5 bg-surface-1 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
             Quick facts
           </p>
           <dl className="mt-3 space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
-              <dt className="text-foreground-muted">Typical review</dt>
-              <dd className="font-medium text-foreground">&lt; 60 s</dd>
+              <dt className="text-zinc-400">Typical review</dt>
+              <dd className="font-medium text-zinc-100">&lt; 60 s</dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-foreground-muted">File size</dt>
-              <dd className="font-medium text-foreground">up to 10 MB</dd>
+              <dt className="text-zinc-400">File size</dt>
+              <dd className="font-medium text-zinc-100">up to 10 MB</dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-foreground-muted">Formats</dt>
-              <dd className="font-medium text-foreground">PDF · DOCX · TXT</dd>
+              <dt className="text-zinc-400">Formats</dt>
+              <dd className="font-medium text-zinc-100">PDF · DOCX · TXT</dd>
             </div>
           </dl>
         </div>
 
-        <div className="rounded-xl border border-border-subtle bg-surface/30 p-5">
-          <p className="text-xs leading-relaxed text-foreground-subtle">
+        <div className="rounded-md border border-white/5 bg-surface-1/60 p-5">
+          <p className="text-xs leading-relaxed text-zinc-500">
             PactSafe AI is a screening tool, not a law firm. For high-stakes
             deals, consult a licensed attorney.{" "}
             <Link href="/#faq" className="text-accent hover:underline underline-offset-2">

@@ -14,8 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/primitives/Badge";
+import { Button } from "@/components/primitives/Button";
 import { listJobs, exportPdfUrl } from "@/lib/api";
 import type { JobStatusResponse } from "@/lib/schemas";
 import { riskBand } from "@/lib/severity";
@@ -120,33 +120,33 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <Badge tone="accent" size="xs" className="mb-3">
+          <Badge className="mb-3 gap-1 border-accent/40 bg-accent/10 text-accent">
             <Clock className="h-3 w-3" />
             Past analyses
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">
             Your contract history
           </h1>
-          <p className="mt-2 text-sm text-foreground-muted">
+          <p className="mt-2 text-sm text-zinc-400">
             Every contract you've analyzed — searchable, filterable, re-exportable.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground-muted pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 pointer-events-none" />
             <Input
               ref={searchRef}
               placeholder="Search by name, type, or summary…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-9 pr-16"
+              className="rounded-md border-white/10 bg-surface-2 pl-9 pr-16 text-zinc-100"
             />
             <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none">
               ⌘K
             </kbd>
           </div>
           <Link href="/analyze" className="flex-shrink-0">
-            <Button>
+            <Button palette="workspace" variant="primary" radius="md">
               New analysis
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -157,7 +157,7 @@ export default function HistoryPage() {
       {/* Risk filter chips */}
       {jobs && jobs.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-xs text-foreground-subtle mr-1">
+          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 mr-1">
             <Filter className="h-3 w-3" />
             Filter
           </span>
@@ -172,8 +172,8 @@ export default function HistoryPage() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                   active
-                    ? "border-white/20 bg-surface-2 text-foreground"
-                    : "border-border bg-surface/40 text-foreground-muted hover:border-border-strong hover:text-foreground",
+                    ? "border-white/20 bg-surface-2 text-zinc-100"
+                    : "border-white/5 bg-surface-1 text-zinc-400 hover:border-white/10 hover:text-zinc-100",
                 )}
               >
                 {f.value !== "all" && (
@@ -184,7 +184,7 @@ export default function HistoryPage() {
                   />
                 )}
                 {f.label}
-                <span className="text-foreground-subtle tabular-nums">
+                <span className="text-zinc-500 tabular-nums">
                   {count}
                 </span>
               </button>
@@ -194,7 +194,7 @@ export default function HistoryPage() {
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 rounded-full border border-border bg-surface/40 px-3 py-1 text-xs text-foreground-muted hover:text-foreground"
+              className="inline-flex items-center gap-1 rounded-full border border-white/5 bg-surface-1 px-3 py-1 text-xs text-zinc-400 hover:text-zinc-100"
             >
               <X className="h-3 w-3" />
               Clear
@@ -204,7 +204,7 @@ export default function HistoryPage() {
       )}
 
       {error && (
-        <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-4 text-sm text-severity-critical">
+        <div className="rounded-md border border-severity-critical/40 bg-severity-critical/10 p-4 text-sm text-severity-critical">
           {error}
         </div>
       )}
@@ -218,14 +218,14 @@ export default function HistoryPage() {
       )}
 
       {jobs && filtered.length === 0 && (
-        <div className="rounded-2xl border border-border bg-surface/40 px-6 py-16 text-center">
+        <div className="rounded-lg border border-white/5 bg-surface-1 px-6 py-16 text-center">
           <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent ring-1 ring-accent/20">
             <FolderOpen className="h-6 w-6" />
           </div>
-          <h3 className="mt-5 text-base font-semibold text-foreground">
+          <h3 className="mt-5 text-base font-semibold text-zinc-100">
             {query ? "No matches found" : "No analyses yet"}
           </h3>
-          <p className="mt-2 text-sm text-foreground-muted max-w-sm mx-auto">
+          <p className="mt-2 text-sm text-zinc-400 max-w-sm mx-auto">
             {query
               ? "Try a different search term."
               : "Upload your first contract and we'll save it here for easy reference."}
@@ -233,7 +233,7 @@ export default function HistoryPage() {
           {!query && (
             <div className="mt-6">
               <Link href="/analyze">
-                <Button>
+                <Button palette="workspace" variant="primary" radius="md">
                   Analyze a contract
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
@@ -244,14 +244,14 @@ export default function HistoryPage() {
       )}
 
       {jobs && filtered.length > 0 && (
-        <div className="rounded-2xl border border-border bg-surface/40 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border/60 text-xs text-foreground-muted">
+        <div className="rounded-lg border border-white/5 bg-surface-1 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 text-xs text-zinc-400">
             <span>
               {filtered.length} {filtered.length === 1 ? "analysis" : "analyses"}
             </span>
             <span>Newest first</span>
           </div>
-          <ul className="divide-y divide-border/60">
+          <ul className="divide-y divide-white/5">
             {filtered.map((j) => {
               const rawScore = j.result?.risk_score;
               const score = rawScore != null ? Math.min(rawScore, 95) : undefined;
@@ -259,27 +259,27 @@ export default function HistoryPage() {
               return (
                 <li
                   key={j.job_id}
-                  className="group hover:bg-surface-2/40 transition-colors"
+                  className="group hover:bg-surface-2 transition-colors"
                 >
                   <Link
                     href={`/analysis/${j.job_id}`}
                     className="flex flex-wrap items-center gap-4 px-5 py-4"
                   >
-                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
+                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
                       <FileText className="h-4 w-4" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate text-foreground">
+                      <p className="font-medium truncate text-zinc-100">
                         {j.filename ?? "Pasted contract"}
                       </p>
-                      <p className="mt-0.5 text-xs text-foreground-muted flex items-center gap-2 truncate">
+                      <p className="mt-0.5 text-xs text-zinc-400 flex items-center gap-2 truncate">
                         {j.result && (
                           <>
                             <span className="inline-flex items-center gap-1">
                               <Sparkles className="h-2.5 w-2.5" />
                               {getDocumentTypeLabel(j.result.metadata?.document_type)}
                             </span>
-                            <span className="text-foreground-subtle">·</span>
+                            <span className="text-zinc-500">·</span>
                           </>
                         )}
                         {new Date(j.created_at).toLocaleString()}
@@ -300,9 +300,7 @@ export default function HistoryPage() {
                           {score}
                         </span>
                       ) : (
-                        <Badge tone="neutral" size="xs" className="capitalize">
-                          {j.status}
-                        </Badge>
+                        <Badge className="capitalize">{j.status}</Badge>
                       )}
                       {j.status === "completed" && (
                         <a
@@ -312,8 +310,10 @@ export default function HistoryPage() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Button
-                            variant="outline"
+                            palette="workspace"
+                            variant="secondary"
                             size="sm"
+                            radius="md"
                             className="opacity-70 group-hover:opacity-100"
                           >
                             <Download className="h-3.5 w-3.5" />

@@ -18,7 +18,7 @@ import {
   ChevronLeft,
   Loader2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/primitives/Button";
 import AnalysisReport from "@/components/AnalysisReport";
 import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import UploadProgress from "@/components/UploadProgress";
@@ -71,23 +71,23 @@ export default function AnalysisPage() {
   // --- Error ---------------------------------------------------------------
   if (error) {
     return (
-      <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-6">
+      <div className="rounded-md border border-severity-critical/40 bg-severity-critical/10 p-6">
         <div className="flex items-start gap-3">
           <AlertTriangle className="h-5 w-5 text-severity-critical mt-0.5" />
           <div className="flex-1">
             <h2 className="text-sm font-semibold text-severity-critical">
               Could not load analysis
             </h2>
-            <p className="mt-1 text-sm text-foreground/80">{error}</p>
+            <p className="mt-1 text-sm text-zinc-200">{error}</p>
             <div className="mt-3 flex gap-2">
               <Link href="/history">
-                <Button variant="ghost" size="sm">
+                <Button palette="workspace" variant="ghost" size="sm" radius="md">
                   <ChevronLeft className="h-3.5 w-3.5" />
                   Back to history
                 </Button>
               </Link>
               <Link href="/analyze">
-                <Button variant="outline" size="sm">
+                <Button palette="workspace" variant="secondary" size="sm" radius="md">
                   <RefreshCw className="h-3.5 w-3.5" />
                   Try again
                 </Button>
@@ -120,16 +120,16 @@ export default function AnalysisPage() {
   if (stillRunning) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-2 text-xs text-foreground-muted">
+        <div className="flex items-center gap-2 text-xs text-zinc-400">
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1 hover:text-zinc-100 transition-colors"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             All analyses
           </Link>
         </div>
-        <div className="flex items-center gap-3 text-sm text-foreground-muted">
+        <div className="flex items-center gap-3 text-sm text-zinc-400">
           <Loader2 className="h-4 w-4 animate-spin text-accent" />
           Live scan in progress — streaming results from the model.
         </div>
@@ -145,29 +145,29 @@ export default function AnalysisPage() {
   if (job.status === "failed") {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-2 text-xs text-foreground-muted">
+        <div className="flex items-center gap-2 text-xs text-zinc-400">
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1 hover:text-zinc-100 transition-colors"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             All analyses
           </Link>
         </div>
-        <div className="rounded-xl border border-severity-critical/40 bg-severity-critical/10 p-5">
+        <div className="rounded-md border border-severity-critical/40 bg-severity-critical/10 p-5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-severity-critical mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm font-semibold text-severity-critical">
                 Analysis failed
               </p>
-              <p className="mt-1 text-xs text-foreground-muted">
+              <p className="mt-1 text-xs text-zinc-400">
                 {job.error ??
                   "Something went wrong processing your contract."}
               </p>
               <div className="mt-3">
                 <Link href="/analyze">
-                  <Button size="sm" variant="outline">
+                  <Button palette="workspace" variant="secondary" size="sm" radius="md">
                     <RefreshCw className="h-3.5 w-3.5" />
                     Try again
                   </Button>
@@ -183,7 +183,7 @@ export default function AnalysisPage() {
   // --- Completed -----------------------------------------------------------
   if (!job.result) {
     return (
-      <div className="rounded-xl border border-border bg-surface/60 p-6 text-sm text-foreground-muted">
+      <div className="rounded-md border border-white/5 bg-surface-1 p-6 text-sm text-zinc-400">
         Analysis finished but no result payload was returned.
       </div>
     );
