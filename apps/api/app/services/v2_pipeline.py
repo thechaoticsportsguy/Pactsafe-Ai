@@ -37,6 +37,11 @@ from app.services.citation_validator import (
     validate_red_flags,
 )
 from app.services.clause_extractor import extract_clauses
+from app.services.result_cache import (
+    cache_result,
+    cache_stats,
+    get_cached_result,
+)
 from app.services.risk_analyzer import ANALYSIS_MODEL, analyze_risks
 
 logger = logging.getLogger(__name__)
@@ -163,9 +168,25 @@ def _to_public_result(
 async def run_v2_pipeline(document_text: str) -> AnalysisResult:
     """Full v2 pipeline → public ``AnalysisResult``.
 
+    SHA-256 of ``document_text`` is checked against the result cache before
+    any Gemini call. A hit skips both passes entirely and logs
+    ``cache_hit=true``; a miss runs the pipeline and stores the result for
+    24 h so a user re-uploading the same file pays nothing.
+
     Stage timings + reject counts are logged so the worker logs surface
     hallucination rate the same way RxBuddy's FAERS rejections did.
     """
+
+    cached = await get_cached_result(document_text)
+    if cached is not None:
+        stats = cache_stats()
+        logger.info(
+            "[v2_pipeline] cache_hit=true hits=%d misses=%d hit_rate=%.2f%%",
+            stats["hits"],
+            stats["misses"],
+            100.0 * float(stats["hit_rate"]),
+        )
+        return cached
 
     extraction = await extract_clauses(document_text)
 
@@ -178,7 +199,7 @@ async def run_v2_pipeline(document_text: str) -> AnalysisResult:
     dropped_protections = filter_missing_protections(analysis, extraction)
 
     logger.info(
-        "[v2_pipeline] complete doc_type=%s clauses=%d "
+        "[v2_pipeline] complete cache_hit=false doc_type=%s clauses=%d "
         "raw_flags=%d kept_flags=%d rejected_flags=%d "
         "raw_protections=%d kept_protections=%d dropped_protections=%d",
         extraction.metadata.document_type,
@@ -191,4 +212,6 @@ async def run_v2_pipeline(document_text: str) -> AnalysisResult:
         dropped_protections,
     )
 
-    return _to_public_result(extraction, analysis)
+    result = _to_public_result(extraction, analysis)
+    await cache_result(document_text, result)
+    return result

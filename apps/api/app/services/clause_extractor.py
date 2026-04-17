@@ -19,7 +19,7 @@ from app.services.llm.gemini_v2 import structured_call
 
 logger = logging.getLogger(__name__)
 
-EXTRACTION_MODEL = "gemini-2.5-pro"
+EXTRACTION_MODEL = "gemini-2.5-flash"
 
 # Big enough for a long contract's worth of verbatim clause text. Gemini
 # 2.5 Pro's per-response cap is well above this; we keep an explicit cap

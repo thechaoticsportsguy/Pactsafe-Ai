@@ -27,7 +27,10 @@ logger = logging.getLogger(__name__)
 
 ANALYSIS_MODEL = "gemini-2.5-pro"
 ANALYSIS_TEMPERATURE = 0.2
-ANALYSIS_THINKING_BUDGET = 8_000
+# Thinking disabled as a cost reduction — ground-truth parity was verified
+# before flipping this off. If red-flag quality regresses, set this back to
+# 8_000 (the previous value) and re-run ``tests/run_handshake_v2.py``.
+ANALYSIS_THINKING_BUDGET: int | None = None
 ANALYSIS_MAX_OUTPUT_TOKENS = 16_000
 
 
