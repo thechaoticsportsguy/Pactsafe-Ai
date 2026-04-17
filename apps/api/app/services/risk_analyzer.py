@@ -80,7 +80,7 @@ CONTRACTOR_PLATFORM_CONFIG = TypeConfig(
         "Uber, DoorDash — a marketplace/platform contracting with individual "
         "workers)"
     ),
-    signer_role="THE CONTRACTOR (the individual signing — not the platform)",
+    signer_role="the Contractor (the individual signing — not the platform)",
     perspective_framing=(
         "The platform's lawyers wrote this. Your job is to spot every clause "
         "that shifts risk, money, or control from the platform to the "
@@ -131,7 +131,7 @@ FREELANCE_SOW_CONFIG = TypeConfig(
         "freelance services agreement / statement of work between an "
         "independent professional and a single client"
     ),
-    signer_role="THE FREELANCER (the service provider, not the client)",
+    signer_role="the Freelancer (the service provider, not the client)",
     perspective_framing=(
         "The client (or the client's lawyer) wrote this. Your job is to spot "
         "clauses that leave the freelancer holding payment risk, scope risk, "
@@ -171,7 +171,7 @@ EMPLOYMENT_CONFIG = TypeConfig(
     document_type_human=(
         "employment agreement (W-2 employee, not independent contractor)"
     ),
-    signer_role="THE EMPLOYEE",
+    signer_role="the Employee",
     perspective_framing=(
         "The employer's lawyers wrote this. The employee usually has limited "
         "negotiating power, so flag the things that quietly trade away "
@@ -207,30 +207,82 @@ EMPLOYMENT_CONFIG = TypeConfig(
 
 NDA_CONFIG = TypeConfig(
     document_type_human="non-disclosure agreement (NDA / confidentiality agreement)",
-    signer_role="THE RECEIVING PARTY (the one accepting confidentiality obligations)",
+    signer_role="the Recipient (the party receiving the confidential information)",
     perspective_framing=(
-        "NDAs that look short can still be aggressive. Focus on duration, "
-        "scope of what counts as 'confidential', and whether the standard "
-        "carve-outs (publicly known, independently developed, required by "
-        "law) are present and reasonable."
+        "NDAs that look short can still be aggressive. This document is "
+        "about information, not money — do NOT analyze it as a freelance "
+        "SOW, contractor agreement, or service contract. There is no "
+        "'freelancer', no 'client', no 'payment terms' here. Focus on the "
+        "Recipient's exposure: how broadly 'confidential' is defined, how "
+        "long the obligations run, whether standard carve-outs are present, "
+        "and whether the NDA sneaks in concepts that do not belong (IP "
+        "assignment, non-solicitation, unilateral amendment)."
     ),
     focus_areas=[
-        "Definition of Confidential Information — is it bounded, or 'any "
-        "information disclosed in any form'?",
-        "Term / duration — and whether trade secrets continue indefinitely",
-        "Standard carve-outs — publicly known, prior knowledge, "
-        "independently developed, required by law",
-        "Return / destruction obligations and the deadline",
-        "Residuals clause — whether ideas retained in unaided memory are "
-        "exempt",
-        "Mutual vs unilateral — does the other party have the same obligations?",
-        "Remedies — injunctive relief, liquidated damages, attorneys' fees",
-        "Governing law and forum",
+        "Definition of Confidential Information — is it narrowly bounded, "
+        "or a sweeping catch-all ('any information disclosed in any form, "
+        "orally, visually, or in writing')? Overbroad definitions turn "
+        "ordinary business conversations into breach risks for the Recipient.",
+        "Survival / term — does confidentiality end after a reasonable "
+        "window (typically 2–5 years), or does it run indefinitely or "
+        "perpetually? Perpetual obligations on non-trade-secret information "
+        "are aggressive.",
+        "Standard carve-outs adequacy — publicly known, already known to "
+        "the Recipient, independently developed, received from a third "
+        "party without restriction, required by law. An NDA missing any of "
+        "these leaves the Recipient exposed for information they never "
+        "should have owed a duty on.",
+        "Required-disclosure cost-shifting — if the Recipient is served "
+        "with a subpoena or court order, who pays the legal costs of "
+        "objecting, seeking a protective order, or notifying the "
+        "Discloser? Recipient-pays clauses are a quiet tax on being "
+        "compelled by law to disclose.",
+        "Reciprocity — mutual vs unilateral. If the NDA is labeled "
+        "'mutual' but only one side actually has confidential information "
+        "to protect, it is mutual in name only. Check whether obligations, "
+        "remedies, and carve-outs are truly symmetric.",
+        "IP assignment hidden in the NDA — NDAs should restrict USE of "
+        "information, not transfer ownership. Watch for clauses assigning "
+        "improvements, derivatives, feedback, or ideas generated from the "
+        "Confidential Information to the Discloser. That is an IP grab "
+        "dressed as confidentiality.",
+        "Non-solicitation / no-hire — NDAs sometimes include restrictions "
+        "on hiring the Discloser's employees or soliciting their "
+        "customers. Flag this as a separate concern since it is not a "
+        "confidentiality obligation and may exceed what the Recipient "
+        "thought they were agreeing to.",
+        "Return / destruction obligations — what is the deadline, what "
+        "form (certified destruction, written attestation?), and can the "
+        "Recipient retain copies for legal, compliance, or backup "
+        "purposes?",
+        "Residuals clause — whether ideas and know-how retained in the "
+        "unaided memory of the Recipient's personnel are exempt. Absence "
+        "of a residuals clause can create breach risk from ordinary "
+        "professional work.",
+        "Remedies — injunctive relief, liquidated damages, attorneys' "
+        "fees, whether equitable relief is agreed in advance without "
+        "showing of actual harm.",
+        "Unilateral amendment — can the Discloser change the NDA terms "
+        "through notice, posting, or updates without the Recipient's "
+        "signature?",
+        "Governing law and forum — and whether the dispute resolution "
+        "clause forces the Recipient into the Discloser's home "
+        "jurisdiction at the Recipient's expense.",
     ],
     exclusion_list=[
-        '"Payment terms" — NDAs typically have no payment.',
-        '"IP assignment" — NDAs restrict use; they do not transfer ownership.',
-        '"Kill fee" / "Revisions" / "Deposit" — irrelevant.',
+        '"Payment terms" / "Net-X" / "Invoice" — NDAs typically have no '
+        "payment; this is an information agreement, not a services contract.",
+        '"IP assignment" as a MISSING protection — NDAs are designed to '
+        "restrict use, not transfer ownership. Flag IP assignment ONLY if "
+        "the NDA actually contains such a clause (which is itself a "
+        "problem — see focus areas).",
+        '"Kill fee" / "Revisions" / "Deposit" / "Scope creep" — freelance '
+        "and services-contract concepts that do not apply to NDAs.",
+        '"Freelancer" / "freelance" / "client approval" / "client sign-off"'
+        " — do NOT refer to the Recipient as a freelancer or to the "
+        "Discloser as a client; those are the wrong frame.",
+        '"Milestone payment" / "Deliverable acceptance" — NDAs do not '
+        "have deliverables in the services sense.",
     ],
 )
 
@@ -239,7 +291,7 @@ SAAS_TERMS_CONFIG = TypeConfig(
     document_type_human=(
         "SaaS / cloud service terms (the customer accepting the provider's terms)"
     ),
-    signer_role="THE CUSTOMER (the one accepting the SaaS terms — not the provider)",
+    signer_role="the Customer (the one accepting the SaaS terms — not the provider)",
     perspective_framing=(
         "SaaS terms are almost always provider-favorable boilerplate. Focus "
         "on data ownership and exit (can the customer get their data out?), "
@@ -277,14 +329,18 @@ SERVICE_AGREEMENT_CONFIG = TypeConfig(
         "B2B service agreement (provider delivering services to a business client)"
     ),
     signer_role=(
-        "the signer — identify which side they are based on the parties list "
-        "and the obligations the contract assigns"
+        "the Service Provider or the Client — identify which side is "
+        "signing from the parties list and the obligations assigned, then "
+        "analyze from that party's perspective"
     ),
     perspective_framing=(
-        "Identify which side the signer is on first (Provider or Client), "
-        "then analyze from that perspective. B2B service agreements are more "
-        "balanced than gig-platform or SaaS terms, but watch for liability "
-        "caps, indemnity asymmetry, and termination rights."
+        "Identify which side the signer is on first (Service Provider or "
+        "Client), then analyze from that perspective. B2B service "
+        "agreements are more balanced than gig-platform or SaaS terms, "
+        "but watch for liability caps, indemnity asymmetry, and "
+        "termination rights. Do not default to treating either party as "
+        "a 'freelancer' — this is a commercial agreement between "
+        "businesses."
     ),
     focus_areas=[
         "Payment terms — Net-X if present, late fees, dispute mechanics",
@@ -308,7 +364,7 @@ SERVICE_AGREEMENT_CONFIG = TypeConfig(
 
 GENERIC_CONFIG = TypeConfig(
     document_type_human="contract or legal agreement",
-    signer_role="the signer (identify which party from the parties list)",
+    signer_role="the Signer (identify which party from the parties list)",
     perspective_framing=(
         "Document type was not confidently classified. Analyze conservatively. "
         "Focus on universally risky patterns and avoid type-specific "
@@ -367,7 +423,7 @@ FOR EACH RED FLAG:
 DO NOT INCLUDE any of these concepts (common hallucinations or type-mismatches):
 {exclusion_list_block}
 
-For `missing_protections`: each item must include `applicable_document_types` listing the document types where this protection is relevant. The downstream filter drops protections whose list does not include the current document type, so be honest — do not list a freelance-only protection as universally applicable.
+For `missing_protections`: each item must include `applicable_document_types` listing the document types where this protection is relevant. The downstream filter drops protections whose list does not include the current document type, so be honest — do not list a type-specific protection as universally applicable.
 
 EXTRACTED CLAUSES (JSON):
 {clauses_json}

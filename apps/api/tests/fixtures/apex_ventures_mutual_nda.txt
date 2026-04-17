@@ -1,0 +1,178 @@
+MUTUAL NON-DISCLOSURE AGREEMENT
+
+This Mutual Non-Disclosure Agreement (this "Agreement") is entered into as
+of the date last signed below (the "Effective Date") by and between Apex
+Ventures, Inc., a Delaware corporation with its principal place of business
+at 2400 Market Street, Suite 800, San Francisco, California 94114 ("Apex"),
+and the counterparty identified on the signature page below ("Counterparty").
+Apex and Counterparty are each a "Party" and together the "Parties." In
+connection with a specific business opportunity between the Parties (the
+"Purpose"), each Party may disclose to the other certain confidential,
+proprietary, or non-public information, and the Parties wish to protect that
+information on the terms set forth below.
+
+1. DEFINITIONS
+
+1.1 "Confidential Information" means any and all information disclosed by
+either Party (the "Disclosing Party") to the other Party (the "Receiving
+Party"), whether disclosed orally, visually, in writing, in electronic form,
+by demonstration, or in any other form or medium, that is or reasonably
+should be understood to be confidential, proprietary, or of competitive
+value, including without limitation: (a) business plans, strategies,
+forecasts, budgets, customer lists, pricing, and financial information;
+(b) product roadmaps, source code, object code, algorithms, designs, and
+technical data; (c) research, know-how, trade secrets, inventions, and
+unpublished patent applications; (d) personnel information and compensation
+data; (e) the existence, content, and status of the Parties' discussions and
+this Agreement itself; and (f) any information of a third party that is in
+the possession of the Disclosing Party and subject to a duty of
+confidentiality. Confidential Information need not be marked "Confidential"
+to be protected hereunder.
+
+1.2 "Representatives" means, with respect to a Party, its directors,
+officers, employees, contractors, attorneys, accountants, and advisors who
+have a legitimate need to know the Confidential Information for the Purpose.
+
+2. OBLIGATIONS OF THE RECEIVING PARTY
+
+2.1 The Receiving Party shall (a) use the Confidential Information solely
+for the Purpose and for no other purpose whatsoever; (b) protect the
+Confidential Information using at least the same degree of care it uses to
+protect its own confidential information of similar importance, but in no
+event less than a reasonable degree of care; and (c) not disclose the
+Confidential Information to any person other than its Representatives who
+are bound by confidentiality obligations no less protective than those set
+forth in this Agreement.
+
+2.2 The Receiving Party shall be responsible for any breach of this
+Agreement by any of its Representatives and shall take all reasonable
+measures to restrain its Representatives from any prohibited or unauthorized
+disclosure or use of Confidential Information.
+
+3. EXCEPTIONS
+
+3.1 The obligations set forth in Section 2 shall not apply to information
+that the Receiving Party can demonstrate by competent written evidence: (a)
+was in the public domain at the time of disclosure or subsequently entered
+the public domain through no act or omission of the Receiving Party; (b) was
+already known to the Receiving Party at the time of disclosure, free of any
+obligation of confidentiality; or (c) was received from a third party not
+under an obligation of confidentiality to the Disclosing Party.
+
+4. COMPELLED DISCLOSURE
+
+4.1 If the Receiving Party is required by applicable law, regulation, or
+valid court or governmental order to disclose any Confidential Information,
+the Receiving Party shall (a) promptly notify the Disclosing Party in
+writing so the Disclosing Party may seek a protective order or other
+appropriate remedy; (b) cooperate reasonably with the Disclosing Party in
+any such effort; and (c) disclose only that portion of the Confidential
+Information that is legally required to be disclosed. The Receiving Party
+shall bear its own costs (including attorneys' fees) associated with any
+such compelled disclosure and any objection or protective-order proceedings
+it may undertake, regardless of which Party initiates or benefits from such
+proceedings.
+
+5. OWNERSHIP AND IMPROVEMENTS
+
+5.1 All Confidential Information shall remain the exclusive property of the
+Disclosing Party. No license, express or implied, to any intellectual
+property right is granted by this Agreement other than the limited right to
+use the Confidential Information for the Purpose.
+
+5.2 To the extent the Receiving Party generates any improvements, feedback,
+suggestions, derivative works, or modifications relating to the
+Confidential Information (collectively, "Improvements"), the Receiving
+Party hereby irrevocably assigns to the Disclosing Party all right, title,
+and interest in and to such Improvements, including all intellectual
+property rights therein. The Receiving Party shall execute any documents
+reasonably necessary to perfect such assignment.
+
+6. TERM AND SURVIVAL
+
+6.1 This Agreement shall commence on the Effective Date and continue in
+full force and effect with respect to each item of Confidential
+Information perpetually from the date of its disclosure. The Receiving
+Party's obligations of confidentiality and non-use shall survive any
+termination of discussions between the Parties and shall continue
+indefinitely.
+
+7. RETURN OR DESTRUCTION
+
+7.1 Upon the written request of the Disclosing Party at any time, the
+Receiving Party shall promptly (and in any event within ten (10) business
+days) return or, at the Disclosing Party's option, destroy all Confidential
+Information in its possession or control (including any copies, summaries,
+or extracts in any form) and provide a written certification of destruction
+signed by an officer of the Receiving Party.
+
+8. NON-SOLICITATION
+
+8.1 For a period of twenty-four (24) months from the Effective Date, the
+Receiving Party shall not, directly or indirectly, solicit for employment or
+engagement any employee or independent contractor of the Disclosing Party
+with whom the Receiving Party had contact in connection with the Purpose,
+nor shall the Receiving Party solicit business from any customer of the
+Disclosing Party whose identity was learned as a result of the Confidential
+Information.
+
+9. REMEDIES
+
+9.1 The Parties acknowledge that any breach or threatened breach of this
+Agreement may cause irreparable harm for which monetary damages would be
+inadequate. Accordingly, the Disclosing Party shall be entitled to seek
+injunctive and other equitable relief without the necessity of posting a
+bond or proving actual damages, in addition to any other remedies available
+at law or in equity. The prevailing Party in any action to enforce this
+Agreement shall be entitled to recover its reasonable attorneys' fees and
+costs from the other Party.
+
+10. NO REPRESENTATIONS
+
+10.1 ALL CONFIDENTIAL INFORMATION IS PROVIDED "AS IS" AND THE DISCLOSING
+PARTY MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, WITH
+RESPECT TO ITS ACCURACY OR COMPLETENESS.
+
+11. AMENDMENTS
+
+11.1 Apex may amend or update this Agreement from time to time by posting
+an updated version at www.apexventures.example/legal/nda or by providing
+written or electronic notice to the Counterparty. Continued disclosure or
+receipt of Confidential Information following such posting or notice shall
+constitute acceptance of the updated Agreement. No amendment by the
+Counterparty shall be effective unless agreed to in writing and signed by an
+authorized officer of Apex.
+
+12. GOVERNING LAW AND FORUM
+
+12.1 This Agreement shall be governed by and construed in accordance with
+the laws of the State of Delaware, without regard to its conflict-of-laws
+principles. The Parties submit to the exclusive jurisdiction of the state
+and federal courts located in San Francisco County, California, for any
+dispute arising under this Agreement, and waive any objection to venue in
+those courts.
+
+13. MISCELLANEOUS
+
+13.1 This Agreement constitutes the entire agreement between the Parties
+regarding its subject matter and supersedes all prior agreements and
+understandings, written or oral.
+
+13.2 This Agreement may be executed in counterparts, each of which shall be
+deemed an original and all of which together shall constitute one and the
+same instrument. Electronic signatures shall be deemed originals for all
+purposes.
+
+13.3 No waiver of any provision of this Agreement shall be effective unless
+in writing signed by the waiving Party, and no failure or delay in enforcing
+any right shall operate as a waiver.
+
+IN WITNESS WHEREOF, the Parties have executed this Agreement as of the
+Effective Date.
+
+APEX VENTURES, INC.                     COUNTERPARTY
+
+By: ____________________________        By: ____________________________
+Name: __________________________        Name: __________________________
+Title: _________________________        Title: _________________________
+Date: __________________________        Date: __________________________
