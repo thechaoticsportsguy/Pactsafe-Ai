@@ -9,59 +9,25 @@
  *   • A scrollable white-paper document area with:
  *       – Serif body text split into lines
  *       – A glowing scan beam sweeping top→bottom
- *       – Color-coded annotation chips that appear as the scan
- *         passes each clause (CRITICAL=red, HIGH=orange, MEDIUM=amber,
- *         POSITIVE=green)
- *   • When done=true the beam stops and all highlights lock in
+ *   • When done=true the beam stops and the status flips to Complete
+ *
+ * This component previously painted synthetic severity chips (e.g.
+ * "Net-60 payment window") onto randomly-chosen lines using a hardcoded
+ * label pool. That was a pre-v2 UX gimmick and became a correctness
+ * problem once the analyzer started grounding every label to a cited
+ * clause: the preview's fake labels looked just like real findings and
+ * didn't reflect what the v2 pipeline actually flagged. Labels are now
+ * owned exclusively by the AnalysisReport below (which renders the
+ * grounded v2 red_flags). The preview is pure visual feedback.
  *
  * This component owns only its own scroll and animation state; it
  * never mutates job state and is safe to unmount at any time.
  */
 
 import * as React from "react";
-import {
-  FileText,
-  AlertOctagon,
-  AlertTriangle,
-  ShieldCheck,
-  Check,
-} from "lucide-react";
+import { FileText, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { JobStatus } from "@/lib/schemas";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type SynthSeverity = "critical" | "high" | "medium" | "positive";
-
-interface SynthAnnotation {
-  lineIndex: number;
-  severity: SynthSeverity;
-  label: string;
-  /** 0..1 — progress threshold at which this annotation appears */
-  at: number;
-}
-
-// ---------------------------------------------------------------------------
-// Annotation pool — realistic freelancer-contract issues
-// ---------------------------------------------------------------------------
-
-const SYNTH_POOL: { severity: SynthSeverity; label: string }[] = [
-  { severity: "critical", label: "IP transfers on signature, not payment" },
-  { severity: "critical", label: "Unlimited contractor liability" },
-  { severity: "critical", label: "One-sided termination — no kill fee" },
-  { severity: "critical", label: "Company can amend without signature" },
-  { severity: "high",     label: "Net-60 payment window" },
-  { severity: "high",     label: "Non-compete — 3 yr, all of North America" },
-  { severity: "high",     label: "Perpetual confidentiality — no sunset" },
-  { severity: "high",     label: "Scope changeable at sole discretion" },
-  { severity: "medium",   label: "Auto-renews — 90-day notice required" },
-  { severity: "medium",   label: "All expenses on contractor" },
-  { severity: "medium",   label: "Arbitration in company's jurisdiction" },
-  { severity: "positive", label: "Mutual indemnification" },
-  { severity: "positive", label: "Portfolio rights retained" },
-];
 
 // ---------------------------------------------------------------------------
 // Sample fallback text for file-upload mode (user's text isn't available)
@@ -115,67 +81,6 @@ const SAMPLE_LINES = [
   "Any amendment may be made by Company alone; Contractor's signature is",
   "not required for changes Company deems administrative or operational.",
 ];
-
-// ---------------------------------------------------------------------------
-// Severity styling (maps to dark theme design tokens)
-// ---------------------------------------------------------------------------
-
-const SEV_STYLE: Record<
-  SynthSeverity,
-  { bg: string; border: string; text: string; chip: string; Icon: React.ElementType }
-> = {
-  critical: {
-    bg:     "bg-severity-critical/10",
-    border: "border-severity-critical/40",
-    text:   "text-severity-critical",
-    chip:   "bg-severity-critical/15 text-severity-critical border-severity-critical/30",
-    Icon:   AlertOctagon,
-  },
-  high: {
-    bg:     "bg-severity-high/10",
-    border: "border-severity-high/40",
-    text:   "text-severity-high",
-    chip:   "bg-severity-high/15 text-severity-high border-severity-high/30",
-    Icon:   AlertTriangle,
-  },
-  medium: {
-    bg:     "bg-severity-medium/8",
-    border: "border-severity-medium/35",
-    text:   "text-severity-medium",
-    chip:   "bg-severity-medium/12 text-severity-medium border-severity-medium/30",
-    Icon:   AlertTriangle,
-  },
-  positive: {
-    bg:     "bg-success/8",
-    border: "border-success/30",
-    text:   "text-success",
-    chip:   "bg-success/12 text-success border-success/25",
-    Icon:   ShieldCheck,
-  },
-};
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function buildAnnotations(lineCount: number): SynthAnnotation[] {
-  const candidates = Array.from({ length: lineCount }, (_, i) => i).filter(
-    (i) => i > 1,
-  );
-  const MAX = Math.min(7, Math.floor(candidates.length / 3));
-  const chosen: SynthAnnotation[] = [];
-  for (let k = 0; k < MAX; k++) {
-    const idx = candidates[Math.floor((k + 0.5) * (candidates.length / MAX))];
-    const pool = SYNTH_POOL[(idx * 7 + k * 3) % SYNTH_POOL.length];
-    chosen.push({
-      lineIndex: idx,
-      severity: pool.severity,
-      label: pool.label,
-      at: 0.12 + (k / Math.max(1, MAX - 1)) * 0.8,
-    });
-  }
-  return chosen.sort((a, b) => a.at - b.at);
-}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -276,16 +181,6 @@ export default function ContractPreview({
     return () => window.cancelAnimationFrame(raf);
   }, [inFlight, done, status, frozen]);
 
-  // ── Annotations ───────────────────────────────────────────────────────────
-  const annotations = React.useMemo(
-    () => buildAnnotations(lines.length),
-    [lines.length],
-  );
-  const visible = React.useMemo(
-    () => annotations.filter((a) => effectiveProg >= a.at),
-    [annotations, effectiveProg],
-  );
-
   // ── Auto-scroll to keep the scan beam visible ─────────────────────────────
   // Throttle via Math.round(beamPct/5) — the effect only re-runs on ~5%
   // jumps, not every rAF tick. Guarded by `frozen` so the compact banner
@@ -332,11 +227,9 @@ export default function ContractPreview({
     );
   }
 
-  // ── Counts for the toolbar ────────────────────────────────────────────────
-  const reds    = visible.filter((a) => a.severity === "critical" || a.severity === "high").length;
-  const yellows = visible.filter((a) => a.severity === "medium").length;
-
   // ── Progress percent ─────────────────────────────────────────────────────
+  // Real counts now come from the v2 pipeline via LiveScanSidebar /
+  // AnalysisReport — this panel only shows the document + beam + %.
   const pct = done ? 100 : Math.round(effectiveProg * 100);
 
   // ---------------------------------------------------------------------------
@@ -363,18 +256,8 @@ export default function ContractPreview({
           </span>
         </span>
 
-        {/* Status / counts */}
+        {/* Progress indicator */}
         <div className="ml-auto flex flex-shrink-0 items-center gap-4 text-[10px] tabular-nums">
-          {!done && reds > 0 && (
-            <span className="font-semibold text-severity-critical">
-              {reds} risk{reds !== 1 ? "s" : ""}
-            </span>
-          )}
-          {!done && yellows > 0 && (
-            <span className="font-semibold text-severity-medium">
-              {yellows} caution{yellows !== 1 ? "s" : ""}
-            </span>
-          )}
           {done ? (
             <span className="font-semibold text-success">Complete</span>
           ) : (
@@ -444,7 +327,6 @@ export default function ContractPreview({
           {/* Document body */}
           <div className="px-10 pb-16 pt-12">
             {lines.map((line, i) => {
-              const anno = visible.find((a) => a.lineIndex === i);
               const isBlank = line.trim().length === 0;
 
               if (isBlank) {
@@ -468,51 +350,13 @@ export default function ContractPreview({
                 );
               }
 
-              if (!anno) {
-                return (
-                  <div
-                    key={i}
-                    ref={(el) => { lineRefs.current[i] = el; }}
-                    className="font-serif text-[12.5px] leading-[1.85] text-gray-700"
-                  >
-                    {line}
-                  </div>
-                );
-              }
-
-              // Annotated line
-              const s = SEV_STYLE[anno.severity];
-              const { Icon } = s;
               return (
                 <div
                   key={i}
                   ref={(el) => { lineRefs.current[i] = el; }}
-                  className="animate-fade-in-up"
+                  className="font-serif text-[12.5px] leading-[1.85] text-gray-700"
                 >
-                  <div
-                    className={cn(
-                      "relative rounded-[3px] border-l-2 py-0.5 pl-2 font-serif text-[12.5px] leading-[1.85]",
-                      s.bg,
-                      s.border.replace("border-", "border-l-"),
-                      "text-gray-800",
-                    )}
-                  >
-                    {line}
-                    {/* Chip pinned top-right */}
-                    <span
-                      className={cn(
-                        "pointer-events-none absolute -right-1 -top-2.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide shadow-sm",
-                        s.chip,
-                      )}
-                    >
-                      <Icon className="h-2.5 w-2.5" strokeWidth={2.5} />
-                      {anno.severity === "positive" ? "Safe" : anno.severity}
-                    </span>
-                  </div>
-                  {/* Annotation label below the line */}
-                  <div className={cn("pb-0.5 pl-2 text-[10px] italic", s.text)}>
-                    {anno.label}
-                  </div>
+                  {line}
                 </div>
               );
             })}
