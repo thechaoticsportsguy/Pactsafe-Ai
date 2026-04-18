@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Copy, Check, Mail } from "lucide-react";
 import { Button } from "@/components/primitives/Button";
-import { TextArea } from "@/components/ui/input";
+import { TextArea } from "@/components/primitives/TextArea";
 import { useToast } from "@/components/Toast";
 import { cn } from "@/lib/cn";
 
@@ -190,7 +190,7 @@ export default function NegotiationComposer({
             value={draft}
             readOnly
             rows={14}
-            className="font-mono text-xs rounded-md border-white/10 bg-surface-2 text-zinc-100"
+            className="font-mono text-xs"
           />
           <div className="mt-3 flex justify-end">
             <Button

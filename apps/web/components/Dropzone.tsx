@@ -93,7 +93,7 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
               e.stopPropagation();
               open();
             }}
-            className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-medium text-white shadow-glow hover:bg-accent-hover active:translate-y-px transition-all"
+            className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-medium text-white shadow-glow-accent hover:bg-accent-hover active:translate-y-px transition-all"
             disabled={disabled}
           >
             <FileUp className="h-3.5 w-3.5" />

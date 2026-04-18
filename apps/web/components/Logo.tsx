@@ -31,7 +31,7 @@ export default function Logo({
         height={size}
         viewBox="0 0 64 64"
         aria-hidden="true"
-        className="shadow-glow rounded-lg"
+        className="shadow-glow-accent rounded-lg"
         style={{ borderRadius: Math.round(size * 0.24) }}
       >
         <defs>

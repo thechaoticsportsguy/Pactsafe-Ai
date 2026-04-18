@@ -597,7 +597,7 @@ export default function ContractReader({
               className={cn(
                 "flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors",
                 active &&
-                  "border-accent/40 bg-accent/[0.08] text-foreground shadow-glow",
+                  "border-accent/40 bg-accent/[0.08] text-foreground shadow-glow-accent",
                 done && "border-success/40 bg-success/5 text-success",
                 !active &&
                   !done &&

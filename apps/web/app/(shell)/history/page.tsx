@@ -120,7 +120,7 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <Badge className="mb-3 gap-1 border-accent/40 bg-accent/10 text-accent">
+          <Badge variant="eyebrow-accent" className="mb-3">
             <Clock className="h-3 w-3" />
             Past analyses
           </Badge>

@@ -414,7 +414,7 @@ export default function AnalysisReport({
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge className="gap-1 border-accent/40 bg-accent/10 text-accent">
+            <Badge variant="eyebrow-accent">
               <Sparkles className="h-3 w-3" />
               {getDocumentTypeLabel(result.metadata?.document_type)}
             </Badge>
@@ -423,11 +423,7 @@ export default function AnalysisReport({
                 {result.provider}
               </Badge>
             )}
-            {result.truncated && (
-              <Badge className="border-warning/40 bg-warning/10 text-warning">
-                Truncated
-              </Badge>
-            )}
+            {result.truncated && <Badge variant="warning">Truncated</Badge>}
           </div>
           <h1 className="mt-3 text-2xl md:text-[28px] font-semibold tracking-tight truncate max-w-2xl text-zinc-100">
             {filename ?? "Pasted contract"}

@@ -46,7 +46,7 @@ import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
 import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import { Button } from "@/components/primitives/Button";
-import { TextArea } from "@/components/ui/input";
+import { TextArea } from "@/components/primitives/TextArea";
 import { Badge } from "@/components/primitives/Badge";
 import {
   fadeInUp,
@@ -479,7 +479,7 @@ export default function AnalyzePage() {
       {/* Main column */}
       <div className="min-w-0 space-y-8">
         <div>
-          <Badge className="mb-3 gap-1 border-accent/40 bg-accent/10 text-accent">
+          <Badge variant="eyebrow-accent" className="mb-3">
             <Zap className="h-3 w-3" />
             New analysis
           </Badge>
@@ -539,7 +539,6 @@ export default function AnalyzePage() {
                 }
               }}
               rows={14}
-              className="rounded-md border-white/10 bg-surface-2 text-zinc-100"
             />
             <div className="mt-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 text-xs text-zinc-400">

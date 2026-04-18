@@ -1,15 +1,22 @@
 "use client";
 
 /**
- * Badge — canonical eyebrow/severity/neutral pill for the redesign.
+ * Badge — canonical eyebrow/severity/neutral/warning pill for the redesign.
  *
- * Three variants serve distinct information patterns:
- *  • eyebrow  — solid ink on beige with 0.15em tracking + 11px.
- *               Used above hero headlines, section titles.
- *  • severity — takes level: 'critical' | 'high' | 'medium' | 'low'.
- *               Reads the nested severity palette; consistent across
- *               flag cards, risk gauge, sidebar counts.
- *  • neutral  — low-contrast label (counts, metadata).
+ * Five variants serve distinct information patterns:
+ *  • eyebrow         — solid ink on beige with 0.15em tracking + 11px.
+ *                      Used above hero headlines + editorial sections.
+ *  • eyebrow-accent  — accent tint on dark surface for workspace pages
+ *                      (Analyze / History / Compare / AnalysisReport
+ *                      headers). Extracted in Phase 4-B after 4 call
+ *                      sites accumulated the same className override.
+ *  • severity        — takes level: 'critical' | 'high' | 'medium' | 'low'.
+ *                      Reads the nested severity palette; consistent
+ *                      across flag cards, risk gauge, sidebar counts.
+ *  • warning         — amber tint on dark surface (Truncated, delta
+ *                      warnings). Extracted in 4-B after 2 Badge call
+ *                      sites accumulated the override.
+ *  • neutral         — low-contrast label (counts, metadata).
  *
  * Legacy Badge at components/ui/badge.tsx stays for callers that
  * already import `tone={severity}`. New code: use `variant="severity"
@@ -21,7 +28,12 @@ import { cn } from "@/lib/cn";
 
 export type SeverityLevel = "critical" | "high" | "medium" | "low";
 
-type Variant = "eyebrow" | "severity" | "neutral";
+type Variant =
+  | "eyebrow"
+  | "eyebrow-accent"
+  | "severity"
+  | "warning"
+  | "neutral";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: Variant;
@@ -62,6 +74,25 @@ export function Badge({
     );
   }
 
+  if (variant === "eyebrow-accent") {
+    return (
+      <span
+        className={cn(
+          // Matches the gap-1 override the 4 workspace-eyebrow call sites
+          // accumulated: Analyze / History / Compare headers plus the
+          // AnalysisReport contract-type badge. Tracking-[0.08em] keeps
+          // it readable on the tight 11px scale without looking like
+          // the editorial eyebrow's wider 0.15em ink-on-beige pill.
+          "inline-flex items-center gap-1 border border-accent/40 bg-accent/10 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] text-accent",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  }
+
   if (variant === "severity") {
     const styles = level ? severityStyles[level] : severityStyles.medium;
     return (
@@ -78,11 +109,25 @@ export function Badge({
     );
   }
 
+  if (variant === "warning") {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center border border-warning/40 bg-warning/10 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-warning",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  }
+
   // neutral
   return (
     <span
       className={cn(
-        "inline-flex items-center border border-border bg-surface-2/80 px-2 py-0.5 text-[11px] font-medium text-foreground/80",
+        "inline-flex items-center border border-white/5 bg-surface-2/80 px-2 py-0.5 text-[11px] font-medium text-zinc-200",
         className,
       )}
       {...props}

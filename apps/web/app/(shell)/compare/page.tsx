@@ -55,7 +55,7 @@ export default function ComparePage() {
   return (
     <div className="space-y-8">
       <div>
-        <Badge className="mb-3 gap-1 border-accent/40 bg-accent/10 text-accent">
+        <Badge variant="eyebrow-accent" className="mb-3">
           <GitCompare className="h-3 w-3" />
           Side by side
         </Badge>
@@ -419,7 +419,7 @@ function ComparePanel({
 
       {result.truncated && (
         <div className="mt-5">
-          <Badge className="gap-1 border-warning/40 bg-warning/10 text-warning">
+          <Badge variant="warning" className="gap-1">
             Truncated
           </Badge>
         </div>
