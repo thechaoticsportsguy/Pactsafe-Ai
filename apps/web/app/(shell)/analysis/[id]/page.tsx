@@ -189,18 +189,34 @@ export default function AnalysisPage() {
     );
   }
 
+  // Opacity-only fade on the completed-report path.
+  //
+  // The page is "use client" and data arrives via a post-mount effect,
+  // so the cold load transitions: SSR shell → skeleton (lines 103-114)
+  // → hard cut to the fully-rendered report. AnalysisReport has no
+  // internal entrance motion (by design — it's a long-form document
+  // view), so without a smoothing fade here the skeleton-to-report
+  // swap reads as a flicker on first load.
+  //
+  // Uses the project's canonical `animate-fade-in` token
+  // (400 ms opacity-only, ease-out, both fill) — the same keyframe
+  // already powering Toast, LiveScanModal, UploadProgress and
+  // KeyboardShortcuts. A scoped wrapper div keeps layout unchanged
+  // since AnalysisReport is already block-level.
   return (
-    <AnalysisErrorBoundary>
-      <AnalysisReport
-        jobId={jobId}
-        result={job.result}
-        filename={job.filename}
-        createdAt={job.created_at}
-        textPreview={job.text_preview}
-        documentText={job.document_text}
-        showBreadcrumb
-        copyWindowHref
-      />
-    </AnalysisErrorBoundary>
+    <div className="animate-fade-in">
+      <AnalysisErrorBoundary>
+        <AnalysisReport
+          jobId={jobId}
+          result={job.result}
+          filename={job.filename}
+          createdAt={job.created_at}
+          textPreview={job.text_preview}
+          documentText={job.document_text}
+          showBreadcrumb
+          copyWindowHref
+        />
+      </AnalysisErrorBoundary>
+    </div>
   );
 }
