@@ -110,26 +110,26 @@ export default function LiveScanSidebar({
   // ── Frozen compact mode (Phase 3 sticky banner) ──────────────────────────
   if (frozen) {
     return (
-      <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-success/40 bg-success/[0.04] shadow-[0_0_0_1px_rgba(16,185,129,0.15),0_8px_32px_-20px_rgba(16,185,129,0.35)] backdrop-blur-sm">
+      <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-md border border-severity-low-border bg-severity-low-bg">
         <div className="flex items-center gap-3 px-4 py-3">
-          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-success/15 text-success ring-1 ring-success/30">
+          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-severity-low-bg text-severity-low-accent ring-1 ring-severity-low-border">
             <CheckCircle2 className="h-4 w-4" strokeWidth={2.25} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-severity-low-accent">
               Analysis complete
             </p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] tabular-nums text-foreground-muted">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] tabular-nums text-zinc-400">
               <Clock className="h-3 w-3" />
               Scanned in {formatElapsed(elapsed)}
             </p>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-4 border-l border-border/60 pl-4 text-right">
+          <div className="flex flex-shrink-0 items-center gap-4 border-l border-white/10 pl-4 text-right">
             <div>
-              <div className="text-sm font-semibold tabular-nums text-foreground">
+              <div className="text-sm font-semibold tabular-nums text-zinc-100">
                 {clausesFound}
               </div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-foreground-subtle">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">
                 Clauses
               </div>
             </div>
@@ -138,20 +138,20 @@ export default function LiveScanSidebar({
                 className={cn(
                   "text-sm font-semibold tabular-nums",
                   risksIdentified > 0
-                    ? "text-severity-critical"
-                    : "text-foreground",
+                    ? "text-severity-critical-accent"
+                    : "text-zinc-100",
                 )}
               >
                 {risksIdentified}
               </div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-foreground-subtle">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">
                 Risks
               </div>
             </div>
           </div>
         </div>
         {/* Locked full progress bar — no shimmer */}
-        <div className="mt-auto h-1 w-full bg-success" />
+        <div className="mt-auto h-1 w-full bg-severity-low-accent" />
       </aside>
     );
   }
@@ -159,17 +159,17 @@ export default function LiveScanSidebar({
   return (
     <aside
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border bg-surface/70 backdrop-blur-sm transition-colors duration-500",
+        "flex h-full min-h-0 flex-col overflow-hidden rounded-md border bg-surface-1 transition-colors duration-500",
         done
-          ? "border-success/40 bg-success/[0.03] shadow-[0_0_0_1px_rgba(16,185,129,0.2),0_20px_60px_-30px_rgba(16,185,129,0.45)]"
-          : "border-border shadow-card",
+          ? "border-severity-low-border bg-severity-low-bg"
+          : "border-white/5",
       )}
     >
       {/* Header */}
-      <div className="border-b border-border/70 bg-bg-elevated/70 px-5 py-4">
+      <div className="border-b border-white/5 bg-surface-2 px-5 py-4">
         <div className="flex items-center gap-2">
           {done ? (
-            <CheckCircle2 className="h-4 w-4 text-success" />
+            <CheckCircle2 className="h-4 w-4 text-severity-low-accent" />
           ) : (
             <span className="relative inline-flex h-4 w-4 items-center justify-center">
               <span className="absolute inset-0 rounded-full bg-accent/30 animate-ping-slow" />
@@ -179,16 +179,16 @@ export default function LiveScanSidebar({
           <span
             className={cn(
               "text-[11px] font-semibold uppercase tracking-[0.12em]",
-              done ? "text-success" : "text-accent",
+              done ? "text-severity-low-accent" : "text-accent",
             )}
           >
             {done ? "Scan complete" : "Live scan"}
           </span>
         </div>
-        <h2 className="mt-2 truncate text-[15px] font-semibold text-foreground">
+        <h2 className="mt-2 truncate text-[15px] font-semibold text-zinc-100">
           {filename ?? "Pasted contract"}
         </h2>
-        <div className="mt-1 flex items-center gap-1.5 text-[11px] tabular-nums text-foreground-muted">
+        <div className="mt-1 flex items-center gap-1.5 text-[11px] tabular-nums text-zinc-400">
           <Clock className="h-3 w-3" />
           {done ? (
             <span>Scanned in {formatElapsed(elapsed)}</span>
@@ -209,22 +209,22 @@ export default function LiveScanSidebar({
               <div
                 key={step.key}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border px-3.5 py-2.5 transition-all duration-500",
+                  "flex items-center gap-3 rounded-md border px-3.5 py-2.5 transition-all duration-500",
                   state === "active" &&
-                    "border-accent/40 bg-accent-soft shadow-[0_0_0_1px_rgba(124,92,252,0.2)]",
+                    "border-accent/40 bg-accent/10",
                   state === "complete" &&
-                    "border-success/30 bg-success/5",
+                    "border-severity-low-border bg-severity-low-bg",
                   state === "pending" &&
-                    "border-border/60 bg-surface-2/40 opacity-60",
+                    "border-white/5 bg-surface-2 opacity-60",
                 )}
               >
                 <span
                   className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                    "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
                     state === "active" && "bg-accent/20 text-accent",
-                    state === "complete" && "bg-success/15 text-success",
+                    state === "complete" && "bg-severity-low-bg text-severity-low-accent",
                     state === "pending" &&
-                      "bg-surface-3/60 text-foreground-subtle",
+                      "bg-surface-3 text-zinc-500",
                   )}
                 >
                   {state === "complete" ? (
@@ -239,9 +239,9 @@ export default function LiveScanSidebar({
                   <p
                     className={cn(
                       "text-[12px] font-semibold transition-colors",
-                      state === "active" && "text-foreground",
-                      state === "complete" && "text-success",
-                      state === "pending" && "text-foreground-subtle",
+                      state === "active" && "text-zinc-100",
+                      state === "complete" && "text-severity-low-accent",
+                      state === "pending" && "text-zinc-500",
                     )}
                   >
                     {step.label}
@@ -262,20 +262,20 @@ export default function LiveScanSidebar({
 
         {/* Progress bar */}
         <div>
-          <div className="flex items-center justify-between text-[11px] text-foreground-muted">
+          <div className="flex items-center justify-between text-[11px] text-zinc-400">
             <span className="font-semibold uppercase tracking-wider">
               Progress
             </span>
-            <span className="tabular-nums text-foreground">
+            <span className="tabular-nums text-zinc-100">
               {done ? 100 : pct}%
             </span>
           </div>
-          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-3/60">
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-700 ease-out",
                 done
-                  ? "bg-gradient-to-r from-success via-success to-success"
+                  ? "bg-severity-low-accent"
                   : "bg-gradient-to-r from-accent via-accent-hover to-accent animate-shimmer bg-[length:200%_100%]",
               )}
               style={{ width: `${done ? 100 : pct}%` }}
@@ -285,32 +285,32 @@ export default function LiveScanSidebar({
 
         {/* Live counts */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl border border-border/60 bg-surface-2/50 px-3 py-2.5">
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-foreground-subtle">
+          <div className="rounded-md border border-white/5 bg-surface-2 px-3 py-2.5">
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
               <Search className="h-3 w-3" />
               Clauses
             </div>
-            <div className="mt-1 text-xl font-semibold tabular-nums text-foreground">
+            <div className="mt-1 text-xl font-semibold tabular-nums text-zinc-100">
               {clausesFound}
             </div>
-            <div className="text-[10px] text-foreground-subtle">
+            <div className="text-[10px] text-zinc-500">
               {clausesFound === 1 ? "found so far" : "found so far"}
             </div>
           </div>
           <div
             className={cn(
-              "rounded-xl border px-3 py-2.5 transition-colors",
+              "rounded-md border px-3 py-2.5 transition-colors",
               risksIdentified > 0
-                ? "border-severity-critical/30 bg-severity-critical/[0.06]"
-                : "border-border/60 bg-surface-2/50",
+                ? "border-severity-critical-border bg-severity-critical-bg"
+                : "border-white/5 bg-surface-2",
             )}
           >
             <div
               className={cn(
                 "flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider",
                 risksIdentified > 0
-                  ? "text-severity-critical"
-                  : "text-foreground-subtle",
+                  ? "text-severity-critical-accent"
+                  : "text-zinc-500",
               )}
             >
               <Sparkles className="h-3 w-3" />
@@ -320,23 +320,23 @@ export default function LiveScanSidebar({
               className={cn(
                 "mt-1 text-xl font-semibold tabular-nums",
                 risksIdentified > 0
-                  ? "text-severity-critical"
-                  : "text-foreground",
+                  ? "text-severity-critical-accent"
+                  : "text-zinc-100",
               )}
             >
               {risksIdentified}
             </div>
-            <div className="text-[10px] text-foreground-subtle">
+            <div className="text-[10px] text-zinc-500">
               {risksIdentified === 1 ? "flagged" : "flagged"}
             </div>
           </div>
         </div>
 
         {/* Contextual status blurb */}
-        <div className="rounded-xl border border-border/60 bg-surface-2/50 px-3.5 py-2.5 text-[11px] leading-relaxed text-foreground-muted">
+        <div className="rounded-md border border-white/5 bg-surface-2 px-3.5 py-2.5 text-[11px] leading-relaxed text-zinc-400">
           {done ? (
             <>
-              <span className="font-semibold text-success">All done.</span>{" "}
+              <span className="font-semibold text-severity-low-accent">All done.</span>{" "}
               Generating your full report…
             </>
           ) : status === "queued" ? (
@@ -358,7 +358,7 @@ export default function LiveScanSidebar({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-center gap-1.5 border-t border-border/60 bg-bg-elevated/40 px-5 py-3 text-[10px] text-foreground-subtle">
+      <div className="flex items-center justify-center gap-1.5 border-t border-white/5 bg-surface-2 px-5 py-3 text-[10px] text-zinc-500">
         <Lock className="h-3 w-3" />
         Encrypted · Never used for training · Private by default
       </div>

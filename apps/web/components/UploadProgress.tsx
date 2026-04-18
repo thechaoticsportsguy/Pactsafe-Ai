@@ -79,19 +79,19 @@ export default function UploadProgress({
   }, [inFlight]);
 
   return (
-    <div className="rounded-2xl border border-border bg-surface/70 p-6">
+    <div className="rounded-md border border-white/5 bg-surface-1 p-6">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2.5 min-w-0">
           {inFlight && (
             <Loader2 className="h-4 w-4 text-accent animate-spin flex-shrink-0" />
           )}
           {failed && (
-            <XCircle className="h-4 w-4 text-severity-critical flex-shrink-0" />
+            <XCircle className="h-4 w-4 text-severity-critical-accent flex-shrink-0" />
           )}
           {done && (
-            <Check className="h-4 w-4 text-success flex-shrink-0" />
+            <Check className="h-4 w-4 text-severity-low-accent flex-shrink-0" />
           )}
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-sm font-medium text-zinc-100 truncate">
             {failed ? "Failed" : message || "Working on it…"}
           </span>
           {inFlight && (
@@ -102,7 +102,7 @@ export default function UploadProgress({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-foreground-muted tabular-nums">
+        <div className="flex items-center gap-3 text-xs text-zinc-400 tabular-nums">
           {inFlight && elapsed > 0 && (
             <span className="hidden sm:inline">{formatElapsed(elapsed)}</span>
           )}
@@ -114,7 +114,7 @@ export default function UploadProgress({
         <div
           className={cn(
             "h-full rounded-full transition-all duration-500",
-            failed ? "bg-severity-critical" : "bg-accent",
+            failed ? "bg-severity-critical-accent" : "bg-accent",
             inFlight && "animate-pulse-soft",
           )}
           style={{
@@ -136,19 +136,19 @@ export default function UploadProgress({
               key={s.key}
               className={cn(
                 "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 transition-colors",
-                active && "border-accent/40 bg-accent/5 text-foreground",
-                stepDone && "border-success/40 bg-success/5 text-success",
+                active && "border-accent/40 bg-accent/5 text-zinc-100",
+                stepDone && "border-severity-low-border bg-severity-low-bg text-severity-low-accent",
                 !active &&
                   !stepDone &&
-                  "border-border text-foreground-subtle",
+                  "border-white/5 text-zinc-500",
               )}
             >
               <span
                 className={cn(
                   "inline-flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] font-bold",
                   active && "bg-accent text-white",
-                  stepDone && "bg-success text-white",
-                  !active && !stepDone && "border border-border-strong",
+                  stepDone && "bg-severity-low-accent text-white",
+                  !active && !stepDone && "border border-white/10",
                 )}
               >
                 {stepDone ? (
@@ -166,17 +166,17 @@ export default function UploadProgress({
       {inFlight && (
         <div
           key={tipIdx}
-          className="mt-5 flex items-start gap-3 rounded-lg border border-border-subtle bg-bg-elevated/50 p-4 animate-fade-in"
+          className="mt-5 flex items-start gap-3 rounded-lg border border-white/5 bg-surface-2 p-4 animate-fade-in"
           role="status"
         >
           <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
             <Lightbulb className="h-3.5 w-3.5" strokeWidth={2} />
           </span>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-subtle">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
               While you wait
             </p>
-            <p className="mt-1 text-xs text-foreground/85 leading-relaxed">
+            <p className="mt-1 text-xs text-zinc-200 leading-relaxed">
               {TIPS[tipIdx]}
             </p>
           </div>

@@ -46,9 +46,9 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
       <div
         {...getRootProps()}
         className={cn(
-          "group relative overflow-hidden rounded-2xl border-2 border-dashed border-border bg-surface/40 transition-all",
+          "group relative overflow-hidden rounded-md border-2 border-dashed border-white/10 bg-surface-1 transition-all",
           "p-12 text-center cursor-pointer",
-          "hover:border-accent/40 hover:bg-surface-2/60",
+          "hover:border-accent/40 hover:bg-surface-2",
           isDragActive && "border-accent bg-accent/5 scale-[1.01]",
           disabled && "opacity-60 cursor-not-allowed",
         )}
@@ -67,7 +67,7 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
         <div className="relative mx-auto flex max-w-sm flex-col items-center gap-4">
           <div
             className={cn(
-              "h-16 w-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center",
+              "h-16 w-16 rounded-md bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center",
               "ring-1 ring-accent/20 transition-all",
               isDragActive && "scale-110 ring-accent/40",
             )}
@@ -78,12 +78,12 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
             />
           </div>
           <div>
-            <p className="text-base font-semibold text-foreground">
+            <p className="text-base font-semibold text-zinc-100">
               {isDragActive
                 ? "Drop your contract here"
                 : "Drop a contract to analyze"}
             </p>
-            <p className="mt-1 text-xs text-foreground-muted">
+            <p className="mt-1 text-xs text-zinc-400">
               PDF · DOCX · TXT · up to 10 MB
             </p>
           </div>
@@ -99,14 +99,14 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
             <FileUp className="h-3.5 w-3.5" />
             Choose a file
           </button>
-          <p className="mt-1 text-[11px] text-foreground-subtle">
+          <p className="mt-1 text-[11px] text-zinc-500">
             or drag it right onto this card
           </p>
         </div>
       </div>
       {error && (
         <div
-          className="flex items-start gap-2 rounded-lg border border-severity-critical/40 bg-severity-critical/10 px-3 py-2.5 text-xs text-severity-critical"
+          className="flex items-start gap-2 rounded-lg border border-severity-critical-border bg-severity-critical-bg px-3 py-2.5 text-xs text-severity-critical-accent"
           role="alert"
         >
           <AlertOctagon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />

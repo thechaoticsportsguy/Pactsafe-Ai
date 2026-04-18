@@ -204,23 +204,23 @@ export default function ContractPreview({
   if (frozen) {
     const pageCount = Math.max(1, Math.round(lines.length / 40));
     return (
-      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden rounded-xl border border-border/70 bg-surface/70 px-4 py-3 shadow-card backdrop-blur-sm">
+      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden rounded-md border border-white/10 bg-surface-1 px-4 py-3">
         <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-accent ring-1 ring-accent/30">
           <FileText className="h-5 w-5" strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-foreground-muted">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
             Scanned document
           </p>
-          <p className="mt-0.5 truncate text-sm font-semibold text-foreground">
+          <p className="mt-0.5 truncate text-sm font-semibold text-zinc-100">
             {filename ?? "Pasted contract"}
           </p>
-          <p className="mt-0.5 text-[11px] tabular-nums text-foreground-subtle">
+          <p className="mt-0.5 text-[11px] tabular-nums text-zinc-500">
             {pageCount} page{pageCount !== 1 ? "s" : ""} · {lines.length} lines
             {elapsed > 0 && ` · analyzed in ${elapsed}s`}
           </p>
         </div>
-        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-success/15 text-success ring-1 ring-success/30">
+        <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-severity-low-bg text-severity-low-accent ring-1 ring-severity-low-border">
           <Check className="h-3.5 w-3.5" strokeWidth={3} />
         </span>
       </div>
@@ -234,13 +234,13 @@ export default function ContractPreview({
 
   // ---------------------------------------------------------------------------
   return (
-    <div className="flex min-h-0 flex-col overflow-hidden border-r border-border/50 bg-[#e8e8ec] dark:bg-[#13131a]">
+    <div className="flex min-h-0 flex-col overflow-hidden border-r border-white/5 bg-[#e8e8ec] dark:bg-surface-0">
 
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-shrink-0 items-center gap-3 border-b border-border/60 bg-surface/90 px-4 py-2.5 backdrop-blur-sm">
+      <div className="flex flex-shrink-0 items-center gap-3 border-b border-white/5 bg-surface-1 px-4 py-2.5">
         {/* Dot indicator */}
         {done ? (
-          <Check className="h-3.5 w-3.5 flex-shrink-0 text-success" />
+          <Check className="h-3.5 w-3.5 flex-shrink-0 text-severity-low-accent" />
         ) : (
           <span className="relative flex h-3 w-3 flex-shrink-0">
             <span className="absolute inset-0 animate-ping-slow rounded-full bg-accent/50" />
@@ -249,9 +249,9 @@ export default function ContractPreview({
         )}
 
         {/* Filename */}
-        <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-foreground-muted">
+        <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-zinc-400">
           <FileText className="h-3.5 w-3.5 flex-shrink-0" />
-          <span className="truncate font-medium text-foreground">
+          <span className="truncate font-medium text-zinc-100">
             {filename ?? "contract.pdf"}
           </span>
         </span>
@@ -259,20 +259,20 @@ export default function ContractPreview({
         {/* Progress indicator */}
         <div className="ml-auto flex flex-shrink-0 items-center gap-4 text-[10px] tabular-nums">
           {done ? (
-            <span className="font-semibold text-success">Complete</span>
+            <span className="font-semibold text-severity-low-accent">Complete</span>
           ) : (
-            <span className="text-foreground-muted">{pct}%</span>
+            <span className="text-zinc-400">{pct}%</span>
           )}
         </div>
       </div>
 
       {/* ── Progress shimmer bar ──────────────────────────────────────────── */}
-      <div className="h-[3px] flex-shrink-0 bg-surface-3/60">
+      <div className="h-[3px] flex-shrink-0 bg-surface-3">
         <div
           className={cn(
             "h-full transition-[width] duration-700 ease-out",
             done
-              ? "bg-success"
+              ? "bg-severity-low-accent"
               : "animate-shimmer bg-gradient-to-r from-accent via-accent-hover to-accent bg-[length:200%_100%]",
           )}
           style={{ width: `${done ? 100 : pct}%` }}
