@@ -2,8 +2,10 @@ import type { MetadataRoute } from "next";
 
 /**
  * Web app manifest. Lets users install PactSafe AI as a PWA on mobile
- * and desktop. Icons are served by the existing /icon.svg and
- * /apple-icon.svg routes.
+ * and desktop. Icons are served by the dynamic Next.js routes at
+ * `app/icon.tsx` (32×32) and `app/apple-icon.tsx` (180×180) — both
+ * render the same geometric LogoMark SVG so the browser-tab favicon,
+ * iOS home-screen icon, and in-app mark are always pixel-identical.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -14,20 +16,20 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#07080c",
-    theme_color: "#07080c",
+    background_color: "#111111",
+    theme_color: "#111111",
     categories: ["business", "productivity", "legal"],
     icons: [
       {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icon",
+        sizes: "32x32",
+        type: "image/png",
         purpose: "any",
       },
       {
-        src: "/apple-icon.svg",
+        src: "/apple-icon",
         sizes: "180x180",
-        type: "image/svg+xml",
+        type: "image/png",
         purpose: "any",
       },
     ],

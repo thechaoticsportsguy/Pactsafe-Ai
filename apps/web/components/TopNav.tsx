@@ -24,9 +24,10 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { LogoMark } from "@/components/primitives/LogoMark";
+import { LogoMark, type LogoMarkVariant } from "@/components/primitives/LogoMark";
 
 export type TopNavVariant = "editorial" | "workspace";
 
@@ -107,16 +108,53 @@ export default function TopNav({
   className,
 }: TopNavProps) {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
   const p = palette[variant];
   const links =
     variant === "editorial" ? NAV_LINKS_EDITORIAL : NAV_LINKS_WORKSPACE;
+
+  // LogoMark palette follows the page's Phase 4-C bifurcation of the
+  // workspace surface: /analyze + /history are now pure monochrome
+  // (no accent) → mono-light mark (black square, pure white P).
+  // /compare + /analysis/[id] keep the accent palette → workspace mark
+  // (white square, dark P). Editorial pages always get the ink-on-beige
+  // mark. Pathname-driven so (shell)/layout.tsx stays untouched.
+  const logoVariant: LogoMarkVariant =
+    variant === "editorial"
+      ? "editorial"
+      : pathname === "/analyze" ||
+          pathname?.startsWith("/analyze/") ||
+          pathname === "/history" ||
+          pathname?.startsWith("/history/")
+        ? "mono-light"
+        : "workspace";
+
+  // Wordmark color follows the TopNav variant (not the logoVariant
+  // sub-split) — the "PactSafe" text reads consistently across every
+  // workspace page regardless of which mark flavor sits next to it.
+  const wordmarkClass =
+    variant === "editorial" ? "text-ink-800" : "text-zinc-100";
 
   return (
     <header
       className={cn("sticky top-0 z-40 w-full", p.shell, className)}
     >
       <div className="mx-auto flex h-14 max-w-[1200px] items-center px-8 md:px-12">
-        <LogoMark variant={variant} size={28} />
+        <Link
+          href="/"
+          aria-label="PactSafe home"
+          className="inline-flex items-center gap-2.5"
+        >
+          <LogoMark variant={logoVariant} size={28} />
+          <span
+            className={cn(
+              "text-[15px] font-medium tracking-[-0.01em]",
+              wordmarkClass,
+            )}
+          >
+            PactSafe
+          </span>
+        </Link>
 
         <nav
           className="ml-10 hidden items-center gap-8 md:flex"

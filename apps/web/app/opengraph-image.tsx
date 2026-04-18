@@ -35,32 +35,21 @@ export default function OGImage() {
             style={{
               width: 56,
               height: 56,
-              borderRadius: 14,
-              background:
-                "linear-gradient(135deg, #7c5cfc 0%, #5b3fe0 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.08) inset, 0 12px 40px rgba(124,92,252,0.35)",
+              background: "#FFFFFF",
             }}
           >
-            <svg width="32" height="32" viewBox="0 0 64 64">
+            {/* New geometric LogoMark — white square, dark P cutout.
+                Workspace variant on the dark OG card so the mark reads
+                clearly against the #07080c background. */}
+            <svg width="56" height="56" viewBox="0 0 40 40">
+              <rect x="0" y="0" width="40" height="40" fill="#FFFFFF" />
               <path
-                d="M32 14 L47 20 V32 C47 41 40.5 48.5 32 51 C23.5 48.5 17 41 17 32 V20 Z"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M25 32 L30 37 L40 26"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                d="M 8 8 L 32 8 L 32 22 L 20 22 L 20 32 L 8 32 Z M 12 12 L 28 12 L 28 18 L 12 18 Z"
+                fill="#0a0a0f"
+                fillRule="evenodd"
               />
             </svg>
           </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/primitives/LogoMark";
+import { cn } from "@/lib/cn";
 
 /**
  * Editorial footer — warm beige backdrop, ink-800 type, sharp corners.
@@ -19,7 +20,16 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-12">
           {/* Brand */}
           <div className="md:col-span-5">
-            <LogoMark variant="editorial" size={28} />
+            <Link
+              href="/"
+              aria-label="PactSafe home"
+              className={cn("inline-flex items-center gap-2.5")}
+            >
+              <LogoMark variant="editorial" size={28} />
+              <span className="text-[15px] font-medium tracking-[-0.01em] text-ink-800">
+                PactSafe
+              </span>
+            </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-600">
               Plain-English contract review for freelancers, creators, and
               small businesses. Spot the traps before you sign.

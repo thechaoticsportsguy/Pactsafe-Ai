@@ -1,94 +1,96 @@
+"use client";
+
 /**
- * LogoMark — shared solid-square brand mark + wordmark.
+ * LogoMark — PactSafe brand mark.
  *
- * The editorial marketing site and the dark analysis workspace share
- * the same visual brand mark: a solid square with the letter "P",
- * followed by the "PactSafe" wordmark. Only the palette swaps.
+ * A geometric negative-space "P" cut out of a solid square. Drawn as a
+ * single <svg> with two polygon subpaths filled with fillRule="evenodd",
+ * so the inner bowl is carved from the solid square. No curves, no
+ * gradients, no shadows — matches the Phase 1 sharp-corners rule.
  *
- * Previously inlined in TopNav. Extracted so Footer (and any future
- * editorial surface) can render the same mark without TopNav's nav
- * chrome.
+ * The P silhouette at 40-unit viewBox:
+ *   • Outer bound: (8,8) → (32,32), with a step at y=22 → x=20 so the
+ *     stem drops down the left side and the bowl sits on top.
+ *   • Inner hole: simple rectangle (12,12) → (28,18) — the closed bowl
+ *     counter. Tuned from the original spec (which had an L-shaped
+ *     hole extending into the stem, producing a visible slit at y=22–28)
+ *     to a clean rectangle so the stem reads as a single solid block.
  *
- * The legacy `components/Logo.tsx` (gradient shield + checkmark) is
- * unused after this primitive lands; keep it in the tree for now in
- * case any out-of-tree import points at it, but prefer this mark for
- * new surfaces.
+ * Four palettes, each keyed to the surface the mark sits on:
+ *   • editorial   — black square, beige P (ink-800 on beige-100 pages)
+ *   • workspace   — white square, dark P (surface-0 cutout on dark
+ *                   accent workspace pages: /compare, /analysis/[id])
+ *   • mono-light  — black square, pure white P (mono workspace pages
+ *                   /analyze + /history after Phase 4-C purple strip;
+ *                   square nearly recedes into the dark surface, white
+ *                   P floats)
+ *   • mono-dark   — white square, black P (reserved for inverse
+ *                   contexts, e.g. the mark on a white card inside a
+ *                   dark surface)
+ *
+ * This primitive renders the MARK ONLY. The wordmark ("PactSafe") and
+ * the link wrapper live in the calling surface (TopNav, Footer) so
+ * those can own their own typography and href per context.
  */
 
-import Link from "next/link";
-import { cn } from "@/lib/cn";
+import * as React from "react";
 
-export type LogoMarkVariant = "editorial" | "workspace";
+export type LogoMarkVariant =
+  | "editorial"
+  | "workspace"
+  | "mono-light"
+  | "mono-dark";
 
-interface LogoMarkProps {
-  variant?: LogoMarkVariant;
-  /** Mark size in px (square). Wordmark scales with it. Default 28. */
+export interface LogoMarkProps {
+  /** Mark size in px (square). Default 28. */
   size?: number;
-  /** Render the "PactSafe" wordmark alongside the mark. Default true. */
-  wordmark?: boolean;
-  /** Override the href; default is "/". */
-  href?: string;
+  /** Palette. Default "editorial". */
+  variant?: LogoMarkVariant;
+  /** Accessible label. Default "PactSafe". */
+  ariaLabel?: string;
   className?: string;
 }
 
-const palette: Record<
+const PALETTE: Record<
   LogoMarkVariant,
-  { mark: string; letter: string; word: string }
+  { square: string; cutout: string }
 > = {
-  editorial: {
-    mark: "bg-ink-800",
-    letter: "text-beige-100",
-    word: "text-ink-800",
-  },
-  workspace: {
-    mark: "bg-accent-500",
-    letter: "text-white",
-    word: "text-zinc-100",
-  },
+  editorial: { square: "#111111", cutout: "#EFE9DD" },
+  workspace: { square: "#FFFFFF", cutout: "#0a0a0f" },
+  "mono-light": { square: "#111111", cutout: "#FFFFFF" },
+  "mono-dark": { square: "#FFFFFF", cutout: "#111111" },
 };
 
+// Path data is split for readability; rendered as one <path> with
+// fillRule="evenodd" so the bowl counter is carved from the P silhouette.
+const OUTER_P =
+  "M 8 8 L 32 8 L 32 22 L 20 22 L 20 32 L 8 32 Z";
+const BOWL_COUNTER = "M 12 12 L 28 12 L 28 18 L 12 18 Z";
+
 export function LogoMark({
-  variant = "editorial",
   size = 28,
-  wordmark = true,
-  href = "/",
+  variant = "editorial",
+  ariaLabel = "PactSafe",
   className,
 }: LogoMarkProps) {
-  const p = palette[variant];
-  // Letter sizing keeps the "P" visually centered at any mark size.
-  const letterPx = Math.max(12, Math.round(size * 0.5));
-  const wordPx = Math.max(14, Math.round(size * 0.54));
-
+  const palette = PALETTE[variant];
   return (
-    <Link
-      href={href}
-      aria-label="PactSafe AI home"
-      className={cn("group inline-flex items-center gap-2.5", className)}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label={ariaLabel}
+      className={className}
+      shapeRendering="crispEdges"
     >
-      <span
-        aria-hidden
-        className={cn(
-          "inline-flex items-center justify-center font-medium",
-          p.mark,
-          p.letter,
-        )}
-        style={{
-          width: size,
-          height: size,
-          fontSize: letterPx,
-          lineHeight: 1,
-        }}
-      >
-        P
-      </span>
-      {wordmark && (
-        <span
-          className={cn("font-medium tracking-[-0.01em]", p.word)}
-          style={{ fontSize: wordPx }}
-        >
-          PactSafe
-        </span>
-      )}
-    </Link>
+      <rect x="0" y="0" width="40" height="40" fill={palette.square} />
+      <path
+        d={`${OUTER_P} ${BOWL_COUNTER}`}
+        fill={palette.cutout}
+        fillRule="evenodd"
+      />
+    </svg>
   );
 }
