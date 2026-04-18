@@ -46,34 +46,25 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
       <div
         {...getRootProps()}
         className={cn(
-          "group relative overflow-hidden rounded-md border-2 border-dashed border-white/10 bg-surface-1 transition-all",
+          "group relative overflow-hidden rounded-md border-2 border-dashed border-white/15 bg-surface-1 transition-all",
           "p-12 text-center cursor-pointer",
-          "hover:border-accent/40 hover:bg-surface-2",
-          isDragActive && "border-accent bg-accent/5 scale-[1.01]",
+          "hover:border-white/30 hover:bg-surface-2",
+          isDragActive && "border-white/50 bg-white/5 scale-[1.01]",
           disabled && "opacity-60 cursor-not-allowed",
         )}
       >
         <input {...getInputProps()} />
 
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{
-            background:
-              "radial-gradient(60% 50% at 50% 0%, rgba(124,92,252,0.08), transparent 60%)",
-          }}
-        />
-
         <div className="relative mx-auto flex max-w-sm flex-col items-center gap-4">
           <div
             className={cn(
-              "h-16 w-16 rounded-md bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center",
-              "ring-1 ring-accent/20 transition-all",
-              isDragActive && "scale-110 ring-accent/40",
+              "h-16 w-16 rounded-md bg-white/5 border border-white/10 flex items-center justify-center",
+              "transition-all",
+              isDragActive && "scale-110 border-white/20",
             )}
           >
             <UploadCloud
-              className="h-7 w-7 text-accent"
+              className="h-7 w-7 text-zinc-300"
               strokeWidth={1.75}
             />
           </div>
@@ -93,7 +84,7 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
               e.stopPropagation();
               open();
             }}
-            className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-medium text-white shadow-glow-accent hover:bg-accent-hover active:translate-y-px transition-all"
+            className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-zinc-100 active:translate-y-px transition-all"
             disabled={disabled}
           >
             <FileUp className="h-3.5 w-3.5" />

@@ -120,7 +120,10 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <Badge variant="eyebrow-accent" className="mb-3">
+          <Badge
+            variant="eyebrow"
+            className="mb-3 border border-white/15 bg-white/5 tracking-[0.08em] text-zinc-300"
+          >
             <Clock className="h-3 w-3" />
             Past analyses
           </Badge>
@@ -139,14 +142,19 @@ export default function HistoryPage() {
               placeholder="Search by name, type, or summary…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="rounded-md border-white/10 bg-surface-2 pl-9 pr-16 text-zinc-100"
+              className="rounded-md border-white/10 bg-surface-2 pl-9 pr-16 text-zinc-100 focus:border-white/20 focus:ring-white/15"
             />
             <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none">
               ⌘K
             </kbd>
           </div>
           <Link href="/analyze" className="flex-shrink-0">
-            <Button palette="workspace" variant="primary" radius="md">
+            <Button
+              palette="workspace"
+              variant="primary"
+              radius="md"
+              className="bg-white text-black hover:bg-zinc-100"
+            >
               New analysis
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -172,8 +180,8 @@ export default function HistoryPage() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                   active
-                    ? "border-white/20 bg-surface-2 text-zinc-100"
-                    : "border-white/5 bg-surface-1 text-zinc-400 hover:border-white/10 hover:text-zinc-100",
+                    ? "border-white bg-white text-black"
+                    : "border-white/10 bg-surface-1 text-zinc-300 hover:bg-surface-2 hover:text-white",
                 )}
               >
                 {f.value !== "all" && (
@@ -219,7 +227,7 @@ export default function HistoryPage() {
 
       {jobs && filtered.length === 0 && (
         <div className="rounded-lg border border-white/5 bg-surface-1 px-6 py-16 text-center">
-          <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent ring-1 ring-accent/20">
+          <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10 text-zinc-300">
             <FolderOpen className="h-6 w-6" />
           </div>
           <h3 className="mt-5 text-base font-semibold text-zinc-100">
@@ -233,7 +241,12 @@ export default function HistoryPage() {
           {!query && (
             <div className="mt-6">
               <Link href="/analyze">
-                <Button palette="workspace" variant="primary" radius="md">
+                <Button
+                  palette="workspace"
+                  variant="primary"
+                  radius="md"
+                  className="bg-white text-black hover:bg-zinc-100"
+                >
                   Analyze a contract
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
@@ -265,7 +278,7 @@ export default function HistoryPage() {
                     href={`/analysis/${j.job_id}`}
                     className="flex flex-wrap items-center gap-4 px-5 py-4"
                   >
-                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
+                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-white/5 border border-white/10 text-zinc-300">
                       <FileText className="h-4 w-4" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -314,7 +327,7 @@ export default function HistoryPage() {
                             variant="secondary"
                             size="sm"
                             radius="md"
-                            className="opacity-70 group-hover:opacity-100"
+                            className="bg-transparent border border-white/15 text-zinc-300 hover:bg-white/5 hover:text-white hover:border-white/25 opacity-70 group-hover:opacity-100"
                           >
                             <Download className="h-3.5 w-3.5" />
                             PDF

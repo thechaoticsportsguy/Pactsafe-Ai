@@ -465,9 +465,9 @@ export default function AnalyzePage() {
           aria-hidden
           className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none animate-fade-in"
         >
-          <div className="absolute inset-4 rounded-lg border-2 border-dashed border-accent/60 bg-accent/[0.08]" />
-          <div className="relative flex flex-col items-center gap-3 rounded-md border border-accent/40 bg-surface-2 px-8 py-6 shadow-elevated ring-1 ring-accent/30">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-md bg-gradient-to-br from-accent/25 to-accent/5 text-accent ring-1 ring-accent/30">
+          <div className="absolute inset-4 rounded-lg border-2 border-dashed border-white/30 bg-white/[0.04]" />
+          <div className="relative flex flex-col items-center gap-3 rounded-md border border-white/20 bg-surface-2 px-8 py-6 shadow-elevated ring-1 ring-white/15">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-md bg-white/5 text-zinc-300 ring-1 ring-white/10">
               <Upload className="h-6 w-6" strokeWidth={1.75} />
             </span>
             <p className="text-sm font-semibold text-zinc-100">Drop your contract anywhere</p>
@@ -479,7 +479,10 @@ export default function AnalyzePage() {
       {/* Main column */}
       <div className="min-w-0 space-y-8">
         <div>
-          <Badge variant="eyebrow-accent" className="mb-3">
+          <Badge
+            variant="eyebrow"
+            className="mb-3 border border-white/15 bg-white/5 tracking-[0.08em] text-zinc-300"
+          >
             <Zap className="h-3 w-3" />
             New analysis
           </Badge>
@@ -509,7 +512,7 @@ export default function AnalyzePage() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
                   mode === m
-                    ? "bg-accent text-white shadow-glow-accent"
+                    ? "bg-white text-black"
                     : "text-zinc-400 hover:text-zinc-100",
                 )}
               >
@@ -518,7 +521,14 @@ export default function AnalyzePage() {
               </button>
             ))}
           </div>
-          <Button palette="workspace" variant="secondary" size="sm" radius="md" onClick={pasteFromClipboard}>
+          <Button
+            palette="workspace"
+            variant="secondary"
+            size="sm"
+            radius="md"
+            onClick={pasteFromClipboard}
+            className="border-white/15 bg-transparent text-zinc-300 hover:border-white/25 hover:bg-white/5 hover:text-white"
+          >
             <ClipboardPaste className="h-3.5 w-3.5" />
             Paste from clipboard
           </Button>
@@ -562,6 +572,7 @@ export default function AnalyzePage() {
                   radius="md"
                   onClick={onAnalyzeText}
                   disabled={text.trim().length < 50}
+                  className="bg-white text-black hover:bg-zinc-100"
                 >
                   Analyze text
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -605,28 +616,28 @@ export default function AnalyzePage() {
       {/* Side reassurance panel */}
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
         <div className="rounded-md border border-white/5 bg-surface-1 p-5">
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-accent">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
             <ShieldCheck className="h-3.5 w-3.5" />
             Private by default
           </p>
           <ul className="mt-4 space-y-3 text-xs leading-relaxed text-zinc-400">
             <li className="flex items-start gap-2">
-              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
               <span>Uploads are encrypted in transit and at rest.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
               <span>We never train on your contracts.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
               <span>Delete any analysis anytime from history.</span>
             </li>
           </ul>
         </div>
 
         <div className="rounded-md border border-white/5 bg-surface-1 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
             Quick facts
           </p>
           <dl className="mt-3 space-y-2.5 text-xs">
@@ -649,7 +660,10 @@ export default function AnalyzePage() {
           <p className="text-xs leading-relaxed text-zinc-500">
             PactSafe AI is a screening tool, not a law firm. For high-stakes
             deals, consult a licensed attorney.{" "}
-            <Link href="/#faq" className="text-accent hover:underline underline-offset-2">
+            <Link
+              href="/#faq"
+              className="text-zinc-100 underline underline-offset-2 hover:text-white"
+            >
               Learn more
             </Link>
             .
