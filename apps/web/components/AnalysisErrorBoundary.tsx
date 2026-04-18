@@ -17,7 +17,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/primitives/Button";
 
 interface AnalysisErrorBoundaryProps {
   children: React.ReactNode;
@@ -56,27 +56,33 @@ export default class AnalysisErrorBoundary extends React.Component<
     if (!this.state.error) return this.props.children;
 
     return (
-      <div className="rounded-2xl border border-warning/40 bg-warning/[0.06] p-6 md:p-8">
+      <div className="rounded-lg border border-warning/40 bg-warning/10 p-6 md:p-8">
         <div className="flex items-start gap-4">
-          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning ring-1 ring-warning/30">
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-warning/15 text-warning ring-1 ring-warning/30">
             <AlertTriangle className="h-5 w-5" strokeWidth={2} />
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-semibold text-foreground">
+            <h2 className="text-base font-semibold text-zinc-100">
               We hit a snag displaying your report
             </h2>
-            <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed max-w-2xl">
+            <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed max-w-2xl">
               The analysis finished, but we couldn&rsquo;t render it cleanly.
               This is almost always fixed by retrying. Your contract text is
               never stored client-side, so nothing is lost.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button size="sm" onClick={this.handleRetry}>
+              <Button
+                palette="workspace"
+                variant="primary"
+                size="sm"
+                radius="md"
+                onClick={this.handleRetry}
+              >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Try again
               </Button>
               <Link href="/analyze">
-                <Button size="sm" variant="outline">
+                <Button palette="workspace" variant="secondary" size="sm" radius="md">
                   Run a new analysis
                 </Button>
               </Link>

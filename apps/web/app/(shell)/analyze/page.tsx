@@ -39,6 +39,7 @@ import {
   CheckCircle2,
   Plus,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import Dropzone from "@/components/Dropzone";
 import ContractPreview from "@/components/ContractPreview";
 import LiveScanSidebar from "@/components/LiveScanSidebar";
@@ -47,6 +48,11 @@ import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
 import { Button } from "@/components/primitives/Button";
 import { TextArea } from "@/components/ui/input";
 import { Badge } from "@/components/primitives/Badge";
+import {
+  fadeInUp,
+  scaleIn,
+  staggerChildren,
+} from "@/components/primitives/Motion";
 import { useToast } from "@/components/Toast";
 import { createJobFromFile, createJobFromText, getJob } from "@/lib/api";
 import type { JobStatus, JobStatusResponse } from "@/lib/schemas";
@@ -334,12 +340,20 @@ export default function AnalyzePage() {
   // ---------------------------------------------------------------------------
   if (inReportPhase && completedJob?.result) {
     return (
-      <div className="space-y-10">
+      <motion.div
+        className="space-y-10"
+        initial="hidden"
+        animate="visible"
+        variants={staggerChildren}
+      >
         {/* Sticky frozen scanner banner — solid fill matches the Phase 1
             workspace surface system (no backdrop-blur); horizontal break-
             out keeps the bar flush to the viewport edge with its inner
             grid re-inset. */}
-        <div className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-white/5 bg-surface-0/95 md:-mx-8 md:-mt-14">
+        <motion.div
+          variants={scaleIn}
+          className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-white/5 bg-surface-0/95 md:-mx-8 md:-mt-14"
+        >
           <div className="px-5 pt-4 md:px-8">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-success">
@@ -373,21 +387,23 @@ export default function AnalyzePage() {
               />
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <AnalysisErrorBoundary onRetry={reset}>
-          <AnalysisReport
-            jobId={completedJob.job_id}
-            result={completedJob.result}
-            filename={completedJob.filename}
-            createdAt={completedJob.created_at}
-            textPreview={completedJob.text_preview}
-            documentText={completedJob.document_text}
-            showBreadcrumb={false}
-            copyWindowHref={false}
-          />
-        </AnalysisErrorBoundary>
-      </div>
+        <motion.div variants={fadeInUp}>
+          <AnalysisErrorBoundary onRetry={reset}>
+            <AnalysisReport
+              jobId={completedJob.job_id}
+              result={completedJob.result}
+              filename={completedJob.filename}
+              createdAt={completedJob.created_at}
+              textPreview={completedJob.text_preview}
+              documentText={completedJob.document_text}
+              showBreadcrumb={false}
+              copyWindowHref={false}
+            />
+          </AnalysisErrorBoundary>
+        </motion.div>
+      </motion.div>
     );
   }
 

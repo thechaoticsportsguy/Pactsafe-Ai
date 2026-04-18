@@ -150,8 +150,8 @@ export default function ClauseHighlighter({
   );
 
   return (
-    <div className="rounded-xl border border-border bg-surface/70 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 text-xs text-foreground-muted">
+    <div className="rounded-lg border border-white/5 bg-surface-1 overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 text-xs text-zinc-400">
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full bg-severity-critical" />

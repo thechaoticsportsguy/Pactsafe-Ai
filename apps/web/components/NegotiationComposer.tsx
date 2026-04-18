@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Copy, Check, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/primitives/Button";
 import { TextArea } from "@/components/ui/input";
 import { useToast } from "@/components/Toast";
 import { cn } from "@/lib/cn";
@@ -119,7 +119,7 @@ export default function NegotiationComposer({
 
   if (safeSuggestions.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-foreground-muted">
+      <div className="rounded-md border border-white/5 bg-surface-1 p-8 text-center text-sm text-zinc-400">
         No negotiation suggestions were generated.
       </div>
     );
@@ -128,21 +128,21 @@ export default function NegotiationComposer({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-surface/70 overflow-hidden",
+        "rounded-lg border border-white/5 bg-surface-1 overflow-hidden",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/70">
+      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/5">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+          <p className="text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
             <Mail className="h-3.5 w-3.5 text-accent" />
             Draft negotiation email
           </p>
-          <p className="mt-0.5 text-xs text-foreground-muted">
+          <p className="mt-0.5 text-xs text-zinc-400">
             {TONE_DESCRIPTION[tone]}
           </p>
         </div>
-        <div className="inline-flex items-center gap-0.5 rounded-lg border border-border bg-surface p-0.5">
+        <div className="inline-flex items-center gap-0.5 rounded-md border border-white/5 bg-surface-2 p-0.5">
           {(["friendly", "formal", "firm"] as Tone[]).map((t) => (
             <button
               key={t}
@@ -151,8 +151,8 @@ export default function NegotiationComposer({
               className={cn(
                 "px-2.5 py-1 rounded-md text-xs font-medium capitalize transition-colors",
                 tone === t
-                  ? "bg-accent text-white shadow-glow"
-                  : "text-foreground-muted hover:text-foreground",
+                  ? "bg-accent text-white shadow-glow-accent"
+                  : "text-zinc-400 hover:text-zinc-100",
               )}
             >
               {t}
@@ -163,7 +163,7 @@ export default function NegotiationComposer({
 
       <div className="grid gap-5 p-5 lg:grid-cols-[220px_minmax(0,1fr)]">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
             Include points
           </p>
           <ul className="mt-3 space-y-2">
@@ -176,7 +176,7 @@ export default function NegotiationComposer({
                     onChange={() => toggle(i)}
                     className="mt-0.5 accent-accent"
                   />
-                  <span className="text-foreground/85 group-hover:text-foreground leading-relaxed">
+                  <span className="text-zinc-200 group-hover:text-zinc-100 leading-relaxed">
                     {s}
                   </span>
                 </label>
@@ -190,10 +190,16 @@ export default function NegotiationComposer({
             value={draft}
             readOnly
             rows={14}
-            className="font-mono text-xs bg-bg-elevated/60"
+            className="font-mono text-xs rounded-md border-white/10 bg-surface-2 text-zinc-100"
           />
           <div className="mt-3 flex justify-end">
-            <Button variant="secondary" size="sm" onClick={copyToClipboard}>
+            <Button
+              palette="workspace"
+              variant="secondary"
+              size="sm"
+              radius="md"
+              onClick={copyToClipboard}
+            >
               {copied ? (
                 <>
                   <Check className="h-3.5 w-3.5" />
