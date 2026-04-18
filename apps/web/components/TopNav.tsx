@@ -24,7 +24,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { LogoMark, type LogoMarkVariant } from "@/components/primitives/LogoMark";
@@ -108,26 +107,18 @@ export default function TopNav({
   className,
 }: TopNavProps) {
   const [open, setOpen] = React.useState(false);
-  const pathname = usePathname();
   const p = palette[variant];
   const links =
     variant === "editorial" ? NAV_LINKS_EDITORIAL : NAV_LINKS_WORKSPACE;
 
-  // LogoMark palette follows the page's Phase 4-C bifurcation of the
-  // workspace surface: /analyze + /history are now pure monochrome
-  // (no accent) → mono-light mark (black square, pure white P).
-  // /compare + /analysis/[id] keep the accent palette → workspace mark
-  // (white square, dark P). Editorial pages always get the ink-on-beige
-  // mark. Pathname-driven so (shell)/layout.tsx stays untouched.
+  // LogoMark palette tracks the TopNav variant 1:1. Editorial pages get
+  // the ink-on-beige mark; workspace pages (/compare, /analysis/[id])
+  // get the accent-matched white-square mark. /analyze and /history
+  // used to be a third "mono-light" variant carved out of workspace,
+  // but Phase-4-D collapsed them onto editorial, so the mono branch is
+  // gone.
   const logoVariant: LogoMarkVariant =
-    variant === "editorial"
-      ? "editorial"
-      : pathname === "/analyze" ||
-          pathname?.startsWith("/analyze/") ||
-          pathname === "/history" ||
-          pathname?.startsWith("/history/")
-        ? "mono-light"
-        : "workspace";
+    variant === "editorial" ? "editorial" : "workspace";
 
   // Wordmark color follows the TopNav variant (not the logoVariant
   // sub-split) — the "PactSafe" text reads consistently across every

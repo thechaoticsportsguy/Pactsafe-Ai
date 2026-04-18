@@ -346,21 +346,21 @@ export default function AnalyzePage() {
         animate="visible"
         variants={staggerChildren}
       >
-        {/* Sticky frozen scanner banner — solid fill matches the Phase 1
-            workspace surface system (no backdrop-blur); horizontal break-
-            out keeps the bar flush to the viewport edge with its inner
-            grid re-inset. */}
+        {/* Sticky frozen scanner banner — editorial surface so there's
+            no color band between the beige TopNav and the report below;
+            horizontal break-out keeps the bar flush to the viewport
+            edge with its inner grid re-inset. */}
         <motion.div
           variants={scaleIn}
-          className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-white/5 bg-surface-0/95 md:-mx-8 md:-mt-14"
+          className="sticky top-16 z-30 -mx-5 -mt-10 border-b border-ink-800/10 bg-beige-100/95 md:-mx-8 md:-mt-14"
         >
           <div className="px-5 pt-4 md:px-8">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-success">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#10b981]">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Live scan complete
               </div>
-              <Button palette="workspace" variant="secondary" size="sm" radius="md" onClick={reset}>
+              <Button palette="editorial" variant="secondary" size="sm" radius="md" onClick={reset}>
                 <Plus className="h-3.5 w-3.5" />
                 Analyze another
               </Button>
@@ -465,13 +465,13 @@ export default function AnalyzePage() {
           aria-hidden
           className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none animate-fade-in"
         >
-          <div className="absolute inset-4 rounded-lg border-2 border-dashed border-white/30 bg-white/[0.04]" />
-          <div className="relative flex flex-col items-center gap-3 rounded-md border border-white/20 bg-surface-2 px-8 py-6 shadow-elevated ring-1 ring-white/15">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-md bg-white/5 text-zinc-300 ring-1 ring-white/10">
+          <div className="absolute inset-4 border-2 border-dashed border-ink-800/40 bg-ink-800/[0.04]" />
+          <div className="relative flex flex-col items-center gap-3 border border-ink-800/40 bg-beige-50 px-8 py-6 shadow-elevated ring-1 ring-ink-800/10">
+            <span className="inline-flex h-12 w-12 items-center justify-center bg-beige-100 text-ink-700 ring-1 ring-ink-800/10">
               <Upload className="h-6 w-6" strokeWidth={1.75} />
             </span>
-            <p className="text-sm font-semibold text-zinc-100">Drop your contract anywhere</p>
-            <p className="text-xs text-zinc-400">PDF · DOCX · TXT · up to 10 MB</p>
+            <p className="text-sm font-semibold text-ink-800">Drop your contract anywhere</p>
+            <p className="text-xs text-ink-600">PDF · DOCX · TXT · up to 10 MB</p>
           </div>
         </div>
       )}
@@ -481,15 +481,15 @@ export default function AnalyzePage() {
         <div>
           <Badge
             variant="eyebrow"
-            className="mb-3 border border-white/15 bg-white/5 tracking-[0.08em] text-zinc-300"
+            className="mb-3 bg-beige-50 tracking-[0.15em] text-ink-800"
           >
             <Zap className="h-3 w-3" />
             New analysis
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">
+          <h1 className="text-3xl font-semibold tracking-tight text-ink-800">
             Analyze a contract
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-zinc-400">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-600">
             Upload a PDF, DOCX, or TXT — or paste raw text. We&rsquo;ll extract
             it, flag risks, and give you ready-to-send negotiation language.
             Your full report appears right here when the scan finishes.
@@ -498,7 +498,7 @@ export default function AnalyzePage() {
 
         {/* Mode toggle + clipboard paste */}
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex items-center gap-1 rounded-md border border-white/5 bg-surface-1 p-1">
+          <div className="inline-flex items-center gap-1 border border-ink-800/10 bg-beige-50 p-1">
             {(
               [
                 ["file", "Upload file", Upload],
@@ -510,10 +510,10 @@ export default function AnalyzePage() {
                 type="button"
                 onClick={() => setMode(m)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.5 text-xs font-medium transition-colors",
+                  "inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium transition-colors",
                   mode === m
-                    ? "bg-white text-black"
-                    : "text-zinc-400 hover:text-zinc-100",
+                    ? "bg-ink-800 text-beige-50"
+                    : "text-ink-600 hover:text-ink-800",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -522,12 +522,10 @@ export default function AnalyzePage() {
             ))}
           </div>
           <Button
-            palette="workspace"
+            palette="editorial"
             variant="secondary"
             size="sm"
-            radius="md"
             onClick={pasteFromClipboard}
-            className="border-white/15 bg-transparent text-zinc-300 hover:border-white/25 hover:bg-white/5 hover:text-white"
           >
             <ClipboardPaste className="h-3.5 w-3.5" />
             Paste from clipboard
@@ -537,8 +535,10 @@ export default function AnalyzePage() {
         {mode === "file" && <Dropzone onFile={onFile} />}
 
         {mode === "text" && (
-          <div className="rounded-md border border-white/5 bg-surface-1 p-5">
+          <div className="border border-ink-800/10 bg-beige-50 p-5">
             <TextArea
+              palette="editorial"
+              radius="none"
               placeholder="Paste your contract text here (at least 50 characters)…"
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -551,28 +551,26 @@ export default function AnalyzePage() {
               rows={14}
             />
             <div className="mt-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 text-xs text-zinc-400">
+              <div className="flex items-center gap-3 text-xs text-ink-600">
                 <span className="tabular-nums">
                   {text.trim().length.toLocaleString()} characters
                 </span>
                 {text.trim().length >= 50 && (
-                  <span className="inline-flex items-center gap-1 text-success">
+                  <span className="inline-flex items-center gap-1 text-[#10b981]">
                     <CheckCircle2 className="h-3 w-3" />
                     Ready
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className="hidden text-xs text-zinc-500 sm:inline">
+                <span className="hidden text-xs text-ink-500 sm:inline">
                   <kbd>⌘</kbd> <kbd>Enter</kbd>
                 </span>
                 <Button
-                  palette="workspace"
+                  palette="editorial"
                   variant="primary"
-                  radius="md"
                   onClick={onAnalyzeText}
                   disabled={text.trim().length < 50}
-                  className="bg-white text-black hover:bg-zinc-100"
                 >
                   Analyze text
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -582,11 +580,13 @@ export default function AnalyzePage() {
           </div>
         )}
 
-        {/* Error state */}
+        {/* Error state — severity tokens preserved (critical red stays
+            critical red regardless of page palette); body text flips to
+            ink so it reads on the beige card. */}
         {error && (
           <div
             role="alert"
-            className="rounded-md border border-severity-critical/40 bg-severity-critical/10 p-5"
+            className="border border-severity-critical/40 bg-severity-critical/10 p-5"
           >
             <div className="flex items-start gap-3">
               <AlertOctagon className="mt-0.5 h-5 w-5 flex-shrink-0 text-severity-critical" />
@@ -594,9 +594,9 @@ export default function AnalyzePage() {
                 <p className="text-sm font-semibold text-severity-critical">
                   Something went wrong
                 </p>
-                <p className="mt-1 text-xs text-zinc-200">{error}</p>
+                <p className="mt-1 text-xs text-ink-700">{error}</p>
                 <div className="mt-3">
-                  <Button palette="workspace" variant="secondary" size="sm" radius="md" onClick={reset}>
+                  <Button palette="editorial" variant="secondary" size="sm" onClick={reset}>
                     <RefreshCw className="h-3.5 w-3.5" />
                     Start over
                   </Button>
@@ -607,7 +607,7 @@ export default function AnalyzePage() {
         )}
 
         {jobId && !busy && !error && !completedJob && (
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-ink-600">
             Job ID: <span className="font-mono">{jobId}</span>
           </p>
         )}
@@ -615,54 +615,54 @@ export default function AnalyzePage() {
 
       {/* Side reassurance panel */}
       <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-        <div className="rounded-md border border-white/5 bg-surface-1 p-5">
-          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
+        <div className="border border-ink-800/10 bg-beige-50 p-5">
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-800">
             <ShieldCheck className="h-3.5 w-3.5" />
             Private by default
           </p>
-          <ul className="mt-4 space-y-3 text-xs leading-relaxed text-zinc-400">
+          <ul className="mt-4 space-y-3 text-xs leading-relaxed text-ink-600">
             <li className="flex items-start gap-2">
-              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-600" />
               <span>Uploads are encrypted in transit and at rest.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-600" />
               <span>We never train on your contracts.</span>
             </li>
             <li className="flex items-start gap-2">
-              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
+              <Lock className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-ink-600" />
               <span>Delete any analysis anytime from history.</span>
             </li>
           </ul>
         </div>
 
-        <div className="rounded-md border border-white/5 bg-surface-1 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-300">
+        <div className="border border-ink-800/10 bg-beige-50 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-800">
             Quick facts
           </p>
           <dl className="mt-3 space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-400">Typical review</dt>
-              <dd className="font-medium text-zinc-100">&lt; 60 s</dd>
+              <dt className="text-ink-600">Typical review</dt>
+              <dd className="font-medium text-ink-800">&lt; 60 s</dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-400">File size</dt>
-              <dd className="font-medium text-zinc-100">up to 10 MB</dd>
+              <dt className="text-ink-600">File size</dt>
+              <dd className="font-medium text-ink-800">up to 10 MB</dd>
             </div>
             <div className="flex items-center justify-between">
-              <dt className="text-zinc-400">Formats</dt>
-              <dd className="font-medium text-zinc-100">PDF · DOCX · TXT</dd>
+              <dt className="text-ink-600">Formats</dt>
+              <dd className="font-medium text-ink-800">PDF · DOCX · TXT</dd>
             </div>
           </dl>
         </div>
 
-        <div className="rounded-md border border-white/5 bg-surface-1/60 p-5">
-          <p className="text-xs leading-relaxed text-zinc-500">
+        <div className="border border-ink-800/10 bg-beige-50/60 p-5">
+          <p className="text-xs leading-relaxed text-ink-500">
             PactSafe AI is a screening tool, not a law firm. For high-stakes
             deals, consult a licensed attorney.{" "}
             <Link
               href="/#faq"
-              className="text-zinc-100 underline underline-offset-2 hover:text-white"
+              className="text-ink-800 underline underline-offset-2 hover:text-ink-700"
             >
               Learn more
             </Link>

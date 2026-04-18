@@ -46,10 +46,10 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
       <div
         {...getRootProps()}
         className={cn(
-          "group relative overflow-hidden rounded-md border-2 border-dashed border-white/15 bg-surface-1 transition-all",
+          "group relative overflow-hidden border-2 border-dashed border-ink-800/20 bg-beige-50 transition-all",
           "p-12 text-center cursor-pointer",
-          "hover:border-white/30 hover:bg-surface-2",
-          isDragActive && "border-white/50 bg-white/5 scale-[1.01]",
+          "hover:border-ink-800/50 hover:bg-beige-100",
+          isDragActive && "border-ink-800 bg-beige-100 scale-[1.01]",
           disabled && "opacity-60 cursor-not-allowed",
         )}
       >
@@ -58,23 +58,23 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
         <div className="relative mx-auto flex max-w-sm flex-col items-center gap-4">
           <div
             className={cn(
-              "h-16 w-16 rounded-md bg-white/5 border border-white/10 flex items-center justify-center",
+              "h-16 w-16 bg-beige-100 border border-ink-800/10 flex items-center justify-center",
               "transition-all",
-              isDragActive && "scale-110 border-white/20",
+              isDragActive && "scale-110 border-ink-800/40",
             )}
           >
             <UploadCloud
-              className="h-7 w-7 text-zinc-300"
+              className="h-7 w-7 text-ink-700"
               strokeWidth={1.75}
             />
           </div>
           <div>
-            <p className="text-base font-semibold text-zinc-100">
+            <p className="text-base font-semibold text-ink-800">
               {isDragActive
                 ? "Drop your contract here"
                 : "Drop a contract to analyze"}
             </p>
-            <p className="mt-1 text-xs text-zinc-400">
+            <p className="mt-1 text-xs text-ink-600">
               PDF · DOCX · TXT · up to 10 MB
             </p>
           </div>
@@ -84,20 +84,20 @@ export default function Dropzone({ onFile, disabled }: DropzoneProps) {
               e.stopPropagation();
               open();
             }}
-            className="mt-1 inline-flex h-9 items-center gap-1.5 rounded-md bg-white px-4 text-sm font-medium text-black hover:bg-zinc-100 active:translate-y-px transition-all"
+            className="mt-1 inline-flex h-9 items-center gap-1.5 bg-ink-800 px-4 text-sm font-medium text-beige-50 hover:bg-ink-700 active:translate-y-px transition-all"
             disabled={disabled}
           >
             <FileUp className="h-3.5 w-3.5" />
             Choose a file
           </button>
-          <p className="mt-1 text-[11px] text-zinc-500">
+          <p className="mt-1 text-[11px] text-ink-500">
             or drag it right onto this card
           </p>
         </div>
       </div>
       {error && (
         <div
-          className="flex items-start gap-2 rounded-lg border border-severity-critical-border bg-severity-critical-bg px-3 py-2.5 text-xs text-severity-critical-accent"
+          className="flex items-start gap-2 border border-severity-critical-border bg-severity-critical-bg px-3 py-2.5 text-xs text-severity-critical-accent"
           role="alert"
         >
           <AlertOctagon className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />

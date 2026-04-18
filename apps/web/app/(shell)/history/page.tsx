@@ -122,39 +122,34 @@ export default function HistoryPage() {
         <div>
           <Badge
             variant="eyebrow"
-            className="mb-3 border border-white/15 bg-white/5 tracking-[0.08em] text-zinc-300"
+            className="mb-3 bg-beige-50 tracking-[0.15em] text-ink-800"
           >
             <Clock className="h-3 w-3" />
             Past analyses
           </Badge>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">
+          <h1 className="text-3xl font-semibold tracking-tight text-ink-800">
             Your contract history
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-ink-600">
             Every contract you've analyzed — searchable, filterable, re-exportable.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-ink-600 pointer-events-none" />
             <Input
               ref={searchRef}
               placeholder="Search by name, type, or summary…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="rounded-md border-white/10 bg-surface-2 pl-9 pr-16 text-zinc-100 focus:border-white/20 focus:ring-white/15"
+              className="rounded-none border-ink-800/10 bg-beige-50 pl-9 pr-16 text-ink-800 placeholder:text-ink-500 focus:border-ink-800/40 focus:bg-beige-50 focus:ring-ink-800/10"
             />
-            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none">
+            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none border border-ink-800/15 bg-beige-100 px-1.5 text-[10px] text-ink-700">
               ⌘K
             </kbd>
           </div>
           <Link href="/analyze" className="flex-shrink-0">
-            <Button
-              palette="workspace"
-              variant="primary"
-              radius="md"
-              className="bg-white text-black hover:bg-zinc-100"
-            >
+            <Button palette="editorial" variant="primary">
               New analysis
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -162,10 +157,11 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {/* Risk filter chips */}
+      {/* Risk filter chips — severity dots preserved inline so they
+          carry meaning across any page palette. */}
       {jobs && jobs.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-xs text-zinc-500 mr-1">
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-500 mr-1">
             <Filter className="h-3 w-3" />
             Filter
           </span>
@@ -180,8 +176,8 @@ export default function HistoryPage() {
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                   active
-                    ? "border-white bg-white text-black"
-                    : "border-white/10 bg-surface-1 text-zinc-300 hover:bg-surface-2 hover:text-white",
+                    ? "border-ink-800 bg-ink-800 text-beige-50"
+                    : "border-ink-800/10 bg-beige-50 text-ink-700 hover:border-ink-800/40 hover:text-ink-800",
                 )}
               >
                 {f.value !== "all" && (
@@ -192,7 +188,12 @@ export default function HistoryPage() {
                   />
                 )}
                 {f.label}
-                <span className="text-zinc-500 tabular-nums">
+                <span
+                  className={cn(
+                    "tabular-nums",
+                    active ? "text-beige-50/70" : "text-ink-500",
+                  )}
+                >
                   {count}
                 </span>
               </button>
@@ -202,7 +203,7 @@ export default function HistoryPage() {
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 rounded-full border border-white/5 bg-surface-1 px-3 py-1 text-xs text-zinc-400 hover:text-zinc-100"
+              className="inline-flex items-center gap-1 rounded-full border border-ink-800/10 bg-beige-50 px-3 py-1 text-xs text-ink-600 hover:text-ink-800"
             >
               <X className="h-3 w-3" />
               Clear
@@ -212,7 +213,7 @@ export default function HistoryPage() {
       )}
 
       {error && (
-        <div className="rounded-md border border-severity-critical/40 bg-severity-critical/10 p-4 text-sm text-severity-critical">
+        <div className="border border-severity-critical/40 bg-severity-critical/10 p-4 text-sm text-severity-critical">
           {error}
         </div>
       )}
@@ -226,14 +227,14 @@ export default function HistoryPage() {
       )}
 
       {jobs && filtered.length === 0 && (
-        <div className="rounded-lg border border-white/5 bg-surface-1 px-6 py-16 text-center">
-          <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10 text-zinc-300">
+        <div className="border border-ink-800/10 bg-beige-50 px-6 py-16 text-center">
+          <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-beige-100 border border-ink-800/10 text-ink-700">
             <FolderOpen className="h-6 w-6" />
           </div>
-          <h3 className="mt-5 text-base font-semibold text-zinc-100">
+          <h3 className="mt-5 text-base font-semibold text-ink-800">
             {query ? "No matches found" : "No analyses yet"}
           </h3>
-          <p className="mt-2 text-sm text-zinc-400 max-w-sm mx-auto">
+          <p className="mt-2 text-sm text-ink-600 max-w-sm mx-auto">
             {query
               ? "Try a different search term."
               : "Upload your first contract and we'll save it here for easy reference."}
@@ -241,12 +242,7 @@ export default function HistoryPage() {
           {!query && (
             <div className="mt-6">
               <Link href="/analyze">
-                <Button
-                  palette="workspace"
-                  variant="primary"
-                  radius="md"
-                  className="bg-white text-black hover:bg-zinc-100"
-                >
+                <Button palette="editorial" variant="primary">
                   Analyze a contract
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
@@ -257,14 +253,14 @@ export default function HistoryPage() {
       )}
 
       {jobs && filtered.length > 0 && (
-        <div className="rounded-lg border border-white/5 bg-surface-1 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 text-xs text-zinc-400">
+        <div className="border border-ink-800/10 bg-beige-50 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-ink-800/10 text-xs text-ink-600">
             <span>
               {filtered.length} {filtered.length === 1 ? "analysis" : "analyses"}
             </span>
             <span>Newest first</span>
           </div>
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-ink-800/10">
             {filtered.map((j) => {
               const rawScore = j.result?.risk_score;
               const score = rawScore != null ? Math.min(rawScore, 95) : undefined;
@@ -272,27 +268,27 @@ export default function HistoryPage() {
               return (
                 <li
                   key={j.job_id}
-                  className="group hover:bg-surface-2 transition-colors"
+                  className="group hover:bg-beige-100 transition-colors"
                 >
                   <Link
                     href={`/analysis/${j.job_id}`}
                     className="flex flex-wrap items-center gap-4 px-5 py-4"
                   >
-                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-white/5 border border-white/10 text-zinc-300">
+                    <span className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center bg-beige-100 border border-ink-800/10 text-ink-700">
                       <FileText className="h-4 w-4" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate text-zinc-100">
+                      <p className="font-medium truncate text-ink-800">
                         {j.filename ?? "Pasted contract"}
                       </p>
-                      <p className="mt-0.5 text-xs text-zinc-400 flex items-center gap-2 truncate">
+                      <p className="mt-0.5 text-xs text-ink-600 flex items-center gap-2 truncate">
                         {j.result && (
                           <>
                             <span className="inline-flex items-center gap-1">
                               <Sparkles className="h-2.5 w-2.5" />
                               {getDocumentTypeLabel(j.result.metadata?.document_type)}
                             </span>
-                            <span className="text-zinc-500">·</span>
+                            <span className="text-ink-500">·</span>
                           </>
                         )}
                         {new Date(j.created_at).toLocaleString()}
@@ -313,7 +309,9 @@ export default function HistoryPage() {
                           {score}
                         </span>
                       ) : (
-                        <Badge className="capitalize">{j.status}</Badge>
+                        <Badge className="capitalize border-ink-800/15 bg-beige-100 text-ink-700">
+                          {j.status}
+                        </Badge>
                       )}
                       {j.status === "completed" && (
                         <a
@@ -323,11 +321,10 @@ export default function HistoryPage() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Button
-                            palette="workspace"
+                            palette="editorial"
                             variant="secondary"
                             size="sm"
-                            radius="md"
-                            className="bg-transparent border border-white/15 text-zinc-300 hover:bg-white/5 hover:text-white hover:border-white/25 opacity-70 group-hover:opacity-100"
+                            className="opacity-70 group-hover:opacity-100"
                           >
                             <Download className="h-3.5 w-3.5" />
                             PDF
