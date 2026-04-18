@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 import { riskBand } from "@/lib/severity";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type SeverityLevel } from "@/components/primitives/Badge";
 
 interface RiskGaugeProps {
   score: number; // 0..100
@@ -32,23 +32,18 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
     return () => cancelAnimationFrame(raf);
   }, [clamped]);
 
-  const toneMap = {
+  const toneMap: Record<string, SeverityLevel> = {
     "#10b981": "low",
     "#eab308": "medium",
     "#f97316": "high",
     "#ef4444": "critical",
-  } as const;
-  const tone =
-    (toneMap[band.color as keyof typeof toneMap] as
-      | "low"
-      | "medium"
-      | "high"
-      | "critical") ?? "low";
+  };
+  const tone: SeverityLevel = toneMap[band.color] ?? "low";
 
   return (
     <div
       className={cn(
-        "relative rounded-xl border border-border bg-surface/70 p-6 overflow-hidden",
+        "relative rounded-lg border border-white/5 bg-surface-1 p-6 overflow-hidden",
         className,
       )}
     >
@@ -61,22 +56,19 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
       />
       <div className="relative">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
             Overall risk score
           </p>
-          <Badge
-            tone={tone === "low" ? "success" : tone}
-            size="sm"
-          >
+          <Badge variant="severity" level={tone}>
             {band.label}
           </Badge>
         </div>
 
         <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-5xl font-semibold tracking-tightest tabular-nums">
+          <span className="text-5xl font-semibold tracking-tightest tabular-nums text-zinc-100">
             {displayed}
           </span>
-          <span className="text-lg text-foreground-muted tabular-nums">
+          <span className="text-lg text-zinc-400 tabular-nums">
             / 100
           </span>
         </div>
@@ -108,7 +100,7 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
           />
         </div>
 
-        <div className="mt-3 flex justify-between text-[10px] uppercase tracking-wider text-foreground-subtle tabular-nums">
+        <div className="mt-3 flex justify-between text-[10px] uppercase tracking-wider text-zinc-500 tabular-nums">
           <span>0 · Safe</span>
           <span>30</span>
           <span>60</span>

@@ -39,8 +39,8 @@ import {
   Check,
   RefreshCw,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/primitives/Button";
+import { Badge } from "@/components/primitives/Badge";
 import { useToast } from "@/components/Toast";
 import RiskGauge from "@/components/RiskGauge";
 import FlagList from "@/components/FlagList";
@@ -346,21 +346,21 @@ export default function AnalysisReport({
         {showBreadcrumb && (
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-100 transition-colors"
           >
             All analyses
           </Link>
         )}
-        <div className="rounded-2xl border border-warning/40 bg-warning/[0.06] p-6 md:p-8">
+        <div className="rounded-lg border border-warning/40 bg-warning/10 p-6 md:p-8">
           <div className="flex items-start gap-4">
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning ring-1 ring-warning/30">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-warning/15 text-warning ring-1 ring-warning/30">
               <AlertTriangle className="h-5 w-5" strokeWidth={2} />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-semibold text-foreground">
+              <h2 className="text-base font-semibold text-zinc-100">
                 Analysis came back empty
               </h2>
-              <p className="mt-1.5 text-sm text-foreground-muted leading-relaxed max-w-2xl">
+              <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed max-w-2xl">
                 We finished the scan but the model didn&rsquo;t return any
                 flagged clauses, missing protections, or summary content.
                 This usually means the extracted text was too short or the
@@ -369,13 +369,13 @@ export default function AnalysisReport({
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link href="/analyze">
-                  <Button size="sm">
+                  <Button palette="workspace" variant="primary" size="sm" radius="md">
                     <RefreshCw className="h-3.5 w-3.5" />
                     Run a new analysis
                   </Button>
                 </Link>
                 <Link href="/demo">
-                  <Button size="sm" variant="outline">
+                  <Button palette="workspace" variant="secondary" size="sm" radius="md">
                     See a sample report instead
                   </Button>
                 </Link>
@@ -400,10 +400,10 @@ export default function AnalysisReport({
   return (
     <div className={cn("space-y-8", className)}>
       {showBreadcrumb && (
-        <div className="flex items-center gap-2 text-xs text-foreground-muted">
+        <div className="flex items-center gap-2 text-xs text-zinc-400">
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1 hover:text-zinc-100 transition-colors"
           >
             All analyses
           </Link>
@@ -414,26 +414,26 @@ export default function AnalysisReport({
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge tone="accent" size="xs">
+            <Badge className="gap-1 border-accent/40 bg-accent/10 text-accent">
               <Sparkles className="h-3 w-3" />
               {getDocumentTypeLabel(result.metadata?.document_type)}
             </Badge>
             {result.provider && (
-              <Badge tone="neutral" size="xs">
+              <Badge variant="neutral">
                 {result.provider}
               </Badge>
             )}
             {result.truncated && (
-              <Badge tone="warning" size="xs">
+              <Badge className="border-warning/40 bg-warning/10 text-warning">
                 Truncated
               </Badge>
             )}
           </div>
-          <h1 className="mt-3 text-2xl md:text-[28px] font-semibold tracking-tight truncate max-w-2xl">
+          <h1 className="mt-3 text-2xl md:text-[28px] font-semibold tracking-tight truncate max-w-2xl text-zinc-100">
             {filename ?? "Pasted contract"}
           </h1>
           {createdAt && (
-            <p className="mt-1.5 text-xs text-foreground-muted flex items-center gap-1.5">
+            <p className="mt-1.5 text-xs text-zinc-400 flex items-center gap-1.5">
               <Clock className="h-3 w-3" />
               Analyzed {new Date(createdAt).toLocaleString()}
             </p>
@@ -441,7 +441,13 @@ export default function AnalysisReport({
         </div>
 
         <div className="flex flex-shrink-0 flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={copyShareLink}>
+          <Button
+            palette="workspace"
+            variant="secondary"
+            size="sm"
+            radius="md"
+            onClick={copyShareLink}
+          >
             {linkCopied ? (
               <>
                 <Check className="h-3.5 w-3.5" />
@@ -455,7 +461,7 @@ export default function AnalysisReport({
             )}
           </Button>
           <a href={exportPdfUrl(jobId)} target="_blank" rel="noreferrer">
-            <Button size="sm">
+            <Button palette="workspace" variant="primary" size="sm" radius="md">
               <Download className="h-3.5 w-3.5" />
               Export PDF
             </Button>
@@ -466,8 +472,8 @@ export default function AnalysisReport({
       {/* Top strip: Risk + key counts */}
       <div className="grid gap-4 lg:grid-cols-3">
         <RiskGauge score={displayScore} className="lg:col-span-2" />
-        <div className="rounded-xl border border-border bg-surface/70 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+        <div className="rounded-lg border border-white/5 bg-surface-1 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
             At a glance
           </p>
           <dl className="mt-4 space-y-3">
@@ -517,7 +523,7 @@ export default function AnalysisReport({
       {result.sub_scores && <ScoreBreakdown scores={result.sub_scores} />}
 
       {/* Mobile sticky section nav (horizontal chip row) */}
-      <div className="lg:hidden sticky top-16 -mx-5 px-5 py-2 bg-background/80 backdrop-blur-xl border-b border-border-subtle/60 z-10">
+      <div className="lg:hidden sticky top-16 -mx-5 px-5 py-2 bg-surface-0/95 border-b border-white/5 z-10">
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
           {sections.map((s) => {
             const active = activeSection === s.key;
@@ -530,7 +536,7 @@ export default function AnalysisReport({
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
                   active
                     ? "border-accent/60 bg-accent/10 text-accent"
-                    : "border-border bg-surface/60 text-foreground-muted hover:text-foreground",
+                    : "border-white/5 bg-surface-1 text-zinc-400 hover:text-zinc-100",
                 )}
               >
                 <s.icon className="h-3 w-3" />
@@ -546,7 +552,7 @@ export default function AnalysisReport({
         {/* Desktop sticky nav */}
         <nav className="hidden lg:block">
           <div className="sticky top-24">
-            <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-foreground-subtle">
+            <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
               Sections
             </p>
             <ul className="mt-2 space-y-0.5">
@@ -561,7 +567,7 @@ export default function AnalysisReport({
                         "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
                         active
                           ? "bg-accent/10 text-accent"
-                          : "text-foreground-muted hover:text-foreground hover:bg-surface-2",
+                          : "text-zinc-400 hover:text-zinc-100 hover:bg-surface-2",
                       )}
                     >
                       <s.icon className="h-3.5 w-3.5" />
@@ -571,12 +577,12 @@ export default function AnalysisReport({
                 );
               })}
             </ul>
-            <div className="mt-6 mx-3 rounded-lg border border-border bg-surface-2/50 p-3">
-              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-foreground-muted">
+            <div className="mt-6 mx-3 rounded-md border border-white/5 bg-surface-2 p-3">
+              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                 <Info className="h-3 w-3" />
                 Not legal advice
               </p>
-              <p className="mt-1.5 text-xs text-foreground-subtle leading-relaxed">
+              <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed">
                 For high-stakes or precedent-setting deals, consult a
                 licensed attorney.
               </p>
@@ -589,8 +595,8 @@ export default function AnalysisReport({
         <div className="min-w-0 space-y-10">
           {/* Summary */}
           <Section id="summary" title="Plain-English summary" icon={Sparkles}>
-            <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-surface/20 p-6">
-              <p className="text-base leading-relaxed text-foreground/95 whitespace-pre-line">
+            <div className="rounded-md border border-white/5 border-l-2 border-l-accent bg-surface-1 p-6">
+              <p className="text-base leading-relaxed text-zinc-100 whitespace-pre-line">
                 {result.overall_summary && result.overall_summary.trim().length > 0
                   ? result.overall_summary
                   : "The analyzer did not return a plain-English summary for this contract. Check the red flags and missing protections below for the specific findings."}
@@ -620,22 +626,22 @@ export default function AnalysisReport({
             count={missingProtections.length}
           >
             {missingProtections.length === 0 ? (
-              <div className="rounded-xl border border-success/30 bg-success/10 p-5 flex items-center gap-3">
+              <div className="rounded-md border border-success/30 bg-success/10 p-5 flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-success" />
-                <p className="text-sm text-foreground">
+                <p className="text-sm text-zinc-100">
                   No critical protections missing. You&rsquo;re covered on
                   the basics.
                 </p>
               </div>
             ) : (
-              <div className="rounded-xl border border-border bg-surface/70 divide-y divide-border/60 overflow-hidden">
+              <div className="rounded-md border border-white/5 bg-surface-1 divide-y divide-white/5 overflow-hidden">
                 {missingProtections.map((m, i) => (
                   <div key={i} className="flex items-start gap-3 px-5 py-4">
                     <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-warning/40 bg-warning/10 text-warning">
                       <AlertTriangle className="h-3.5 w-3.5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm text-foreground/90 leading-relaxed">
+                      <p className="text-sm text-zinc-200 leading-relaxed">
                         {m}
                       </p>
                     </div>
@@ -679,7 +685,7 @@ export default function AnalysisReport({
                 onMarkClick={handleMarkClick}
               />
             ) : (
-              <div className="rounded-xl border border-border bg-surface/70 p-8 text-center text-sm text-foreground-muted">
+              <div className="rounded-md border border-white/5 bg-surface-1 p-8 text-center text-sm text-zinc-400">
                 No extracted text available for this contract.
               </div>
             )}
@@ -710,14 +716,14 @@ function Section({
   return (
     <section id={`section-${id}`} className="scroll-mt-32">
       <div className="mb-4 flex items-center gap-3">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent ring-1 ring-accent/20">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
           <Icon className="h-4 w-4" strokeWidth={2} />
         </span>
-        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
+          {title}
+        </h2>
         {typeof count === "number" && (
-          <Badge tone="neutral" size="xs">
-            {count}
-          </Badge>
+          <Badge variant="neutral">{count}</Badge>
         )}
       </div>
       {children}
@@ -742,7 +748,7 @@ function StatRow({
   } as const;
   return (
     <div className="flex items-center justify-between">
-      <dt className="text-sm text-foreground-muted">{label}</dt>
+      <dt className="text-sm text-zinc-400">{label}</dt>
       <dd
         className={cn("text-base font-semibold tabular-nums", colorMap[tone])}
       >

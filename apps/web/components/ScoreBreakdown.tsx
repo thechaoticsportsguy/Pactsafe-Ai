@@ -65,12 +65,12 @@ function bandLabel(score: number): string {
 
 export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
   return (
-    <div className="rounded-xl border border-border bg-surface/70 p-6">
+    <div className="rounded-lg border border-white/5 bg-surface-1 p-6">
       <div className="mb-5 flex items-baseline justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-foreground-muted">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           Contract health breakdown
         </p>
-        <p className="text-[10px] text-foreground-subtle uppercase tracking-wider">
+        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
           Higher is better
         </p>
       </div>
@@ -93,7 +93,7 @@ export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
                 >
                   <d.icon className="h-3.5 w-3.5" strokeWidth={2.25} />
                 </span>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-medium text-zinc-100">
                   {d.label}
                 </p>
                 <span
@@ -102,7 +102,7 @@ export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
                 >
                   {label}
                 </span>
-                <span className="text-sm font-semibold tabular-nums text-foreground">
+                <span className="text-sm font-semibold tabular-nums text-zinc-100">
                   {value}
                 </span>
               </div>
@@ -125,7 +125,7 @@ export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
                   }}
                 />
               </div>
-              <p className="mt-2 text-xs text-foreground-muted leading-snug">
+              <p className="mt-2 text-xs text-zinc-400 leading-snug">
                 {d.hint}
               </p>
             </div>
