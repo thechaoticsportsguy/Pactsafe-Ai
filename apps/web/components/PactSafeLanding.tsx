@@ -43,54 +43,6 @@ import {
 } from "@/components/primitives/Motion";
 
 // ---------------------------------------------------------------------------
-// Editorial hero — real red flags (trimmed) from the Handshake
-// ground-truth fixture. Used only by the right-column product
-// screenshot card so the marketing visual matches actual analyzer
-// output rather than stock copy.
-// ---------------------------------------------------------------------------
-interface FlagPreview {
-  sev: "Critical" | "High";
-  /** Tailwind bg class for the left severity bar. */
-  sevBar: string;
-  /** Tailwind text class for the severity label. */
-  sevText: string;
-  title: string;
-  /** Short excerpt from the verbatim quote. null hides the italic line. */
-  quote: string | null;
-  /** "5.1 · Ownership of Work Product" — section number + heading. */
-  section: string;
-}
-
-const FLAG_PREVIEWS: FlagPreview[] = [
-  {
-    sev: "Critical",
-    sevBar: "bg-[#ef4444]",
-    sevText: "text-[#ef4444]",
-    title: "IP covers pre-existing work",
-    quote:
-      "…created, conceived of or otherwise developed… prior to the Effective Date",
-    section: "5.1 · Ownership of Work Product",
-  },
-  {
-    sev: "High",
-    sevBar: "bg-[#f97316]",
-    sevText: "text-[#f97316]",
-    title: "$500 liability cap favors platform",
-    quote:
-      "…exceeding in the aggregate the greater of… during the 3-month period…",
-    section: "14.2 · General Damages",
-  },
-  {
-    sev: "High",
-    sevBar: "bg-[#f97316]",
-    sevText: "text-[#f97316]",
-    title: "Mandatory arbitration, 30-day opt-out",
-    quote: null,
-    section: "17.12 · Your Right to Opt Out",
-  },
-];
-
-// ---------------------------------------------------------------------------
 // Main landing component
 // ---------------------------------------------------------------------------
 export default function PactSafeLanding() {
@@ -106,6 +58,7 @@ export default function PactSafeLanding() {
       <TopNav variant="editorial" />
       <main id="main-content" className="flex-1">
         <Hero />
+        <HeroStats />
         <TrustBar />
         <HowItWorks />
         <SampleReport />
@@ -213,23 +166,39 @@ function MobileStickyCTA() {
 }
 
 // ---------------------------------------------------------------------------
-// Hero — editorial two-column marketing block. Left: eyebrow pill,
-// headline, subhead, CTA row, and a 4-cell stats row. Right: dark
-// product-screenshot card showing three real red flags from the
-// Handshake ground-truth fixture so the visual matches actual output.
-// No state, no polling — clicking the primary CTA routes to /analyze
-// where the real upload + scan flow lives.
+// Hero — two-column editorial marketing block, pdf.online-inspired.
 //
-// Unchanged from the Phase 3A editorial cut — the hero was already
-// converted when Phase 2 landed. Listed first in the file for reading
-// order; sub-sections below inherit the same palette.
+// Left column  (HeroCopy):
+//   eyebrow pill → serif display headline → supporting paragraph →
+//   primary/secondary CTA pair → testimonial card.
+//
+// Right column (HeroVisual):
+//   decorative legal-themed line-art illustration sitting at ~70%
+//   opacity behind a dashed "drop a contract" card that links to
+//   /analyze. Illustration is hidden on mobile (md:block) so the
+//   dropzone doesn't crowd narrow viewports.
+//
+// The 4-cell stats row that used to live inside HeroCopy has moved
+// below into its own <HeroStats /> section so the hero's left column
+// ends cleanly on the testimonial and the stats read as a band.
+//
+// Direction change note: this replaces the previous hero — a dark
+// product-card showing three real red flags from the Handshake
+// fixture (FLAG_PREVIEWS) — with a decorative illustration + upload
+// card pattern. Trades product-proof-in-hero for a more conventional
+// illustrated-SaaS aesthetic.
+//
+// Font note: the h1 uses inline fontFamily: Fraunces/Times fallback.
+// Fraunces isn't wired through next/font yet; Times will render until
+// it is. Wire it in app/layout.tsx in a follow-up and swap the inline
+// style for font-serif.
 // ---------------------------------------------------------------------------
 function Hero() {
   return (
-    <section className="bg-beige-100 text-ink-800">
-      <div className="container-app grid gap-12 py-16 md:grid-cols-2 md:items-center md:gap-16 md:py-24">
+    <section className="bg-beige-100 border-b border-ink-800/10">
+      <div className="mx-auto max-w-7xl px-8 py-20 md:py-28 md:px-12 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-12 md:gap-16 items-center">
         <HeroCopy />
-        <HeroScreenshot />
+        <HeroVisual />
       </div>
     </section>
   );
@@ -237,156 +206,229 @@ function Hero() {
 
 function HeroCopy() {
   return (
-    <div className="max-w-xl">
-      {/* Eyebrow pill — black bg / cream text, the only uppercase
-          element in the headline cluster. */}
-      <div className="inline-flex items-center gap-2 bg-ink-800 px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest text-beige-50">
-        <span className="h-1.5 w-1.5 rounded-full bg-beige-100" />
-        Grounded AI · Every claim cited
+    <div className="flex flex-col gap-8 max-w-xl">
+      <div className="inline-flex items-center gap-2 self-start bg-ink-800 text-beige-100 px-3 py-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-beige-100" />
+        <span className="text-[11px] tracking-[0.16em] uppercase font-medium">
+          Grounded AI · Every claim cited
+        </span>
       </div>
 
-      {/* Headline — weight 500 keeps the editorial feel; 600+ reads
-          heavy against the warm beige. Hard line breaks preserve the
-          target rhythm regardless of viewport width. */}
-      <h1 className="mt-6 text-5xl font-medium leading-[1.05] tracking-[-0.03em] text-ink-800 md:text-7xl">
-        Read every
-        <br />
-        clause. Like
-        <br />
-        a lawyer
-        <br />
-        would.
+      <h1
+        className="text-ink-800 text-[54px] md:text-[72px] leading-[1.02] font-medium tracking-[-0.035em]"
+        style={{ fontFamily: "'Fraunces', 'Times New Roman', serif" }}
+      >
+        Read every clause. Like a lawyer would.
       </h1>
 
-      <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-700">
+      <p className="text-ink-700 text-lg leading-[1.55] max-w-md">
         Paste any contract. In under 60 seconds, get a plain-English
         risk report — every red flag tied to the exact clause in your
         document. No lawyer fees. No data retained.
       </p>
 
-      {/* CTAs — sharp corners, primary filled black, secondary
-          bordered. Both link to real routes (no inline textarea on
-          the marketing page; the full upload flow lives at /analyze). */}
-      <div className="mt-8 flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap gap-3 items-center">
         <Link
           href="/analyze"
-          className="inline-flex items-center gap-2 bg-ink-800 px-7 py-3.5 text-sm font-medium text-beige-50 transition-colors hover:bg-ink-700"
+          className="inline-flex items-center gap-2 bg-ink-800 text-beige-100 px-7 py-3.5 text-sm font-medium hover:bg-ink-700 transition-colors"
         >
-          Analyze a contract
-          <ArrowRight className="h-4 w-4" />
+          Analyze a contract <span className="text-base">→</span>
         </Link>
         <Link
           href="/demo"
-          className="inline-flex items-center gap-2 border border-ink-800 px-7 py-3.5 text-sm font-medium text-ink-800 transition-colors hover:bg-ink-800 hover:text-beige-50"
+          className="inline-flex items-center bg-transparent text-ink-800 border border-ink-800 px-6 py-3.5 text-sm font-medium hover:bg-ink-800/5 transition-colors"
         >
           See sample report
         </Link>
       </div>
 
-      {/* Stats — 2 cols on mobile, 4 on desktop. 1-px ink-800 top
-          border matches the nav's editorial rhythm. */}
-      <dl className="mt-12 grid max-w-[560px] grid-cols-2 gap-x-6 gap-y-6 border-t border-ink-800 pt-6 md:grid-cols-4">
-        {[
-          { k: "Free", v: "No account" },
-          { k: "60s", v: "Avg scan" },
-          { k: "Cited", v: "Every claim" },
-          { k: "0%", v: "Retained" },
-        ].map((s) => (
-          <div key={s.k}>
-            <dd className="text-2xl font-medium tracking-tight text-ink-800 tabular-nums">
-              {s.k}
-            </dd>
-            <dt className="mt-1 text-[11px] font-medium uppercase tracking-widest text-ink-500">
-              {s.v}
-            </dt>
+      {/* Testimonial — placeholder copy, attributed to a placeholder
+          name. Swap with a real quote before public launch, or drop
+          the whole card. Kept per user spec; flagged in commit body. */}
+      <div className="mt-4 bg-beige-50 border border-ink-800/10 p-5 max-w-md">
+        <p className="text-ink-700 text-sm leading-[1.55] mb-4">
+          &ldquo;PactSafe flagged a $500 liability cap I would have signed
+          without thinking. Saved me genuinely.&rdquo;
+        </p>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-ink-800 text-beige-100 flex items-center justify-center text-sm font-medium">
+            M
           </div>
-        ))}
-      </dl>
+          <div>
+            <div className="text-ink-800 text-sm font-medium">Mihir J.</div>
+            <div className="text-ink-600 text-[12px]">Freelance consultant</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function HeroScreenshot() {
-  // Hidden on small screens — the dense card crowds narrow viewports
-  // and the marketing copy stands on its own without it.
+function HeroVisual() {
   return (
-    <div className="hidden md:block">
-      <div className="bg-ink-800 p-5 text-beige-50">
-        {/* Status bar */}
-        <div className="flex items-center justify-between border-b border-beige-50/10 pb-3 text-[11px] font-medium uppercase tracking-widest text-beige-50">
-          <span className="inline-flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#10b981]" />
-            Analysis complete
-          </span>
-          <span className="text-beige-50/60">18s · 78 clauses</span>
-        </div>
-
-        {/* Metric cards — beige tiles on dark bg, sharp corners. */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="bg-beige-100 p-4 text-ink-800">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-500">
-              Risk score
-            </p>
-            <p className="mt-1 text-3xl font-medium tabular-nums">
-              72
-              <span className="text-sm text-ink-500">/100</span>
-            </p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-[#ef4444]">
-              High risk
-            </p>
-          </div>
-          <div className="bg-beige-100 p-4 text-ink-800">
-            <p className="text-[10px] font-medium uppercase tracking-widest text-ink-500">
-              Flags found
-            </p>
-            <p className="mt-1 text-3xl font-medium tabular-nums">11</p>
-            <p className="mt-2 text-[10px] font-medium uppercase tracking-widest text-ink-500">
-              2 critical · 5 high
-            </p>
-          </div>
-        </div>
-
-        {/* Mini flag cards — content lifted from the Handshake
-            ground-truth fixture, trimmed to fit. Real output, not
-            stock copy. */}
-        <div className="mt-4 space-y-2">
-          {FLAG_PREVIEWS.map((f) => (
-            <div
-              key={f.title}
-              className="flex gap-3 bg-beige-50 p-3 text-ink-800"
-            >
-              <span
-                aria-hidden
-                className={cn("w-0.5 flex-shrink-0", f.sevBar)}
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "text-[9px] font-medium uppercase tracking-widest",
-                      f.sevText,
-                    )}
-                  >
-                    {f.sev}
-                  </span>
-                  <span className="text-[10px] text-ink-500">
-                    § {f.section}
-                  </span>
-                </div>
-                <p className="mt-1 text-[13px] font-medium text-ink-800">
-                  {f.title}
-                </p>
-                {f.quote && (
-                  <p className="mt-1 text-[11px] italic leading-snug text-ink-500">
-                    &ldquo;{f.quote}&rdquo;
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="relative flex items-center justify-center min-h-[420px]">
+      {/* Background illustration layer — atmospheric, hidden on
+          narrow viewports so it doesn't compete with the dropzone. */}
+      <div
+        className="absolute inset-0 hidden md:flex items-center justify-center opacity-70 pointer-events-none"
+        aria-hidden="true"
+      >
+        <HeroIllustration />
       </div>
+
+      {/* Foreground dropzone card — a real link, not a working
+          dropzone. Clicking routes to /analyze where the actual
+          upload flow lives. */}
+      <Link
+        href="/analyze"
+        className="relative bg-beige-50 border-2 border-dashed border-ink-800/30 p-10 w-full max-w-[360px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
+      >
+        <div className="w-14 h-14 bg-ink-800 text-beige-100 flex items-center justify-center">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+        </div>
+        <div className="text-ink-800 text-lg font-medium">
+          Drop a contract to start
+        </div>
+        <div className="text-ink-600 text-[13px]">
+          PDF · DOCX · TXT · up to 10 MB
+        </div>
+        <div className="inline-flex items-center gap-2 bg-ink-800 text-beige-100 px-5 py-2.5 text-sm font-medium mt-2">
+          Choose file
+        </div>
+        <div className="flex items-center gap-1.5 text-ink-500 text-[11px] mt-1">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          Files stay private
+        </div>
+      </Link>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HeroIllustration — placeholder legal-themed line art sitting behind
+// the dropzone card. Clean, abstract-ish, no stock-SaaS person-in-suit
+// cliché. Swap with a custom asset by replacing the SVG body or
+// pointing at a file in /public. Kept as inline SVG so it scales and
+// inherits currentColor from the parent's color style.
+// ---------------------------------------------------------------------------
+function HeroIllustration() {
+  return (
+    <svg
+      viewBox="0 0 600 500"
+      className="w-full h-full max-w-[560px]"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ color: "#1a1a1a" }}
+      aria-hidden="true"
+    >
+      {/* Top-left: stack of documents with lines */}
+      <g transform="translate(40 50)">
+        <rect x="0" y="0" width="90" height="120" />
+        <rect x="8" y="-8" width="90" height="120" />
+        <line x1="20" y1="30" x2="85" y2="30" />
+        <line x1="20" y1="50" x2="85" y2="50" />
+        <line x1="20" y1="70" x2="70" y2="70" />
+        <line x1="20" y1="90" x2="85" y2="90" />
+      </g>
+      {/* Top-right: scales of justice */}
+      <g transform="translate(420 40)">
+        <line x1="60" y1="0" x2="60" y2="140" />
+        <line x1="20" y1="30" x2="100" y2="30" />
+        <path d="M 20 30 L 5 75 L 35 75 Z" />
+        <path d="M 100 30 L 85 75 L 115 75 Z" />
+        <ellipse cx="60" cy="140" rx="28" ry="4" />
+      </g>
+      {/* Middle-left: open book */}
+      <g transform="translate(30 250)">
+        <path d="M 0 20 Q 50 0 100 20 L 100 100 Q 50 80 0 100 Z" />
+        <path d="M 100 20 Q 150 0 200 20 L 200 100 Q 150 80 100 100 Z" />
+        <line x1="100" y1="20" x2="100" y2="100" />
+        <line x1="15" y1="45" x2="85" y2="40" />
+        <line x1="15" y1="60" x2="85" y2="55" />
+        <line x1="115" y1="40" x2="185" y2="45" />
+        <line x1="115" y1="55" x2="185" y2="60" />
+      </g>
+      {/* Middle-right: gavel */}
+      <g transform="translate(430 260)">
+        <rect x="0" y="30" width="110" height="35" rx="4" />
+        <rect x="-15" y="37" width="15" height="20" rx="2" />
+        <rect x="110" y="37" width="15" height="20" rx="2" />
+        <line x1="55" y1="65" x2="55" y2="125" />
+        <rect x="30" y="125" width="50" height="15" />
+      </g>
+      {/* Bottom-left: quill pen on paper */}
+      <g transform="translate(100 400)">
+        <rect x="0" y="20" width="80" height="60" />
+        <line x1="15" y1="40" x2="65" y2="40" />
+        <line x1="15" y1="55" x2="55" y2="55" />
+        <path d="M 70 0 L 95 25 L 75 30 Z" />
+        <line x1="75" y1="30" x2="50" y2="55" />
+      </g>
+      {/* Bottom-right: shield with checkmark */}
+      <g transform="translate(440 400)">
+        <path d="M 50 0 L 100 20 L 100 55 Q 100 85 50 100 Q 0 85 0 55 L 0 20 Z" />
+        <path d="M 25 50 L 45 70 L 80 30" strokeWidth="2" />
+      </g>
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HeroStats — the 4-cell stats band that used to live at the bottom of
+// HeroCopy. Pulled out into its own <section> so the hero ends on the
+// testimonial and the stats read as a distinct band under the fold.
+// Slightly darker beige (beige-200) visually separates it from the
+// hero above without breaking palette.
+// ---------------------------------------------------------------------------
+function HeroStats() {
+  const stats: [string, string][] = [
+    ["Free", "No account"],
+    ["60s", "Avg scan"],
+    ["Cited", "Every claim"],
+    ["0%", "Retained"],
+  ];
+  return (
+    <section className="bg-beige-200 border-b border-ink-800/10">
+      <div className="mx-auto max-w-7xl px-8 md:px-12 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
+        {stats.map(([v, l]) => (
+          <div key={l}>
+            <div className="text-ink-800 text-2xl font-medium tracking-[-0.02em]">
+              {v}
+            </div>
+            <div className="text-ink-600 text-[10px] uppercase tracking-[0.12em] font-medium mt-1.5">
+              {l}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
