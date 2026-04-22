@@ -272,11 +272,13 @@ function HeroVisual() {
     <div className="relative flex items-center justify-center min-h-[420px]">
       {/* Background illustration layer — atmospheric, hidden on
           narrow viewports so it doesn't compete with the dropzone.
-          opacity-95 keeps the labeled-scene text in the illustration
-          legible; the dropzone's shadow-panel lift + denser border
-          opacity (ink-800/40) keep it readable on top of it. */}
+          opacity-90 keeps the labeled-scene text in the illustration
+          legible without drowning the dropzone; HeroIllustration is
+          sized wider than this container (w-[120%] + negative
+          horizontal margin) so the corner scenes extend past the
+          dropzone's edges and remain fully readable. */}
       <div
-        className="absolute inset-0 hidden md:flex items-center justify-center opacity-95 pointer-events-none"
+        className="absolute inset-0 flex items-center justify-center opacity-90 hidden md:flex pointer-events-none"
         aria-hidden="true"
       >
         <HeroIllustration />
@@ -343,9 +345,13 @@ function HeroVisual() {
 // intentional negative space — the dropzone card sits there in the
 // HeroVisual stack. Decorative only: alt="" + aria-hidden skips it
 // for screen readers. priority preloads it since it's above the fold.
-// width/height are the PNG's actual pixel dimensions; they act as
-// aspect-ratio hints — object-contain + max-w-[720px] govern the
-// rendered size.
+//
+// Sizing rationale: w-[120%] + -mx-[10%] pushes the illustration past
+// the absolute container's edges in both directions so the four
+// corner scenes extend beyond the dropzone card's footprint and stay
+// readable. max-w-none overrides any ancestor max-width so the
+// scaling actually takes effect. h-auto lets the aspect ratio drive
+// height; the parent flex+items-center centers it vertically.
 // ---------------------------------------------------------------------------
 function HeroIllustration() {
   return (
@@ -355,7 +361,7 @@ function HeroIllustration() {
       width={1402}
       height={1122}
       aria-hidden="true"
-      className="w-full h-full object-contain max-w-[720px]"
+      className="w-[120%] h-auto max-w-none object-contain -mx-[10%]"
       priority
       draggable={false}
     />
