@@ -200,7 +200,7 @@ function MobileStickyCTA() {
 function Hero() {
   return (
     <section className="bg-beige-100 border-b border-ink-800/10">
-      <div className="mx-auto max-w-7xl px-8 py-24 md:py-36 md:px-12 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-12 md:gap-20 items-center">
+      <div className="mx-auto max-w-7xl px-8 py-16 md:py-20 md:px-12 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-12 md:gap-20 items-center">
         <HeroCopy />
         <HeroVisual />
       </div>
@@ -210,7 +210,7 @@ function Hero() {
 
 function HeroCopy() {
   return (
-    <div className="flex flex-col gap-8 max-w-xl">
+    <div className="flex flex-col gap-6 max-w-xl">
       <div className="inline-flex items-center gap-2 self-start bg-ink-800 text-beige-100 px-3 py-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-beige-100" />
         <span className="text-[11px] tracking-[0.16em] uppercase font-medium">
@@ -219,13 +219,13 @@ function HeroCopy() {
       </div>
 
       <h1
-        className="text-ink-800 text-[56px] md:text-[88px] leading-[1.00] font-medium tracking-[-0.04em]"
+        className="text-ink-800 text-[44px] md:text-[68px] leading-[1.02] font-medium tracking-[-0.04em]"
         style={{ fontFamily: "'Fraunces', 'Times New Roman', serif" }}
       >
         Read every clause. Like a lawyer would.
       </h1>
 
-      <p className="text-ink-700 text-xl leading-[1.55] max-w-lg">
+      <p className="text-ink-700 text-lg leading-[1.5] max-w-lg">
         Paste any contract. In under 60 seconds, get a plain-English
         risk report — every red flag tied to the exact clause in your
         document. No lawyer fees. No data retained.
@@ -234,13 +234,13 @@ function HeroCopy() {
       <div className="flex flex-wrap gap-3 items-center">
         <Link
           href="/analyze"
-          className="inline-flex items-center gap-2 bg-ink-800 text-beige-100 px-8 py-4 text-base font-medium hover:bg-ink-700 transition-colors"
+          className="inline-flex items-center gap-2 bg-ink-800 text-beige-100 px-7 py-3.5 text-sm font-medium hover:bg-ink-700 transition-colors"
         >
-          Analyze a contract <span className="text-lg">→</span>
+          Analyze a contract <span className="text-base">→</span>
         </Link>
         <Link
           href="/demo"
-          className="inline-flex items-center bg-transparent text-ink-800 border border-ink-800 px-8 py-4 text-base font-medium hover:bg-ink-800/5 transition-colors"
+          className="inline-flex items-center bg-transparent text-ink-800 border border-ink-800 px-7 py-3.5 text-sm font-medium hover:bg-ink-800/5 transition-colors"
         >
           See sample report
         </Link>
@@ -251,7 +251,7 @@ function HeroCopy() {
 
 function HeroVisual() {
   return (
-    <div className="relative flex items-center justify-center min-h-[420px]">
+    <div className="relative flex items-center justify-center min-h-[380px]">
       {/* Background illustration layer — atmospheric, hidden on
           narrow viewports so it doesn't compete with the dropzone.
           opacity-90 keeps the labeled-scene text in the illustration
@@ -271,7 +271,7 @@ function HeroVisual() {
           upload flow lives. */}
       <Link
         href="/analyze"
-        className="relative bg-beige-50 border-2 border-dashed border-ink-800/40 shadow-panel p-12 w-full max-w-[440px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
+        className="relative bg-beige-50 border-2 border-dashed border-ink-800/40 shadow-panel p-10 w-full max-w-[400px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
       >
         <div className="w-14 h-14 bg-ink-800 text-beige-100 flex items-center justify-center">
           <svg
