@@ -171,7 +171,8 @@ function MobileStickyCTA() {
 //
 // Left column  (HeroCopy):
 //   eyebrow pill → serif display headline → supporting paragraph →
-//   primary/secondary CTA pair → testimonial card.
+//   primary/secondary CTA pair. The column ends on the CTAs; the
+//   4-cell stats row lives below as its own <HeroStats /> band.
 //
 // Right column (HeroVisual):
 //   custom 2-color line illustration (cream + ink) showing four
@@ -181,15 +182,15 @@ function MobileStickyCTA() {
 //   center is intentional negative space for the dropzone. Hidden on
 //   mobile (md:flex) so the dropzone doesn't crowd narrow viewports.
 //
-// The 4-cell stats row that used to live inside HeroCopy has moved
-// below into its own <HeroStats /> section so the hero's left column
-// ends cleanly on the testimonial and the stats read as a band.
-//
 // Direction change note: this replaces the previous hero — a dark
 // product-card showing three real red flags from the Handshake
 // fixture (FLAG_PREVIEWS) — with a decorative illustration + upload
 // card pattern. Trades product-proof-in-hero for a more conventional
-// illustrated-SaaS aesthetic.
+// illustrated-SaaS aesthetic. A placeholder testimonial card sat
+// below the CTA pair in an earlier iteration; removed once the
+// display-type scale went up (CTA pair is the column's last child
+// now). A real testimonial will land later once we have permission
+// to attribute one.
 //
 // Font note: the h1 uses inline fontFamily: Fraunces/Times fallback.
 // Fraunces isn't wired through next/font yet; Times will render until
@@ -199,7 +200,7 @@ function MobileStickyCTA() {
 function Hero() {
   return (
     <section className="bg-beige-100 border-b border-ink-800/10">
-      <div className="mx-auto max-w-7xl px-8 py-20 md:py-28 md:px-12 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-12 md:gap-16 items-center">
+      <div className="mx-auto max-w-7xl px-8 py-24 md:py-36 md:px-12 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-12 md:gap-20 items-center">
         <HeroCopy />
         <HeroVisual />
       </div>
@@ -218,13 +219,13 @@ function HeroCopy() {
       </div>
 
       <h1
-        className="text-ink-800 text-[54px] md:text-[72px] leading-[1.02] font-medium tracking-[-0.035em]"
+        className="text-ink-800 text-[56px] md:text-[88px] leading-[1.00] font-medium tracking-[-0.04em]"
         style={{ fontFamily: "'Fraunces', 'Times New Roman', serif" }}
       >
         Read every clause. Like a lawyer would.
       </h1>
 
-      <p className="text-ink-700 text-lg leading-[1.55] max-w-md">
+      <p className="text-ink-700 text-xl leading-[1.55] max-w-lg">
         Paste any contract. In under 60 seconds, get a plain-English
         risk report — every red flag tied to the exact clause in your
         document. No lawyer fees. No data retained.
@@ -233,35 +234,16 @@ function HeroCopy() {
       <div className="flex flex-wrap gap-3 items-center">
         <Link
           href="/analyze"
-          className="inline-flex items-center gap-2 bg-ink-800 text-beige-100 px-7 py-3.5 text-sm font-medium hover:bg-ink-700 transition-colors"
+          className="inline-flex items-center gap-2 bg-ink-800 text-beige-100 px-8 py-4 text-base font-medium hover:bg-ink-700 transition-colors"
         >
-          Analyze a contract <span className="text-base">→</span>
+          Analyze a contract <span className="text-lg">→</span>
         </Link>
         <Link
           href="/demo"
-          className="inline-flex items-center bg-transparent text-ink-800 border border-ink-800 px-6 py-3.5 text-sm font-medium hover:bg-ink-800/5 transition-colors"
+          className="inline-flex items-center bg-transparent text-ink-800 border border-ink-800 px-8 py-4 text-base font-medium hover:bg-ink-800/5 transition-colors"
         >
           See sample report
         </Link>
-      </div>
-
-      {/* Testimonial — placeholder copy, attributed to a placeholder
-          name. Swap with a real quote before public launch, or drop
-          the whole card. Kept per user spec; flagged in commit body. */}
-      <div className="mt-4 bg-beige-50 border border-ink-800/10 p-5 max-w-md">
-        <p className="text-ink-700 text-sm leading-[1.55] mb-4">
-          &ldquo;PactSafe flagged a $500 liability cap I would have signed
-          without thinking. Saved me genuinely.&rdquo;
-        </p>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-ink-800 text-beige-100 flex items-center justify-center text-sm font-medium">
-            M
-          </div>
-          <div>
-            <div className="text-ink-800 text-sm font-medium">Mihir J.</div>
-            <div className="text-ink-600 text-[12px]">Freelance consultant</div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -274,9 +256,9 @@ function HeroVisual() {
           narrow viewports so it doesn't compete with the dropzone.
           opacity-90 keeps the labeled-scene text in the illustration
           legible without drowning the dropzone; HeroIllustration is
-          sized wider than this container (w-[120%] + negative
+          sized wider than this container (w-[130%] + negative
           horizontal margin) so the corner scenes extend past the
-          dropzone's edges and remain fully readable. */}
+          enlarged dropzone's edges and remain fully readable. */}
       <div
         className="absolute inset-0 flex items-center justify-center opacity-90 hidden md:flex pointer-events-none"
         aria-hidden="true"
@@ -289,7 +271,7 @@ function HeroVisual() {
           upload flow lives. */}
       <Link
         href="/analyze"
-        className="relative bg-beige-50 border-2 border-dashed border-ink-800/40 shadow-panel p-10 w-full max-w-[360px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
+        className="relative bg-beige-50 border-2 border-dashed border-ink-800/40 shadow-panel p-12 w-full max-w-[440px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
       >
         <div className="w-14 h-14 bg-ink-800 text-beige-100 flex items-center justify-center">
           <svg
@@ -346,12 +328,15 @@ function HeroVisual() {
 // HeroVisual stack. Decorative only: alt="" + aria-hidden skips it
 // for screen readers. priority preloads it since it's above the fold.
 //
-// Sizing rationale: w-[120%] + -mx-[10%] pushes the illustration past
+// Sizing rationale: w-[130%] + -mx-[15%] pushes the illustration past
 // the absolute container's edges in both directions so the four
-// corner scenes extend beyond the dropzone card's footprint and stay
-// readable. max-w-none overrides any ancestor max-width so the
-// scaling actually takes effect. h-auto lets the aspect ratio drive
-// height; the parent flex+items-center centers it vertically.
+// corner scenes extend beyond the now-larger dropzone card's
+// footprint and stay readable. The -mx- negative margin is always
+// exactly half the over-100 excess (at 130%, half of 30% = 15% each
+// side) to keep the image centered. max-w-none overrides any
+// ancestor max-width so the scaling actually takes effect. h-auto
+// lets the aspect ratio drive height; the parent flex+items-center
+// centers it vertically.
 // ---------------------------------------------------------------------------
 function HeroIllustration() {
   return (
@@ -364,7 +349,7 @@ function HeroIllustration() {
       width={1401}
       height={1123}
       aria-hidden="true"
-      className="w-[120%] h-auto max-w-none object-contain -mx-[10%]"
+      className="w-[130%] h-auto max-w-none object-contain -mx-[15%]"
       priority
       draggable={false}
     />
@@ -373,10 +358,10 @@ function HeroIllustration() {
 
 // ---------------------------------------------------------------------------
 // HeroStats — the 4-cell stats band that used to live at the bottom of
-// HeroCopy. Pulled out into its own <section> so the hero ends on the
-// testimonial and the stats read as a distinct band under the fold.
-// Slightly darker beige (beige-200) visually separates it from the
-// hero above without breaking palette.
+// HeroCopy. Pulled out into its own <section> so the hero's left
+// column ends cleanly on the CTA pair and the stats read as a
+// distinct band under the fold. Slightly darker beige (beige-200)
+// visually separates it from the hero above without breaking palette.
 // ---------------------------------------------------------------------------
 function HeroStats() {
   const stats: [string, string][] = [
