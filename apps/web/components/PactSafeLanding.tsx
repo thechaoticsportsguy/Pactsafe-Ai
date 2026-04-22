@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/cn";
 import {
@@ -173,10 +174,12 @@ function MobileStickyCTA() {
 //   primary/secondary CTA pair → testimonial card.
 //
 // Right column (HeroVisual):
-//   decorative legal-themed line-art illustration sitting at ~70%
-//   opacity behind a dashed "drop a contract" card that links to
-//   /analyze. Illustration is hidden on mobile (md:block) so the
-//   dropzone doesn't crowd narrow viewports.
+//   custom 2-color line illustration (cream + ink) showing four
+//   labeled product-capability scenes around a books + shield +
+//   contracts composition, sitting at 95% opacity behind a dashed
+//   "drop a contract" card that links to /analyze. The illustration's
+//   center is intentional negative space for the dropzone. Hidden on
+//   mobile (md:flex) so the dropzone doesn't crowd narrow viewports.
 //
 // The 4-cell stats row that used to live inside HeroCopy has moved
 // below into its own <HeroStats /> section so the hero's left column
@@ -268,9 +271,12 @@ function HeroVisual() {
   return (
     <div className="relative flex items-center justify-center min-h-[420px]">
       {/* Background illustration layer — atmospheric, hidden on
-          narrow viewports so it doesn't compete with the dropzone. */}
+          narrow viewports so it doesn't compete with the dropzone.
+          opacity-95 keeps the labeled-scene text in the illustration
+          legible; the dropzone's shadow-panel lift + denser border
+          opacity (ink-800/40) keep it readable on top of it. */}
       <div
-        className="absolute inset-0 hidden md:flex items-center justify-center opacity-70 pointer-events-none"
+        className="absolute inset-0 hidden md:flex items-center justify-center opacity-95 pointer-events-none"
         aria-hidden="true"
       >
         <HeroIllustration />
@@ -281,7 +287,7 @@ function HeroVisual() {
           upload flow lives. */}
       <Link
         href="/analyze"
-        className="relative bg-beige-50 border-2 border-dashed border-ink-800/30 p-10 w-full max-w-[360px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
+        className="relative bg-beige-50 border-2 border-dashed border-ink-800/40 shadow-panel p-10 w-full max-w-[360px] flex flex-col items-center gap-4 hover:border-ink-800/60 hover:bg-beige-100 transition-colors"
       >
         <div className="w-14 h-14 bg-ink-800 text-beige-100 flex items-center justify-center">
           <svg
@@ -329,74 +335,30 @@ function HeroVisual() {
 }
 
 // ---------------------------------------------------------------------------
-// HeroIllustration — placeholder legal-themed line art sitting behind
-// the dropzone card. Clean, abstract-ish, no stock-SaaS person-in-suit
-// cliché. Swap with a custom asset by replacing the SVG body or
-// pointing at a file in /public. Kept as inline SVG so it scales and
-// inherits currentColor from the parent's color style.
+// HeroIllustration — custom 2-color (cream + ink) line illustration
+// showing four labeled product-capability scenes ("Read every clause,"
+// "Spot risks instantly," "Understand complex terms," "Get clear
+// summaries") around a books + shield + contracts composition. Lives
+// at /public/hero-illustration.png. The center of the illustration is
+// intentional negative space — the dropzone card sits there in the
+// HeroVisual stack. Decorative only: alt="" + aria-hidden skips it
+// for screen readers. priority preloads it since it's above the fold.
+// width/height are the PNG's actual pixel dimensions; they act as
+// aspect-ratio hints — object-contain + max-w-[720px] govern the
+// rendered size.
 // ---------------------------------------------------------------------------
 function HeroIllustration() {
   return (
-    <svg
-      viewBox="0 0 600 500"
-      className="w-full h-full max-w-[560px]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "#1a1a1a" }}
+    <Image
+      src="/hero-illustration.png"
+      alt=""
+      width={1402}
+      height={1122}
       aria-hidden="true"
-    >
-      {/* Top-left: stack of documents with lines */}
-      <g transform="translate(40 50)">
-        <rect x="0" y="0" width="90" height="120" />
-        <rect x="8" y="-8" width="90" height="120" />
-        <line x1="20" y1="30" x2="85" y2="30" />
-        <line x1="20" y1="50" x2="85" y2="50" />
-        <line x1="20" y1="70" x2="70" y2="70" />
-        <line x1="20" y1="90" x2="85" y2="90" />
-      </g>
-      {/* Top-right: scales of justice */}
-      <g transform="translate(420 40)">
-        <line x1="60" y1="0" x2="60" y2="140" />
-        <line x1="20" y1="30" x2="100" y2="30" />
-        <path d="M 20 30 L 5 75 L 35 75 Z" />
-        <path d="M 100 30 L 85 75 L 115 75 Z" />
-        <ellipse cx="60" cy="140" rx="28" ry="4" />
-      </g>
-      {/* Middle-left: open book */}
-      <g transform="translate(30 250)">
-        <path d="M 0 20 Q 50 0 100 20 L 100 100 Q 50 80 0 100 Z" />
-        <path d="M 100 20 Q 150 0 200 20 L 200 100 Q 150 80 100 100 Z" />
-        <line x1="100" y1="20" x2="100" y2="100" />
-        <line x1="15" y1="45" x2="85" y2="40" />
-        <line x1="15" y1="60" x2="85" y2="55" />
-        <line x1="115" y1="40" x2="185" y2="45" />
-        <line x1="115" y1="55" x2="185" y2="60" />
-      </g>
-      {/* Middle-right: gavel */}
-      <g transform="translate(430 260)">
-        <rect x="0" y="30" width="110" height="35" rx="4" />
-        <rect x="-15" y="37" width="15" height="20" rx="2" />
-        <rect x="110" y="37" width="15" height="20" rx="2" />
-        <line x1="55" y1="65" x2="55" y2="125" />
-        <rect x="30" y="125" width="50" height="15" />
-      </g>
-      {/* Bottom-left: quill pen on paper */}
-      <g transform="translate(100 400)">
-        <rect x="0" y="20" width="80" height="60" />
-        <line x1="15" y1="40" x2="65" y2="40" />
-        <line x1="15" y1="55" x2="55" y2="55" />
-        <path d="M 70 0 L 95 25 L 75 30 Z" />
-        <line x1="75" y1="30" x2="50" y2="55" />
-      </g>
-      {/* Bottom-right: shield with checkmark */}
-      <g transform="translate(440 400)">
-        <path d="M 50 0 L 100 20 L 100 55 Q 100 85 50 100 Q 0 85 0 55 L 0 20 Z" />
-        <path d="M 25 50 L 45 70 L 80 30" strokeWidth="2" />
-      </g>
-    </svg>
+      className="w-full h-full object-contain max-w-[720px]"
+      priority
+      draggable={false}
+    />
   );
 }
 
