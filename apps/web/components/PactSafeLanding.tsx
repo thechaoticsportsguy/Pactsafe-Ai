@@ -356,10 +356,13 @@ function HeroVisual() {
 function HeroIllustration() {
   return (
     <Image
-      src="/hero-illustration.png"
+      // ?v=N cache-bust: bump the integer whenever the PNG is
+      // replaced so browsers and Next's image optimizer treat it as a
+      // new asset and don't serve a stale cached copy.
+      src="/hero-illustration.png?v=2"
       alt=""
-      width={1402}
-      height={1122}
+      width={1401}
+      height={1123}
       aria-hidden="true"
       className="w-[120%] h-auto max-w-none object-contain -mx-[10%]"
       priority
