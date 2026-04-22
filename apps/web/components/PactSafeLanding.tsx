@@ -199,7 +199,7 @@ function MobileStickyCTA() {
 // ---------------------------------------------------------------------------
 function Hero() {
   return (
-    <section className="bg-beige-100 border-b border-ink-800/10">
+    <section className="bg-beige-100 border-b border-ink-800/10 overflow-x-hidden">
       <div className="mx-auto max-w-7xl px-8 py-16 md:py-20 md:px-12 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-12 md:gap-20 items-center">
         <HeroCopy />
         <HeroVisual />
@@ -255,10 +255,12 @@ function HeroVisual() {
       {/* Background illustration layer — atmospheric, hidden on
           narrow viewports so it doesn't compete with the dropzone.
           opacity-90 keeps the labeled-scene text in the illustration
-          legible without drowning the dropzone; HeroIllustration is
-          sized wider than this container (w-[130%] + negative
-          horizontal margin) so the corner scenes extend past the
-          enlarged dropzone's edges and remain fully readable. */}
+          legible without drowning the dropzone. HeroIllustration is
+          constrained to its grid column (w-full max-w-[560px]) — a
+          previous version pulled it outward to clear the dropzone,
+          but that clipped the right-side scenes off the viewport on
+          narrower desktops. Some dropzone/illustration overlap in
+          the middle is the accepted trade-off. */}
       <div
         className="absolute inset-0 flex items-center justify-center opacity-90 hidden md:flex pointer-events-none"
         aria-hidden="true"
@@ -328,15 +330,17 @@ function HeroVisual() {
 // HeroVisual stack. Decorative only: alt="" + aria-hidden skips it
 // for screen readers. priority preloads it since it's above the fold.
 //
-// Sizing rationale: w-[130%] + -mx-[15%] pushes the illustration past
-// the absolute container's edges in both directions so the four
-// corner scenes extend beyond the now-larger dropzone card's
-// footprint and stay readable. The -mx- negative margin is always
-// exactly half the over-100 excess (at 130%, half of 30% = 15% each
-// side) to keep the image centered. max-w-none overrides any
-// ancestor max-width so the scaling actually takes effect. h-auto
-// lets the aspect ratio drive height; the parent flex+items-center
-// centers it vertically.
+// Sizing rationale: w-full max-w-[560px] keeps the illustration
+// contained inside its grid column. A previous iteration used
+// w-[130%] + -mx-[15%] to push the corner scenes outward past the
+// dropzone's edges, but on desktops narrower than ~1440px that pull
+// shoved the right-side scenes past the viewport edge and clipped
+// them. Accepting a bit of dropzone/illustration overlap in the
+// middle is the lesser evil — content disappearing off the page is
+// a layout bug, overlap is a composition choice. h-auto lets the
+// aspect ratio drive height; the parent flex+items-center centers
+// it vertically. The hero section also carries overflow-x-hidden
+// as a defensive safeguard against future sizing regressions.
 // ---------------------------------------------------------------------------
 function HeroIllustration() {
   return (
@@ -349,7 +353,7 @@ function HeroIllustration() {
       width={1401}
       height={1123}
       aria-hidden="true"
-      className="w-[130%] h-auto max-w-none object-contain -mx-[15%]"
+      className="w-full h-auto max-w-[560px] object-contain"
       priority
       draggable={false}
     />
