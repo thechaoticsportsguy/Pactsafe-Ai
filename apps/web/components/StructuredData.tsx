@@ -106,7 +106,7 @@ export function FaqJsonLd() {
     },
     {
       q: "How private is my data?",
-      a: "Uploads are TLS 1.3 encrypted in transit and AES-256 encrypted at rest. Zero-retention flags are set on all LLM API calls, and your contracts are never used to train any model. You can delete any analysis with one click.",
+      a: "Uploads are TLS 1.3 encrypted in transit and AES-256 encrypted at rest. We use Google's Gemini API, which by default does not use your data to train Google's models, and we do not build internal training corpuses from customer data. You can delete any analysis with one click.",
     },
     {
       q: "How accurate is the analysis?",
@@ -122,7 +122,7 @@ export function FaqJsonLd() {
     },
     {
       q: "What models do you use?",
-      a: "Primary analysis runs on Groq + Llama 3.3 70B for speed. Anthropic Claude is available as a fallback provider. Zero-retention is enforced at the API layer.",
+      a: "PactSafe AI runs on Google Gemini 2.5 Flash (clause extraction and contract-validity screening) and Gemini 2.5 Pro (risk analysis) via the Google AI API. PDF parsing on complex documents uses LlamaParse by LlamaIndex. Google's Gemini API does not use your data to train Google's models by default.",
     },
     {
       q: "Can I cancel anytime?",

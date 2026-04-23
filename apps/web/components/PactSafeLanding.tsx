@@ -429,10 +429,10 @@ function TrustBar() {
         </p>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-ink-700">
           <span className="inline-flex items-center gap-1.5">
-            Anthropic Claude
+            Google Gemini 2.5
           </span>
           <span className="inline-flex items-center gap-1.5">
-            Groq · Llama&nbsp;3.3
+            LlamaParse
           </span>
           <span className="inline-flex items-center gap-1.5">
             <GitFork className="h-3.5 w-3.5" />
@@ -1096,7 +1096,7 @@ function FAQ() {
     },
     {
       q: "How private is my data?",
-      a: "Uploads are TLS 1.3-encrypted in transit and AES-256-encrypted at rest. We set zero-retention flags on all LLM API calls, and your contracts are never used to train any model. You can delete any analysis from your history with one click and the underlying file is purged within 24 hours. See the Security page for the full breakdown.",
+      a: "Uploads are TLS 1.3-encrypted in transit and AES-256-encrypted at rest. We use Google's Gemini API, which by default does not use your data to train Google's models, and we don't build internal training corpuses from customer data. You can delete any analysis from your history with one click and the underlying file is purged within 24 hours. See the Security page for the full breakdown.",
     },
     {
       q: "How accurate is the analysis?",
@@ -1112,7 +1112,7 @@ function FAQ() {
     },
     {
       q: "What models do you use?",
-      a: "Primary analysis runs on Groq + Llama 3.3 70B for speed. Anthropic Claude is available as a fallback provider. We pick whichever gives the best precision for the contract type, with zero-retention enforced at the API layer.",
+      a: "PactSafe AI runs on Google Gemini 2.5 Flash (clause extraction and a pre-analysis contract-validity screen) and Gemini 2.5 Pro (risk analysis) via the Google AI API. PDF parsing on complex documents uses LlamaParse by LlamaIndex. Google's Gemini API doesn't use your data to train Google's models by default, and we never build our own training corpus from customer contracts.",
     },
     {
       q: "Can I use this for client contracts I send out?",

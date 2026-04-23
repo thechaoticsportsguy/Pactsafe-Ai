@@ -37,6 +37,13 @@ interface Entry {
  */
 const ENTRIES: Entry[] = [
   {
+    date: "2026-04-23",
+    kind: "improvement",
+    title: "Production model stack migrated to Google Gemini",
+    body: "The analysis pipeline now uses Gemini 2.5 Flash for clause extraction and Gemini 2.5 Pro for risk analysis. Previous versions used Claude via Anthropic and Llama 3.3 via Groq. The new stack improves structured-output reliability and reduces per-analysis cost. No change to the user experience; output quality is maintained or improved across all supported document types.",
+    tags: ["backend", "models"],
+  },
+  {
     date: "2026-04-14",
     kind: "feature",
     title: "Shareable analysis links + back to top",

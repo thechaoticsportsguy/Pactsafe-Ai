@@ -83,28 +83,28 @@ export default function PrivacyPage() {
       <p>
         Your contracts are <strong>never</strong> used to train machine
         learning models — not our own, not third-party models, not anyone else.
-        This is a hard rule and is enforced at the system level: our LLM API
-        calls go out with zero-retention flags where available, and we do not
-        keep a separate training corpus.
+        Google&rsquo;s Gemini API, which is the LLM provider we use for
+        analysis, does not use API data to train Google&rsquo;s models by
+        default. We do not maintain any separate internal training corpus
+        built from customer data.
       </p>
 
       <h2>Third parties we share data with</h2>
       <p>
         To run PactSafe we have to send the contract text to a language model
-        provider. We currently use a subset of the following:
+        provider. Our production stack is:
       </p>
       <ul>
         <li>
-          <strong>Anthropic</strong> (Claude) — for primary analysis.
-          Zero-retention is requested via API headers.
+          <strong>Google</strong> (Gemini 2.5 Flash and Gemini 2.5 Pro via the
+          Google AI API) — for contract-validity screening, clause extraction,
+          and risk analysis. Gemini API data is not used to train Google&rsquo;s
+          models by default.
         </li>
         <li>
-          <strong>Groq</strong> (Llama 3.3 70B) — for fast first-pass scoring.
-          Zero-retention is requested via API headers.
-        </li>
-        <li>
-          <strong>Ollama</strong> (self-hosted) — for local development. Never
-          leaves our infrastructure.
+          <strong>LlamaIndex</strong> (LlamaParse) — for PDF parsing on
+          complex documents. Receives only the PDF file; returns extracted
+          text.
         </li>
       </ul>
       <p>

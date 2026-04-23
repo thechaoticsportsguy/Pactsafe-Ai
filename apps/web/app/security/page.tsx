@@ -19,7 +19,7 @@ import {
 export const metadata: Metadata = {
   title: "Security",
   description:
-    "How PactSafe AI keeps your contracts safe: TLS 1.3 in transit, AES-256 at rest, zero-retention LLM calls, and no training on your data.",
+    "How PactSafe AI keeps your contracts safe: TLS 1.3 in transit, AES-256 at rest, Gemini API calls that don't train on your data, and one-click deletion.",
 };
 
 interface Pillar {
@@ -46,7 +46,7 @@ const PILLARS: Pillar[] = [
     title: "Never used for training",
     body: "Your contracts don\u2019t end up in anyone\u2019s training set.",
     items: [
-      "Zero-retention flags set on all Anthropic & Groq API calls",
+      "Google's Gemini API doesn't use your data for model training by default",
       "No internal training corpus built from customer data",
       "No data share with third parties outside the LLM call itself",
       "Delete any analysis instantly — purged within 24 hours",
@@ -83,7 +83,7 @@ const SECURITY_FAQS = [
   },
   {
     q: "Do you train models on my contracts?",
-    a: "No. Zero-retention flags are set on all LLM API calls, and we do not build internal training corpuses from customer data. This is a hard rule.",
+    a: "No. We use Google's Gemini API, which by default does not use your data to train Google's models, and we do not build internal training corpuses from customer data. Your contract text is sent only as far as is required to generate your analysis, and you can delete any analysis with one click.",
   },
   {
     q: "Where are my contracts stored?",
@@ -151,6 +151,38 @@ export default function SecurityPage() {
                 </ul>
               </div>
             ))}
+          </div>
+        </SectionEditorial>
+
+        {/* AI providers — explicit stack disclosure so technical
+            auditors can match marketing copy to what's actually
+            running in production. Update here when the stack
+            changes; this is the canonical public source of truth. */}
+        <SectionEditorial tone="warm" divider="top" pad="lg">
+          <div className="mx-auto max-w-3xl border border-ink-800/10 bg-beige-50 p-8 md:p-10">
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-ink-500">
+              AI providers
+            </p>
+            <h2 className="mt-3 text-xl font-medium tracking-tight text-ink-800">
+              What actually runs your analysis
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              PactSafe AI uses{" "}
+              <strong className="text-ink-800">Google Gemini 2.5 Flash</strong>{" "}
+              (clause extraction and contract-validity screening) and{" "}
+              <strong className="text-ink-800">Google Gemini 2.5 Pro</strong>{" "}
+              (risk analysis) via the Google AI API, plus{" "}
+              <strong className="text-ink-800">LlamaParse by LlamaIndex</strong>{" "}
+              for PDF parsing on complex documents. All API calls run
+              server-side from our Fly.io infrastructure; your contract text is
+              never sent to any AI provider from your browser.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              Google&rsquo;s Gemini API does not use your data for model
+              training by default. We do not store contract text beyond what
+              is required to return your analysis; you can delete any analysis
+              from your history at any time, which purges it within 24 hours.
+            </p>
           </div>
         </SectionEditorial>
 
