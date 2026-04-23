@@ -38,6 +38,8 @@ import {
   ClipboardPaste,
   CheckCircle2,
   Plus,
+  Ban,
+  FileQuestion,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Dropzone from "@/components/Dropzone";
@@ -90,6 +92,14 @@ export default function AnalyzePage() {
   const [filename, setFilename] = React.useState<string | null>(null);
   const [elapsed, setElapsed] = React.useState(0);
   const [completedJob, setCompletedJob] =
+    React.useState<JobStatusResponse | null>(null);
+  // Pass 0 rejection — set when the backend's contract-validity gate
+  // refused to analyze the submitted document. Distinct from `error`
+  // (which indicates a crash or validation failure) and from
+  // `completedJob` (which renders the normal report). Carries the
+  // full JobStatusResponse so the rejection UI can surface
+  // `result.rejection_reason` and `result.detected_as`.
+  const [rejectedJob, setRejectedJob] =
     React.useState<JobStatusResponse | null>(null);
   // Gates the Phase 3 report render. Stays `false` for ~2 s after the
   // backend reports "completed" so the scanner can visibly finish in
@@ -148,6 +158,7 @@ export default function AnalyzePage() {
   ) {
     setError(null);
     setCompletedJob(null);
+    setRejectedJob(null);
     setShowReport(false);
     setElapsed(0);
     hasFinalResultRef.current = false;
@@ -218,6 +229,20 @@ export default function AnalyzePage() {
           holdRef.current = setTimeout(() => {
             setShowReport(true);
           }, 2000);
+        } else if (job.status === "rejected") {
+          // Pass 0 refused the document. Pull the full payload so the
+          // rejection UI can surface `result.rejection_reason` and
+          // `result.detected_as` — the list endpoint omits `result`
+          // but the single-job endpoint hydrates it for "rejected"
+          // jobs the same way it does for "completed" ones.
+          hasFinalResultRef.current = true;
+          stopPolling();
+          let finalJob: JobStatusResponse;
+          try { finalJob = await getJob(job_id); }
+          catch { finalJob = job; }
+          const normalized = normalizeJobStatus(finalJob) ?? finalJob;
+          setRejectedJob(normalized);
+          setBusy(false);
         } else if (job.status === "failed") {
           stopPolling();
           setError(job.error || "Analysis failed.");
@@ -326,14 +351,103 @@ export default function AnalyzePage() {
     setFilename(null);
     setElapsed(0);
     setCompletedJob(null);
+    setRejectedJob(null);
     setShowReport(false);
   }
 
   // Derived gates — declared once so the JSX below reads like a truth table.
   const inScanningPhase = busy || (completedJob !== null && !showReport);
   const inReportPhase = completedJob !== null && completedJob.result !== null && showReport;
+  const inRejectedPhase = rejectedJob !== null;
   const scannerFinalClauses = estimateClauses(progress);
   const scannerFinalRisks = estimateRisks(progress);
+
+  // ---------------------------------------------------------------------------
+  // REJECTED — Pass 0 refused the document (not a contract).
+  //
+  // Distinct from the error branch below because rejection is a
+  // correctness guardrail, not a crash: we know exactly why we refused
+  // ("This looks like: ChatGPT conversation. …") so we can surface copy
+  // that's useful instead of a generic "something went wrong" panel.
+  // ---------------------------------------------------------------------------
+  if (inRejectedPhase) {
+    const detectedAs = rejectedJob?.result?.detected_as ?? null;
+    const rejectionReason =
+      rejectedJob?.result?.rejection_reason ??
+      rejectedJob?.error ??
+      "This document doesn't look like a legal contract.";
+    return (
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={staggerChildren}
+        className="mx-auto max-w-2xl space-y-6 py-6"
+      >
+        <motion.div
+          variants={fadeInUp}
+          className="border border-ink-800/15 border-l-2 border-l-ink-800 bg-beige-50 p-8"
+        >
+          <div className="flex items-start gap-4">
+            <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-[#F5E6D6] text-[#A56A20] ring-1 ring-[#E3C7A8]">
+              <Ban className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A56A20]">
+                Not a legal contract
+              </p>
+              <h1 className="mt-1 text-xl font-semibold text-ink-800">
+                We couldn&rsquo;t analyze this document.
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-ink-700">
+                {rejectionReason}
+              </p>
+              {detectedAs && (
+                <div className="mt-5 flex items-center gap-2 border border-ink-800/10 bg-beige-100 px-3 py-2 text-xs text-ink-700">
+                  <FileQuestion className="h-3.5 w-3.5 flex-shrink-0 text-ink-600" />
+                  <span>
+                    This looks like:{" "}
+                    <span className="font-medium text-ink-800">
+                      {detectedAs}
+                    </span>
+                  </span>
+                </div>
+              )}
+              <p className="mt-5 text-xs leading-relaxed text-ink-600">
+                PactSafe AI only analyzes actual legal agreements — employment
+                contracts, NDAs, service agreements, leases, SaaS terms, and
+                similar documents with named parties, consideration, and
+                obligations. If you pasted a conversation, article, or other
+                non-contract text, try a real agreement instead.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Button
+                  palette="editorial"
+                  variant="primary"
+                  onClick={reset}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Try a different document
+                </Button>
+                <Link
+                  href="/demo"
+                  className="text-xs font-medium text-ink-800 underline underline-offset-2 hover:text-ink-700"
+                >
+                  See a sample analysis
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div variants={fadeInUp}>
+          <p className="text-center text-[11px] text-ink-500">
+            Your document was not analyzed or stored for analysis —
+            Pass 0 refused before any detailed processing.
+          </p>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // PHASE 3 — REPORT (sticky frozen scanner at top + full AnalysisReport)

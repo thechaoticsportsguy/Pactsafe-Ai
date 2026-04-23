@@ -99,6 +99,17 @@ export function normalizeAnalysisResult(
       : {}),
     ...(highlightMap !== undefined ? { highlight_map: highlightMap } : {}),
     ...(metadata !== undefined ? { metadata } : {}),
+    // Pass 0 rejection fields — preserved through normalization so the
+    // /analyze page can branch on `status === "rejected"` and surface
+    // `rejection_reason` / `detected_as` even after the usual null-
+    // safety strip runs over the happy-path content fields.
+    ...(raw.rejected === true ? { rejected: true } : {}),
+    ...(typeof raw.rejection_reason === "string" && raw.rejection_reason.length > 0
+      ? { rejection_reason: raw.rejection_reason }
+      : {}),
+    ...(typeof raw.detected_as === "string" && raw.detected_as.length > 0
+      ? { detected_as: raw.detected_as }
+      : {}),
   };
 }
 

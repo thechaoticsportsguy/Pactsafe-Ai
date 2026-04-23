@@ -102,6 +102,52 @@ async def run_job(job_id: UUID) -> None:
             await _fail(job_id, result.error, result=result)
             return
 
+        # ---- Pass 0 rejection ----
+        # The v2 pipeline refused to analyze the document (not a
+        # contract, or confidence below 0.6). This is a correctness
+        # guardrail — NOT a crash — so we don't route through _fail.
+        # Instead we flip the job to "rejected", persist the rejection
+        # copy on the Analysis row so GET /api/jobs/{id} can hydrate
+        # `result.rejection_reason` / `result.detected_as`, and carry
+        # the reason in `job.error` for the history list endpoint which
+        # doesn't join Analysis rows.
+        if result.rejected:
+            logger.info(
+                "run_job rejected job=%s detected_as=%r reason=%r",
+                job_id,
+                result.detected_as,
+                (result.rejection_reason or "")[:120],
+            )
+            with session_scope() as s:
+                job = s.get(Job, job_id)
+                if job is None:
+                    return
+                analysis = Analysis(
+                    job_id=job.id,
+                    contract_type=result.contract_type,
+                    risk_score=result.risk_score,
+                    model_used=result.model_used,
+                    provider=result.provider,
+                    result_json=result.model_dump(mode="json"),
+                )
+                job.status = "rejected"
+                job.error = result.rejection_reason or (
+                    "Input is not a legal contract."
+                )
+                job.updated_at = datetime.now(timezone.utc)
+                s.add(analysis)
+                s.add(job)
+
+            await publish(JobProgressEvent(
+                job_id=job_id,
+                status="rejected",
+                message=result.rejection_reason
+                or "This doesn't look like a legal contract.",
+                progress=1.0,
+                partial=result,
+            ))
+            return
+
         # ---- persist ----
         with session_scope() as s:
             job = s.get(Job, job_id)

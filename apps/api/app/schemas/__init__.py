@@ -23,7 +23,18 @@ from pydantic import BaseModel, ConfigDict, Field
 Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 SEVERITY_ORDER: dict[str, int] = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
 
-JobStatus = Literal["queued", "extracting", "analyzing", "completed", "failed"]
+JobStatus = Literal[
+    "queued",
+    "extracting",
+    "analyzing",
+    "completed",
+    "failed",
+    # Pass 0 gate refused to analyze the document (not a contract, or
+    # confidence too low). Distinct from "failed": this is a correctness
+    # guardrail, not a crash — the rejection reason is carried on
+    # ``AnalysisResult.rejection_reason`` + ``detected_as``.
+    "rejected",
+]
 
 
 class RedFlag(BaseModel):
@@ -100,6 +111,31 @@ class AnalysisResult(BaseModel):
     # v2-only: carries the document_type enum so the frontend can pick
     # its own display label. Absent on legacy responses.
     metadata: Optional[AnalysisMetadata] = None
+
+    # Pass 0 rejection fields — populated only when the contract-validity
+    # gate refused to analyze the document (non-contract input, or
+    # confidence below the 0.6 threshold). When ``rejected=True`` the
+    # other content fields (``red_flags``, ``risk_score``, etc.) are
+    # empty/default; the frontend renders a dedicated "Not a contract"
+    # state instead of the normal report. Absent/False on every legacy
+    # and every successful v2 response.
+    rejected: bool = False
+    rejection_reason: Optional[str] = Field(
+        None,
+        description=(
+            "One-sentence plain-English explanation of why Pass 0 refused "
+            "the analysis. Surfaced verbatim in the rejection UI."
+        ),
+    )
+    detected_as: Optional[str] = Field(
+        None,
+        description=(
+            "Human-readable label for what Pass 0 thinks the document "
+            "actually is — 'ChatGPT conversation', 'News article', "
+            "'Source code', etc. Surfaced in the rejection UI as 'This "
+            "looks like: {detected_as}'."
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------

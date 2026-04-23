@@ -12,7 +12,15 @@ export type JobStatus =
   | "extracting"
   | "analyzing"
   | "completed"
-  | "failed";
+  | "failed"
+  /**
+   * The Pass 0 contract-validity gate refused to analyze the document
+   * — the pasted text isn't a legal contract, or confidence was below
+   * the 0.6 threshold. Distinct from "failed" (which means a crash):
+   * "rejected" is a correctness guardrail. The rejection copy lives on
+   * `AnalysisResult.rejection_reason` / `detected_as`.
+   */
+  | "rejected";
 
 export interface RedFlag {
   clause: string;
@@ -136,6 +144,21 @@ export interface AnalysisResult {
    * generic "Contract" label.
    */
   metadata?: AnalysisMetadata;
+  /**
+   * Pass 0 rejection fields — populated only when the contract-validity
+   * gate refused the document. When `rejected === true` the other
+   * content fields (`red_flags`, `risk_score`, etc.) are empty defaults
+   * and the UI should render a dedicated "Not a contract" state. Absent
+   * / false on every successful analysis.
+   */
+  rejected?: boolean;
+  rejection_reason?: string | null;
+  /**
+   * Human-readable guess for what the document actually is —
+   * "ChatGPT conversation", "News article", "Source code", etc.
+   * Surfaced in the rejection UI as "This looks like: {detected_as}".
+   */
+  detected_as?: string | null;
 }
 
 export interface JobCreateResponse {

@@ -419,7 +419,11 @@ async def get_job(job_id: UUID, session: Session = Depends(get_session)) -> JobS
         raise HTTPException(404, "Job not found")
 
     result: Optional[AnalysisResult] = None
-    if job.status == "completed":
+    # Hydrate `result` for both happy-path completion AND Pass 0
+    # rejection — the worker persists an Analysis row in the rejected
+    # case too so the frontend can read `result.rejection_reason` and
+    # `result.detected_as` off a uniform shape.
+    if job.status in ("completed", "rejected"):
         analysis = session.exec(select(Analysis).where(Analysis.job_id == job.id)).first()
         if analysis and analysis.result_json:
             result = AnalysisResult.model_validate(analysis.result_json)
