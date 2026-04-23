@@ -346,21 +346,21 @@ export default function AnalysisReport({
         {showBreadcrumb && (
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-ink-600 transition-colors hover:text-ink-800"
           >
             All analyses
           </Link>
         )}
-        <div className="rounded-lg border border-warning/40 bg-warning/10 p-6 md:p-8">
+        <div className="rounded-lg border border-[#E3C7A8] bg-[#F5E6D6] p-6 md:p-8">
           <div className="flex items-start gap-4">
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-warning/15 text-warning ring-1 ring-warning/30">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-[#E3C7A8] bg-[#EDDAC0] text-[#A56A20]">
               <AlertTriangle className="h-5 w-5" strokeWidth={2} />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-semibold text-zinc-100">
+              <h2 className="text-base font-semibold text-ink-800">
                 Analysis came back empty
               </h2>
-              <p className="mt-1.5 text-sm text-zinc-400 leading-relaxed max-w-2xl">
+              <p className="mt-1.5 max-w-2xl text-[13px] leading-[1.55] text-ink-700">
                 We finished the scan but the model didn&rsquo;t return any
                 flagged clauses, missing protections, or summary content.
                 This usually means the extracted text was too short or the
@@ -369,13 +369,13 @@ export default function AnalysisReport({
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link href="/analyze">
-                  <Button palette="workspace" variant="primary" size="sm" radius="md">
+                  <Button palette="editorial" variant="primary" size="sm" radius="md">
                     <RefreshCw className="h-3.5 w-3.5" />
                     Run a new analysis
                   </Button>
                 </Link>
                 <Link href="/demo">
-                  <Button palette="workspace" variant="secondary" size="sm" radius="md">
+                  <Button palette="editorial" variant="secondary" size="sm" radius="md">
                     See a sample report instead
                   </Button>
                 </Link>
@@ -400,10 +400,10 @@ export default function AnalysisReport({
   return (
     <div className={cn("space-y-8", className)}>
       {showBreadcrumb && (
-        <div className="flex items-center gap-2 text-xs text-zinc-400">
+        <div className="flex items-center gap-2 text-xs text-ink-600">
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center gap-1 transition-colors hover:text-ink-800"
           >
             All analyses
           </Link>
@@ -519,7 +519,7 @@ export default function AnalysisReport({
       {result.sub_scores && <ScoreBreakdown scores={result.sub_scores} />}
 
       {/* Mobile sticky section nav (horizontal chip row) */}
-      <div className="lg:hidden sticky top-16 -mx-5 px-5 py-2 bg-surface-0/95 border-b border-white/5 z-10">
+      <div className="lg:hidden sticky top-16 -mx-5 px-5 py-2 bg-beige-100/95 backdrop-blur border-b border-ink-800/10 z-10">
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
           {sections.map((s) => {
             const active = activeSection === s.key;
@@ -531,8 +531,8 @@ export default function AnalysisReport({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
                   active
-                    ? "border-accent/60 bg-accent/10 text-accent"
-                    : "border-white/5 bg-surface-1 text-zinc-400 hover:text-zinc-100",
+                    ? "border-ink-800 bg-beige-200 text-ink-800"
+                    : "border-ink-800/10 bg-beige-50 text-ink-600 hover:text-ink-800",
                 )}
               >
                 <s.icon className="h-3 w-3" />
@@ -548,7 +548,7 @@ export default function AnalysisReport({
         {/* Desktop sticky nav */}
         <nav className="hidden lg:block">
           <div className="sticky top-24">
-            <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+            <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
               Sections
             </p>
             <ul className="mt-2 space-y-0.5">
@@ -560,10 +560,15 @@ export default function AnalysisReport({
                       type="button"
                       onClick={() => scrollToSection(s.key)}
                       className={cn(
-                        "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                        // border-l-[3px] on every row keeps the text's
+                        // horizontal position stable as the active state
+                        // toggles — transparent when inactive, ink-800
+                        // when active is the "you are here" signal (no
+                        // more purple accent fill on beige).
+                        "flex w-full items-center gap-2.5 rounded-md border-l-[3px] px-3 py-2 text-sm transition-colors",
                         active
-                          ? "bg-accent/10 text-accent"
-                          : "text-zinc-400 hover:text-zinc-100 hover:bg-surface-2",
+                          ? "border-ink-800 bg-beige-200 text-ink-800"
+                          : "border-transparent text-ink-600 hover:bg-beige-100 hover:text-ink-800",
                       )}
                     >
                       <s.icon className="h-3.5 w-3.5" />
@@ -573,12 +578,12 @@ export default function AnalysisReport({
                 );
               })}
             </ul>
-            <div className="mt-6 mx-3 rounded-md border border-white/5 bg-surface-2 p-3">
-              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+            <div className="mt-6 mx-3 rounded-md border border-ink-800/15 border-l-2 border-l-ink-800 bg-beige-50 p-3">
+              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
                 <Info className="h-3 w-3" />
                 Not legal advice
               </p>
-              <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed">
+              <p className="mt-1.5 text-[13px] leading-[1.55] text-ink-700">
                 For high-stakes or precedent-setting deals, consult a
                 licensed attorney.
               </p>
@@ -591,8 +596,8 @@ export default function AnalysisReport({
         <div className="min-w-0 space-y-10">
           {/* Summary */}
           <Section id="summary" title="Plain-English summary" icon={Sparkles}>
-            <div className="rounded-md border border-white/5 border-l-2 border-l-accent bg-surface-1 p-6">
-              <p className="text-base leading-relaxed text-zinc-100 whitespace-pre-line">
+            <div className="rounded-md border border-ink-800/15 border-l-2 border-l-ink-800 bg-beige-50 p-6">
+              <p className="whitespace-pre-line text-[15px] leading-[1.6] text-ink-800">
                 {result.overall_summary && result.overall_summary.trim().length > 0
                   ? result.overall_summary
                   : "The analyzer did not return a plain-English summary for this contract. Check the red flags and missing protections below for the specific findings."}
@@ -622,22 +627,22 @@ export default function AnalysisReport({
             count={missingProtections.length}
           >
             {missingProtections.length === 0 ? (
-              <div className="rounded-md border border-success/30 bg-success/10 p-5 flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                <p className="text-sm text-zinc-100">
+              <div className="flex items-center gap-3 rounded-md border border-[#C6D7BE] bg-[#E8F0E5] p-5">
+                <CheckCircle2 className="h-5 w-5 text-[#3C7428]" />
+                <p className="text-[15px] text-ink-800">
                   No critical protections missing. You&rsquo;re covered on
                   the basics.
                 </p>
               </div>
             ) : (
-              <div className="rounded-md border border-white/5 bg-surface-1 divide-y divide-white/5 overflow-hidden">
+              <div className="divide-y divide-ink-800/10 overflow-hidden rounded-md border border-ink-800/10 bg-beige-50">
                 {missingProtections.map((m, i) => (
                   <div key={i} className="flex items-start gap-3 px-5 py-4">
-                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-warning/40 bg-warning/10 text-warning">
+                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-[#E3C7A8] bg-[#F5E6D6] text-[#A56A20]">
                       <AlertTriangle className="h-3.5 w-3.5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm text-zinc-200 leading-relaxed">
+                      <p className="text-[15px] leading-[1.55] text-ink-800">
                         {m}
                       </p>
                     </div>
@@ -681,7 +686,7 @@ export default function AnalysisReport({
                 onMarkClick={handleMarkClick}
               />
             ) : (
-              <div className="rounded-md border border-white/5 bg-surface-1 p-8 text-center text-sm text-zinc-400">
+              <div className="rounded-md border border-ink-800/10 bg-beige-50 p-8 text-center text-[13px] text-ink-600">
                 No extracted text available for this contract.
               </div>
             )}
@@ -712,14 +717,14 @@ function Section({
   return (
     <section id={`section-${id}`} className="scroll-mt-32">
       <div className="mb-4 flex items-center gap-3">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-accent/10 text-accent ring-1 ring-accent/20">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-ink-800/15 bg-ink-800/10 text-ink-800">
           <Icon className="h-4 w-4" strokeWidth={2} />
         </span>
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
+        <h2 className="text-lg font-semibold tracking-tight text-ink-800">
           {title}
         </h2>
         {typeof count === "number" && (
-          <Badge variant="neutral">{count}</Badge>
+          <Badge variant="eyebrow">{count}</Badge>
         )}
       </div>
       {children}

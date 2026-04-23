@@ -65,12 +65,12 @@ function bandLabel(score: number): string {
 
 export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
   return (
-    <div className="rounded-lg border border-white/5 bg-surface-1 p-6">
+    <div className="rounded-lg border border-ink-800/10 bg-beige-50 p-6">
       <div className="mb-5 flex items-baseline justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-600">
           Contract health breakdown
         </p>
-        <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
+        <p className="text-[10px] uppercase tracking-[0.12em] text-ink-500">
           Higher is better
         </p>
       </div>
@@ -93,21 +93,21 @@ export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
                 >
                   <d.icon className="h-3.5 w-3.5" strokeWidth={2.25} />
                 </span>
-                <p className="text-sm font-medium text-zinc-100">
+                <p className="text-sm font-medium text-ink-800">
                   {d.label}
                 </p>
                 <span
-                  className="ml-auto text-[10px] uppercase tracking-wider font-semibold tabular-nums"
+                  className="ml-auto text-[10px] font-semibold uppercase tracking-[0.12em] tabular-nums"
                   style={{ color }}
                 >
                   {label}
                 </span>
-                <span className="text-sm font-semibold tabular-nums text-zinc-100">
+                <span className="text-sm font-semibold tabular-nums text-ink-800">
                   {value}
                 </span>
               </div>
               <div
-                className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-3"
+                className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-800/5"
                 role="progressbar"
                 aria-valuenow={value}
                 aria-valuemin={0}
@@ -121,11 +121,10 @@ export default function ScoreBreakdown({ scores }: ScoreBreakdownProps) {
                   style={{
                     width: `${value}%`,
                     background: `linear-gradient(90deg, ${color}aa, ${color})`,
-                    boxShadow: `0 0 12px ${color}66`,
                   }}
                 />
               </div>
-              <p className="mt-2 text-xs text-zinc-400 leading-snug">
+              <p className="mt-2 text-xs leading-snug text-ink-600">
                 {d.hint}
               </p>
             </div>

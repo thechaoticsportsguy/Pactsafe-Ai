@@ -119,7 +119,7 @@ export default function NegotiationComposer({
 
   if (safeSuggestions.length === 0) {
     return (
-      <div className="rounded-md border border-white/5 bg-surface-1 p-8 text-center text-sm text-zinc-400">
+      <div className="rounded-md border border-ink-800/10 bg-beige-50 p-8 text-center text-[13px] text-ink-600">
         No negotiation suggestions were generated.
       </div>
     );
@@ -128,31 +128,31 @@ export default function NegotiationComposer({
   return (
     <div
       className={cn(
-        "rounded-lg border border-white/5 bg-surface-1 overflow-hidden",
+        "overflow-hidden rounded-lg border border-ink-800/10 bg-beige-50",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/5">
+      <div className="flex items-center justify-between gap-3 border-b border-ink-800/10 px-5 py-4">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-zinc-100 flex items-center gap-1.5">
-            <Mail className="h-3.5 w-3.5 text-accent" />
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-800">
+            <Mail className="h-3.5 w-3.5 text-ink-800" />
             Draft negotiation email
           </p>
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <p className="mt-0.5 text-xs text-ink-600">
             {TONE_DESCRIPTION[tone]}
           </p>
         </div>
-        <div className="inline-flex items-center gap-0.5 rounded-md border border-white/5 bg-surface-2 p-0.5">
+        <div className="inline-flex items-center gap-0.5 rounded-md border border-ink-800/15 bg-beige-100 p-0.5">
           {(["friendly", "formal", "firm"] as Tone[]).map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => setTone(t)}
               className={cn(
-                "px-2.5 py-1 rounded-md text-xs font-medium capitalize transition-colors",
+                "rounded-md px-2.5 py-1 text-xs font-medium capitalize transition-colors",
                 tone === t
-                  ? "bg-accent text-white shadow-glow-accent"
-                  : "text-zinc-400 hover:text-zinc-100",
+                  ? "bg-ink-800 text-beige-50"
+                  : "text-ink-600 hover:text-ink-800",
               )}
             >
               {t}
@@ -163,20 +163,20 @@ export default function NegotiationComposer({
 
       <div className="grid gap-5 p-5 lg:grid-cols-[220px_minmax(0,1fr)]">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
             Include points
           </p>
           <ul className="mt-3 space-y-2">
             {safeSuggestions.map((s, i) => (
               <li key={i}>
-                <label className="flex items-start gap-2.5 text-xs cursor-pointer group">
+                <label className="group flex cursor-pointer items-start gap-2.5 text-xs">
                   <input
                     type="checkbox"
                     checked={selected.has(i)}
                     onChange={() => toggle(i)}
-                    className="mt-0.5 accent-accent"
+                    className="mt-0.5 accent-ink-800"
                   />
-                  <span className="text-zinc-200 group-hover:text-zinc-100 leading-relaxed">
+                  <span className="leading-relaxed text-ink-700 group-hover:text-ink-800">
                     {s}
                   </span>
                 </label>
@@ -187,6 +187,7 @@ export default function NegotiationComposer({
 
         <div>
           <TextArea
+            palette="editorial"
             value={draft}
             readOnly
             rows={14}
@@ -194,7 +195,7 @@ export default function NegotiationComposer({
           />
           <div className="mt-3 flex justify-end">
             <Button
-              palette="workspace"
+              palette="editorial"
               variant="secondary"
               size="sm"
               radius="md"

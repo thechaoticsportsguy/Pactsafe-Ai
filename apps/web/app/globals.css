@@ -458,14 +458,17 @@ kbd {
    via the reset at the top of this file. */
 
 @keyframes flag-flash {
+  /* Ink pulse — neutral enough to land cleanly on the migrated
+     editorial /analyze surface. Previous value used workspace accent
+     purple (#7c5cfc) which clashed visually on beige. */
   0% {
-    box-shadow: 0 0 0 0 rgba(124, 92, 252, 0.7);
+    box-shadow: 0 0 0 0 rgba(26, 26, 26, 0.5);
   }
   30% {
-    box-shadow: 0 0 0 6px rgba(124, 92, 252, 0.55);
+    box-shadow: 0 0 0 6px rgba(26, 26, 26, 0.35);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(124, 92, 252, 0);
+    box-shadow: 0 0 0 0 rgba(26, 26, 26, 0);
   }
 }
 

@@ -26,11 +26,16 @@ interface Segment {
   flagIndex: number | null;
 }
 
+// Soft-tinted severity highlights that read on beige: the mark keeps
+// its severity signal via background tint + border, but the clause
+// text inherits the surrounding ink-800 so long runs stay readable.
+// Hex values match the FlagList / GreenFlagList card tints so the
+// clause viewer and the flag list share one visual language.
 const SEVERITY_HL: Record<string, string> = {
-  CRITICAL: "bg-severity-critical/25 text-severity-critical",
-  HIGH: "bg-severity-high/25 text-severity-high",
-  MEDIUM: "bg-severity-medium/25 text-severity-medium",
-  LOW: "bg-severity-low/25 text-severity-low",
+  CRITICAL: "bg-[#F8EAEA] border border-[#E9CBCB] text-ink-800",
+  HIGH: "bg-[#F5E6D6] border border-[#E3C7A8] text-ink-800",
+  MEDIUM: "bg-[#F6EDCD] border border-[#E2D6A2] text-ink-800",
+  LOW: "bg-[#E8F0E5] border border-[#C6D7BE] text-ink-800",
 };
 
 /**
@@ -150,23 +155,23 @@ export default function ClauseHighlighter({
   );
 
   return (
-    <div className="rounded-lg border border-white/5 bg-surface-1 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 text-xs text-zinc-400">
+    <div className="overflow-hidden rounded-lg border border-ink-800/10 bg-beige-50">
+      <div className="flex items-center justify-between border-b border-ink-800/10 px-5 py-3 text-xs text-ink-600">
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-severity-critical" />
+            <span className="h-2 w-2 rounded-full bg-[#A82020]" />
             Critical
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-severity-high" />
+            <span className="h-2 w-2 rounded-full bg-[#A56A20]" />
             High
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-severity-medium" />
+            <span className="h-2 w-2 rounded-full bg-[#8A6D1A]" />
             Medium
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-severity-low" />
+            <span className="h-2 w-2 rounded-full bg-[#3C7428]" />
             Low
           </span>
         </span>
@@ -184,9 +189,15 @@ export default function ClauseHighlighter({
           // shows a scrollbar only when needed. Without this, a 60k-
           // char Handshake-style contract would push every section
           // below it off the bottom of the viewport.
+          //
+          // Typography previously came from the `prose-contract` global
+          // rule, which forces workspace-zinc text color. On the
+          // editorial /analyze page that reads wrong, so inline the
+          // mono font + leading here and let text-ink-700 be the color
+          // source of truth.
           "px-6 py-5",
           "max-h-[600px] overflow-y-auto",
-          "prose-contract whitespace-pre-wrap",
+          "whitespace-pre-wrap font-mono text-[13px] leading-[1.7] text-ink-700",
           className,
         )}
       >
@@ -214,10 +225,10 @@ export default function ClauseHighlighter({
               title={flag.explanation}
               onClick={() => onMarkClick?.(flagIdx)}
               className={cn(
-                "rounded px-0.5 cursor-pointer transition-all",
+                "cursor-pointer rounded px-0.5 transition-all",
                 SEVERITY_HL[flag.severity],
                 isActive &&
-                  "ring-2 ring-accent ring-offset-1 ring-offset-background",
+                  "ring-2 ring-ink-800 ring-offset-1 ring-offset-beige-50",
               )}
             >
               {chunk}

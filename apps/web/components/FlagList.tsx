@@ -7,11 +7,11 @@ import {
   AlertCircle,
   Info,
   ChevronRight,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { severityColor, severityLabel } from "@/lib/severity";
+import { severityLabel } from "@/lib/severity";
 import { SEVERITY_ORDER, type RedFlag, type Severity } from "@/lib/schemas";
-import { Badge, type SeverityLevel } from "@/components/primitives/Badge";
 
 interface FlagListProps {
   flags: RedFlag[];
@@ -28,32 +28,36 @@ const SEVERITY_ICON: Record<Severity, React.ElementType> = {
   LOW: Info,
 };
 
-// Maps Severity (screaming-case, matches schema) → primitives/Badge level.
-const SEVERITY_LEVEL: Record<Severity, SeverityLevel> = {
-  CRITICAL: "critical",
-  HIGH: "high",
-  MEDIUM: "medium",
-  LOW: "low",
+// Soft, hand-tuned severity tints that read as "emphasized beige" rather
+// than full severity panels. Each card's background communicates the
+// severity via warm-neutral tinting; the explicit left-stripe accent is
+// gone now that the whole card carries the signal.
+const SEVERITY_CARD: Record<Severity, string> = {
+  CRITICAL: "bg-[#F8EAEA] border-[#E9CBCB]",
+  HIGH: "bg-[#F5E6D6] border-[#E3C7A8]",
+  MEDIUM: "bg-[#F6EDCD] border-[#E2D6A2]",
+  LOW: "bg-[#E8F0E5] border-[#C6D7BE]",
 };
 
-// Severity accent for the flag-card left border. Phase 1's severity-{level}-
-// accent nested tokens. Read as the severity signal — the card body is
-// flat surface-1 so the accent reads loud without background tinting.
-const SEVERITY_BORDER: Record<Severity, string> = {
-  CRITICAL: "border-l-severity-critical-accent",
-  HIGH: "border-l-severity-high-accent",
-  MEDIUM: "border-l-severity-medium-accent",
-  LOW: "border-l-severity-low-accent",
+// Pill chip (e.g. "CRITICAL" label) sitting inside each card — slightly
+// darker tint than the card bg, paired with a deeper severity-accent
+// text color so it still reads as the canonical severity without the
+// high-contrast red/orange blocks of the workspace palette.
+const SEVERITY_PILL: Record<Severity, string> = {
+  CRITICAL: "bg-[#EDD0D0] text-[#A82020]",
+  HIGH: "bg-[#EDDAC0] text-[#A56A20]",
+  MEDIUM: "bg-[#E8D998] text-[#8A6D1A]",
+  LOW: "bg-[#CCDCC3] text-[#3C7428]",
 };
 
-// Small tinted bubble behind the severity icon on each card — kept as a
-// second signal but confined to a 32px square so it doesn't dilute the
-// border accent.
-const SEVERITY_ICON_BG: Record<Severity, string> = {
-  CRITICAL: "bg-severity-critical-bg",
-  HIGH: "bg-severity-high-bg",
-  MEDIUM: "bg-severity-medium-bg",
-  LOW: "bg-severity-low-bg",
+// Severity-accent text — used for the severity-group heading label and
+// the icon on the left of each card. Same hex as the pill text so the
+// card reads with a single consistent accent hue.
+const SEVERITY_ACCENT_TEXT: Record<Severity, string> = {
+  CRITICAL: "text-[#A82020]",
+  HIGH: "text-[#A56A20]",
+  MEDIUM: "text-[#8A6D1A]",
+  LOW: "text-[#3C7428]",
 };
 
 export default function FlagList({
@@ -79,14 +83,14 @@ export default function FlagList({
 
   if (flags.length === 0) {
     return (
-      <div className="rounded-md border border-success/30 bg-success/10 p-8 text-center">
-        <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-success/15 text-success">
-          <AlertCircle className="h-5 w-5" />
+      <div className="rounded-md border border-[#C6D7BE] bg-[#E8F0E5] p-8 text-center">
+        <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#CCDCC3] text-[#3C7428]">
+          <CheckCircle2 className="h-5 w-5" />
         </div>
-        <p className="mt-4 text-sm font-medium text-zinc-100">
+        <p className="mt-4 text-sm font-medium text-ink-800">
           No red flags detected
         </p>
-        <p className="mt-1 text-xs text-zinc-400">
+        <p className="mt-1 text-xs text-ink-600">
           This contract is in the clear on our known risk patterns.
         </p>
       </div>
@@ -102,18 +106,18 @@ export default function FlagList({
         return (
           <section key={sev}>
             <div className="mb-3 flex items-center gap-2">
-              <Icon className={cn("h-3.5 w-3.5", severityColor[sev])} />
+              <Icon className={cn("h-3.5 w-3.5", SEVERITY_ACCENT_TEXT[sev])} />
               <h3
                 className={cn(
-                  "text-xs font-semibold uppercase tracking-wider",
-                  severityColor[sev],
+                  "text-[11px] font-semibold uppercase tracking-[0.12em]",
+                  SEVERITY_ACCENT_TEXT[sev],
                 )}
               >
                 {severityLabel[sev]}
               </h3>
-              <Badge variant="severity" level={SEVERITY_LEVEL[sev]}>
+              <span className="inline-flex items-center bg-ink-800 text-beige-50 px-2 py-0.5 text-[11px] font-medium tabular-nums">
                 {items.length}
-              </Badge>
+              </span>
             </div>
             <ul className="space-y-2.5">
               {items.map(({ flag, originalIndex }) => {
@@ -129,52 +133,49 @@ export default function FlagList({
                       id={`card-flag-${originalIndex}`}
                       onClick={() => onSelect?.(flag, originalIndex)}
                       className={cn(
-                        "group w-full text-left rounded-md border border-white/5 border-l-2 bg-surface-1 p-4 transition-all",
-                        SEVERITY_BORDER[sev],
-                        "hover:bg-surface-2 hover:-translate-y-px",
-                        isActive && "ring-2 ring-accent/60 ring-offset-2 ring-offset-background",
+                        "group w-full text-left rounded-md border p-4 transition-all",
+                        SEVERITY_CARD[sev],
+                        "hover:-translate-y-px hover:shadow-panel",
+                        isActive &&
+                          "ring-2 ring-ink-800/40 ring-offset-2 ring-offset-beige-100",
                       )}
                     >
                       <div className="flex items-start gap-3">
-                        <span
+                        <Icon
                           className={cn(
-                            "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md",
-                            SEVERITY_ICON_BG[sev],
+                            "mt-0.5 h-4 w-4 flex-shrink-0",
+                            SEVERITY_ACCENT_TEXT[sev],
                           )}
-                        >
-                          <Icon
-                            className={cn("h-4 w-4", severityColor[sev])}
-                          />
-                        </span>
+                          strokeWidth={2.25}
+                        />
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium leading-snug text-zinc-100">
+                          <div className="flex items-center gap-2">
                             <span
                               className={cn(
-                                "mr-1.5 text-[10px] font-bold uppercase tracking-wider",
-                                severityColor[sev],
+                                "inline-flex items-center px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em]",
+                                SEVERITY_PILL[sev],
                               )}
                             >
                               {severityLabel[sev]}
                             </span>
-                            <span className="text-zinc-400">·</span>{" "}
-                            <span className="text-zinc-200">
-                              “{truncate(flag.clause, 160)}”
-                            </span>
+                          </div>
+                          <p className="mt-2 text-[15px] font-medium leading-[1.4] text-ink-800">
+                            “{truncate(flag.clause, 160)}”
                           </p>
-                          <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed">
+                          <p className="mt-1.5 text-[13px] leading-[1.55] text-ink-700">
                             {flag.explanation}
                           </p>
                           {flag.page != null && (
-                            <p className="mt-2 text-[10px] uppercase tracking-wider text-zinc-500">
+                            <span className="mt-2 inline-flex items-center gap-1.5 border border-ink-800/10 bg-beige-50 px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-600">
                               Page {flag.page}
-                            </p>
+                            </span>
                           )}
                         </div>
                         <ChevronRight
                           className={cn(
-                            "h-4 w-4 flex-shrink-0 text-zinc-500 transition-all",
-                            "group-hover:text-zinc-100 group-hover:translate-x-0.5",
-                            isActive && "text-accent",
+                            "h-4 w-4 flex-shrink-0 text-ink-600 transition-all",
+                            "group-hover:translate-x-0.5 group-hover:text-ink-800",
+                            isActive && "text-ink-800",
                           )}
                         />
                       </div>
