@@ -38,8 +38,6 @@ import {
   ClipboardPaste,
   CheckCircle2,
   Plus,
-  Ban,
-  FileQuestion,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Dropzone from "@/components/Dropzone";
@@ -47,6 +45,7 @@ import ContractPreview from "@/components/ContractPreview";
 import LiveScanSidebar from "@/components/LiveScanSidebar";
 import AnalysisReport from "@/components/AnalysisReport";
 import AnalysisErrorBoundary from "@/components/AnalysisErrorBoundary";
+import { NotAContractModal } from "@/components/NotAContractModal";
 import { Button } from "@/components/primitives/Button";
 import { TextArea } from "@/components/primitives/TextArea";
 import { Badge } from "@/components/primitives/Badge";
@@ -358,96 +357,8 @@ export default function AnalyzePage() {
   // Derived gates — declared once so the JSX below reads like a truth table.
   const inScanningPhase = busy || (completedJob !== null && !showReport);
   const inReportPhase = completedJob !== null && completedJob.result !== null && showReport;
-  const inRejectedPhase = rejectedJob !== null;
   const scannerFinalClauses = estimateClauses(progress);
   const scannerFinalRisks = estimateRisks(progress);
-
-  // ---------------------------------------------------------------------------
-  // REJECTED — Pass 0 refused the document (not a contract).
-  //
-  // Distinct from the error branch below because rejection is a
-  // correctness guardrail, not a crash: we know exactly why we refused
-  // ("This looks like: ChatGPT conversation. …") so we can surface copy
-  // that's useful instead of a generic "something went wrong" panel.
-  // ---------------------------------------------------------------------------
-  if (inRejectedPhase) {
-    const detectedAs = rejectedJob?.result?.detected_as ?? null;
-    const rejectionReason =
-      rejectedJob?.result?.rejection_reason ??
-      rejectedJob?.error ??
-      "This document doesn't look like a legal contract.";
-    return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={staggerChildren}
-        className="mx-auto max-w-2xl space-y-6 py-6"
-      >
-        <motion.div
-          variants={fadeInUp}
-          className="border border-ink-800/15 border-l-2 border-l-ink-800 bg-beige-50 p-8"
-        >
-          <div className="flex items-start gap-4">
-            <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-[#F5E6D6] text-[#A56A20] ring-1 ring-[#E3C7A8]">
-              <Ban className="h-5 w-5" strokeWidth={2} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#A56A20]">
-                Not a legal contract
-              </p>
-              <h1 className="mt-1 text-xl font-semibold text-ink-800">
-                We couldn&rsquo;t analyze this document.
-              </h1>
-              <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                {rejectionReason}
-              </p>
-              {detectedAs && (
-                <div className="mt-5 flex items-center gap-2 border border-ink-800/10 bg-beige-100 px-3 py-2 text-xs text-ink-700">
-                  <FileQuestion className="h-3.5 w-3.5 flex-shrink-0 text-ink-600" />
-                  <span>
-                    This looks like:{" "}
-                    <span className="font-medium text-ink-800">
-                      {detectedAs}
-                    </span>
-                  </span>
-                </div>
-              )}
-              <p className="mt-5 text-xs leading-relaxed text-ink-600">
-                PactSafe AI only analyzes actual legal agreements — employment
-                contracts, NDAs, service agreements, leases, SaaS terms, and
-                similar documents with named parties, consideration, and
-                obligations. If you pasted a conversation, article, or other
-                non-contract text, try a real agreement instead.
-              </p>
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <Button
-                  palette="editorial"
-                  variant="primary"
-                  onClick={reset}
-                >
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  Try a different document
-                </Button>
-                <Link
-                  href="/demo"
-                  className="text-xs font-medium text-ink-800 underline underline-offset-2 hover:text-ink-700"
-                >
-                  See a sample analysis
-                </Link>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div variants={fadeInUp}>
-          <p className="text-center text-[11px] text-ink-500">
-            Your document was not analyzed or stored for analysis —
-            Pass 0 refused before any detailed processing.
-          </p>
-        </motion.div>
-      </motion.div>
-    );
-  }
 
   // ---------------------------------------------------------------------------
   // PHASE 3 — REPORT (sticky frozen scanner at top + full AnalysisReport)
@@ -788,6 +699,30 @@ export default function AnalyzePage() {
           </p>
         </div>
       </aside>
+
+      {/* ---------------------------------------------------------------
+         Pass 0 rejection surface — centered modal overlay on top of the
+         upload form. When the backend's contract-validity gate refuses
+         the document, `rejectedJob` is populated by the polling handler
+         and the modal opens above the still-visible dropzone/paste box.
+         All dismiss paths (X, backdrop, Escape) clear `rejectedJob`
+         leaving the upload form in its pre-submit state so the user can
+         correct and retry. The "Try a different document" CTA also
+         calls `reset()` to wipe the text box and job ID for a clean
+         start.
+         --------------------------------------------------------------- */}
+      <NotAContractModal
+        open={rejectedJob !== null}
+        detectedAs={rejectedJob?.result?.detected_as ?? null}
+        reason={
+          rejectedJob?.result?.rejection_reason ?? rejectedJob?.error ?? null
+        }
+        onDismiss={() => setRejectedJob(null)}
+        onTryAnother={() => {
+          setRejectedJob(null);
+          reset();
+        }}
+      />
     </div>
   );
 }
