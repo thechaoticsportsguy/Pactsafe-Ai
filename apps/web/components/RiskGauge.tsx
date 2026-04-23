@@ -8,9 +8,16 @@ import { Badge, type SeverityLevel } from "@/components/primitives/Badge";
 interface RiskGaugeProps {
   score: number; // 0..100
   className?: string;
+  /**
+   * When true, renders bare — no outer border, rounded corner, or
+   * background color. Used when this gauge is embedded inside a larger
+   * shared container (e.g. the merged risk-overview panel on the
+   * analysis report) which owns the rectangle.
+   */
+  bare?: boolean;
 }
 
-export default function RiskGauge({ score, className }: RiskGaugeProps) {
+export default function RiskGauge({ score, className, bare = false }: RiskGaugeProps) {
   const clamped = Math.min(95, Math.max(0, Math.round(score)));
   const band = riskBand(clamped);
   const [displayed, setDisplayed] = React.useState(0);
@@ -43,7 +50,8 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
   return (
     <div
       className={cn(
-        "relative rounded-lg border border-ink-800/10 bg-beige-50 p-6 overflow-hidden",
+        "relative p-6 overflow-hidden",
+        !bare && "rounded-lg border border-ink-800/10 bg-beige-50",
         className,
       )}
     >

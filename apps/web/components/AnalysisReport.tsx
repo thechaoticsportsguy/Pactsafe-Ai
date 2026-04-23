@@ -465,10 +465,14 @@ export default function AnalysisReport({
         </div>
       </div>
 
-      {/* Top strip: Risk + key counts */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <RiskGauge score={displayScore} className="lg:col-span-2" />
-        <div className="rounded-lg border border-ink-800/10 bg-beige-50 p-5">
+      {/* Region 2 — Risk overview.
+          Single outer container that owns the border; RiskGauge renders
+          `bare` so it shares the container, and the two halves are
+          split by `divide-x` on desktop (stacks on mobile with a
+          divide-y fallback). */}
+      <div className="overflow-hidden rounded-lg border border-ink-800/10 bg-beige-50 divide-y divide-ink-800/10 lg:grid lg:grid-cols-3 lg:divide-y-0 lg:divide-x">
+        <RiskGauge score={displayScore} bare className="lg:col-span-2" />
+        <div className="p-5">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-600">
             At a glance
           </p>
@@ -545,40 +549,46 @@ export default function AnalysisReport({
 
       {/* Main grid: sticky nav + content */}
       <div className="grid gap-8 lg:grid-cols-[200px_minmax(0,1fr)]">
-        {/* Desktop sticky nav */}
+        {/* Desktop sticky nav — Region 4.
+            Section nav and "Not legal advice" callout merged into one
+            sticky panel with an internal `border-t` divider. Gives the
+            left rail a single calm rectangle instead of a nav card +
+            floating legal card separated by whitespace. */}
         <nav className="hidden lg:block">
-          <div className="sticky top-24">
-            <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
-              Sections
-            </p>
-            <ul className="mt-2 space-y-0.5">
-              {sections.map((s) => {
-                const active = activeSection === s.key;
-                return (
-                  <li key={s.key}>
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection(s.key)}
-                      className={cn(
-                        // border-l-[3px] on every row keeps the text's
-                        // horizontal position stable as the active state
-                        // toggles — transparent when inactive, ink-800
-                        // when active is the "you are here" signal (no
-                        // more purple accent fill on beige).
-                        "flex w-full items-center gap-2.5 rounded-md border-l-[3px] px-3 py-2 text-sm transition-colors",
-                        active
-                          ? "border-ink-800 bg-beige-200 text-ink-800"
-                          : "border-transparent text-ink-600 hover:bg-beige-100 hover:text-ink-800",
-                      )}
-                    >
-                      <s.icon className="h-3.5 w-3.5" />
-                      {s.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="mt-6 mx-3 rounded-md border border-ink-800/15 border-l-2 border-l-ink-800 bg-beige-50 p-3">
+          <div className="sticky top-24 overflow-hidden rounded-md border border-ink-800/10 bg-beige-50">
+            <div className="p-3">
+              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
+                Sections
+              </p>
+              <ul className="mt-2 space-y-0.5">
+                {sections.map((s) => {
+                  const active = activeSection === s.key;
+                  return (
+                    <li key={s.key}>
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection(s.key)}
+                        className={cn(
+                          // border-l-[3px] on every row keeps the text's
+                          // horizontal position stable as the active
+                          // state toggles — transparent when inactive,
+                          // ink-800 when active is the "you are here"
+                          // signal (no more purple accent fill on beige).
+                          "flex w-full items-center gap-2.5 rounded-md border-l-[3px] px-3 py-2 text-sm transition-colors",
+                          active
+                            ? "border-ink-800 bg-beige-200 text-ink-800"
+                            : "border-transparent text-ink-600 hover:bg-beige-100 hover:text-ink-800",
+                        )}
+                      >
+                        <s.icon className="h-3.5 w-3.5" />
+                        {s.label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <div className="border-t border-ink-800/10 border-l-2 border-l-ink-800 p-3">
               <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
                 <Info className="h-3 w-3" />
                 Not legal advice
@@ -591,106 +601,138 @@ export default function AnalysisReport({
           </div>
         </nav>
 
-        {/* Content — deliberately no overflow/height traps so the page
-            scrolls naturally all the way to the last finding. */}
-        <div className="min-w-0 space-y-10">
-          {/* Summary */}
-          <Section id="summary" title="Plain-English summary" icon={Sparkles}>
-            <div className="rounded-md border border-ink-800/15 border-l-2 border-l-ink-800 bg-beige-50 p-6">
-              <p className="whitespace-pre-line text-[15px] leading-[1.6] text-ink-800">
-                {result.overall_summary && result.overall_summary.trim().length > 0
-                  ? result.overall_summary
-                  : "The analyzer did not return a plain-English summary for this contract. Check the red flags and missing protections below for the specific findings."}
-              </p>
-            </div>
-          </Section>
-
-          {/* Red flags */}
-          <Section
-            id="flags"
-            title="Red flags"
-            icon={AlertTriangle}
-            count={redFlags.length}
-          >
-            <FlagList
-              flags={redFlags}
-              activeIndex={activeFlagIndex}
-              onSelect={handleCardClick}
-            />
-          </Section>
-
-          {/* Missing protections */}
-          <Section
-            id="missing"
-            title="Missing protections"
-            icon={ShieldCheck}
-            count={missingProtections.length}
-          >
-            {missingProtections.length === 0 ? (
-              <div className="flex items-center gap-3 rounded-md border border-[#C6D7BE] bg-[#E8F0E5] p-5">
-                <CheckCircle2 className="h-5 w-5 text-[#3C7428]" />
-                <p className="text-[15px] text-ink-800">
-                  No critical protections missing. You&rsquo;re covered on
-                  the basics.
+        {/* Content — Region 3.
+            Summary + Flags + Missing + (Green) + Recs all live inside
+            one shared bordered container with `border-t border-ink-800/10`
+            dividers between sections. The Section helper renders in
+            `embedded` mode so each child drops its own card chrome.
+            Clause highlighter stays as its own card below — it's a
+            full-document viewer, visually distinct from the findings. */}
+        <div className="min-w-0">
+          <div className="overflow-hidden rounded-lg border border-ink-800/10 bg-beige-50">
+            {/* Summary — accent stripe on the inner content block. */}
+            <Section
+              id="summary"
+              title="Plain-English summary"
+              icon={Sparkles}
+              embedded
+            >
+              <div className="border-l-2 border-ink-800 pl-5">
+                <p className="whitespace-pre-line text-[15px] leading-[1.6] text-ink-800">
+                  {result.overall_summary && result.overall_summary.trim().length > 0
+                    ? result.overall_summary
+                    : "The analyzer did not return a plain-English summary for this contract. Check the red flags and missing protections below for the specific findings."}
                 </p>
               </div>
-            ) : (
-              <div className="divide-y divide-ink-800/10 overflow-hidden rounded-md border border-ink-800/10 bg-beige-50">
-                {missingProtections.map((m, i) => (
-                  <div key={i} className="flex items-start gap-3 px-5 py-4">
-                    <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-[#E3C7A8] bg-[#F5E6D6] text-[#A56A20]">
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[15px] leading-[1.55] text-ink-800">
-                        {m}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
-
-          {/* Green flags (optional) */}
-          {hasGreen && (
-            <Section
-              id="green"
-              title="In your favor"
-              icon={CheckCircle2}
-              count={greenFlags.length}
-            >
-              <GreenFlagList flags={greenFlags} />
             </Section>
-          )}
 
-          {/* Recommendations / Negotiation */}
-          <Section
-            id="negotiate"
-            title="Recommendations"
-            icon={MessageSquareQuote}
-          >
-            <NegotiationComposer
-              suggestions={negotiationSuggestions}
-              contractType={getDocumentTypeLabel(result.metadata?.document_type)}
-            />
-          </Section>
-
-          {/* Clause highlighter */}
-          <Section id="clauses" title="Clause highlighter" icon={FileText}>
-            {highlighterText ? (
-              <ClauseHighlighter
-                text={highlighterText}
+            {/* Red flags — header stays inside section padding; FlagList
+                renders `embedded` which means full-bleed severity-tinted
+                rows break out of the padding to reach the container edge. */}
+            <Section
+              id="flags"
+              title="Red flags"
+              icon={AlertTriangle}
+              count={redFlags.length}
+              embedded
+              fullBleedContent
+            >
+              <FlagList
                 flags={redFlags}
+                variant="embedded"
                 activeIndex={activeFlagIndex}
-                onMarkClick={handleMarkClick}
+                onSelect={handleCardClick}
               />
-            ) : (
-              <div className="rounded-md border border-ink-800/10 bg-beige-50 p-8 text-center text-[13px] text-ink-600">
-                No extracted text available for this contract.
-              </div>
+            </Section>
+
+            {/* Missing protections — rows run edge-to-edge; header stays
+                above in the padded section. */}
+            <Section
+              id="missing"
+              title="Missing protections"
+              icon={ShieldCheck}
+              count={missingProtections.length}
+              embedded
+              fullBleedContent
+            >
+              {missingProtections.length === 0 ? (
+                <div className="flex items-center gap-3 border-t border-[#C6D7BE] bg-[#E8F0E5] px-6 py-5">
+                  <CheckCircle2 className="h-5 w-5 text-[#3C7428]" />
+                  <p className="text-[15px] text-ink-800">
+                    No critical protections missing. You&rsquo;re covered on
+                    the basics.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  {missingProtections.map((m, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 border-t border-ink-800/10 px-6 py-4"
+                    >
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-[#E3C7A8] bg-[#F5E6D6] text-[#A56A20]">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[15px] leading-[1.55] text-ink-800">
+                          {m}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+
+            {/* Green flags (optional) */}
+            {hasGreen && (
+              <Section
+                id="green"
+                title="In your favor"
+                icon={CheckCircle2}
+                count={greenFlags.length}
+                embedded
+                fullBleedContent
+              >
+                <GreenFlagList flags={greenFlags} variant="embedded" />
+              </Section>
             )}
-          </Section>
+
+            {/* Recommendations / Negotiation — NegotiationComposer owns
+                its own layout; wraps cleanly in the section padding. */}
+            <Section
+              id="negotiate"
+              title="Recommendations"
+              icon={MessageSquareQuote}
+              embedded
+            >
+              <NegotiationComposer
+                suggestions={negotiationSuggestions}
+                contractType={getDocumentTypeLabel(result.metadata?.document_type)}
+              />
+            </Section>
+          </div>
+
+          {/* Clause highlighter — its own card below the merged findings
+              container. The highlighter is a full-document viewer and
+              gets its own rectangle so the consolidated container
+              doesn't balloon. */}
+          <div className="mt-10">
+            <Section id="clauses" title="Clause highlighter" icon={FileText}>
+              {highlighterText ? (
+                <ClauseHighlighter
+                  text={highlighterText}
+                  flags={redFlags}
+                  activeIndex={activeFlagIndex}
+                  onMarkClick={handleMarkClick}
+                />
+              ) : (
+                <div className="rounded-md border border-ink-800/10 bg-beige-50 p-8 text-center text-[13px] text-ink-600">
+                  No extracted text available for this contract.
+                </div>
+              )}
+            </Section>
+          </div>
         </div>
       </div>
     </div>
@@ -707,13 +749,60 @@ function Section({
   icon: Icon,
   count,
   children,
+  embedded = false,
+  fullBleedContent = false,
 }: {
   id: SectionKey;
   title: string;
   icon: React.ElementType;
   count?: number;
   children: React.ReactNode;
+  /**
+   * When true, the section renders as part of a larger shared container:
+   * no outer margin, internal `border-t` divider (`first:border-t-0`
+   * cancels on the first child), padded header + children inset via
+   * `p-6` / `pt-6 pb-6 px-6`. Used by the consolidated findings column
+   * in Region 3 of the analysis report.
+   */
+  embedded?: boolean;
+  /**
+   * When embedded AND the content should stretch edge-to-edge (e.g.
+   * severity-tinted FlagList rows, missing-protection row lists), we
+   * drop the horizontal padding on the content block so rows reach the
+   * container border. The header row above still gets the normal
+   * `px-6 pt-6` inset.
+   */
+  fullBleedContent?: boolean;
 }) {
+  if (embedded) {
+    return (
+      <section
+        id={`section-${id}`}
+        className="scroll-mt-32 border-t border-ink-800/10 first:border-t-0"
+      >
+        <div
+          className={cn(
+            "flex items-center gap-3 px-6 pt-6",
+            fullBleedContent ? "pb-4" : "pb-4",
+          )}
+        >
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-ink-800/15 bg-ink-800/10 text-ink-800">
+            <Icon className="h-4 w-4" strokeWidth={2} />
+          </span>
+          <h2 className="text-lg font-semibold tracking-tight text-ink-800">
+            {title}
+          </h2>
+          {typeof count === "number" && (
+            <Badge variant="eyebrow">{count}</Badge>
+          )}
+        </div>
+        <div className={cn(fullBleedContent ? "pb-0" : "px-6 pb-6")}>
+          {children}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id={`section-${id}`} className="scroll-mt-32">
       <div className="mb-4 flex items-center gap-3">

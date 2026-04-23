@@ -479,7 +479,11 @@ export default function AnalyzePage() {
                 Analyze another
               </Button>
             </div>
-            <div className="grid gap-3 pb-4 md:grid-cols-[1fr_340px]">
+            {/* Region 1 — single outer container with one vertical
+                divider on md+ (stacks with a horizontal divider on
+                mobile). The frozen variants of both components render
+                bare (no border/bg) so this wrapper owns the rectangle. */}
+            <div className="grid overflow-hidden rounded-md border border-ink-800/10 bg-beige-50 pb-0 divide-y divide-ink-800/10 md:grid-cols-[1fr_340px] md:divide-y-0 md:divide-x mb-4">
               <ContractPreview
                 frozen
                 status="completed"

@@ -201,10 +201,14 @@ export default function ContractPreview({
   // Placed AFTER every hook so the hook call order stays identical across
   // the Phase 2 → Phase 3 transition. See the note above for why this
   // ordering is load-bearing.
+  //
+  // No outer border / background — the Phase 3 banner wraps THIS element
+  // and <LiveScanSidebar frozen /> inside a single shared container with
+  // an internal `border-l` divider, so we render bare here.
   if (frozen) {
     const pageCount = Math.max(1, Math.round(lines.length / 40));
     return (
-      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden rounded-md border border-ink-800/10 bg-beige-50 px-4 py-3">
+      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden px-4 py-3">
         <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-ink-800/15 bg-ink-800/10 text-ink-800">
           <FileText className="h-5 w-5" strokeWidth={2} />
         </span>
@@ -233,25 +237,31 @@ export default function ContractPreview({
   const pct = done ? 100 : Math.round(effectiveProg * 100);
 
   // ---------------------------------------------------------------------------
+  // Editorial in-progress scan viewer.
+  //
+  // Token map: workspace dark + indigo scan beam → editorial beige with
+  // a soft-ink beam (`rgba(26,26,26,0.12)`). The paper inside stays
+  // white — it IS a document, not a UI surface — but the frame around
+  // it and the toolbar/progress all read as part of the beige page.
   return (
-    <div className="flex min-h-0 flex-col overflow-hidden border-r border-white/5 bg-[#e8e8ec] dark:bg-surface-0">
+    <div className="flex min-h-0 flex-col overflow-hidden border-r border-ink-800/10 bg-beige-100">
 
       {/* ── Toolbar ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-shrink-0 items-center gap-3 border-b border-white/5 bg-surface-1 px-4 py-2.5">
+      <div className="flex flex-shrink-0 items-center gap-3 border-b border-ink-800/10 bg-beige-50 px-4 py-2.5">
         {/* Dot indicator */}
         {done ? (
-          <Check className="h-3.5 w-3.5 flex-shrink-0 text-severity-low-accent" />
+          <Check className="h-3.5 w-3.5 flex-shrink-0 text-[#3C7428]" />
         ) : (
           <span className="relative flex h-3 w-3 flex-shrink-0">
-            <span className="absolute inset-0 animate-ping-slow rounded-full bg-accent/50" />
-            <span className="relative h-3 w-3 rounded-full bg-accent" />
+            <span className="absolute inset-0 animate-ping-slow rounded-full bg-ink-800/30" />
+            <span className="relative h-3 w-3 rounded-full bg-ink-800" />
           </span>
         )}
 
         {/* Filename */}
-        <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-zinc-400">
+        <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-ink-600">
           <FileText className="h-3.5 w-3.5 flex-shrink-0" />
-          <span className="truncate font-medium text-zinc-100">
+          <span className="truncate font-medium text-ink-800">
             {filename ?? "contract.pdf"}
           </span>
         </span>
@@ -259,21 +269,19 @@ export default function ContractPreview({
         {/* Progress indicator */}
         <div className="ml-auto flex flex-shrink-0 items-center gap-4 text-[10px] tabular-nums">
           {done ? (
-            <span className="font-semibold text-severity-low-accent">Complete</span>
+            <span className="font-semibold text-[#3C7428]">Complete</span>
           ) : (
-            <span className="text-zinc-400">{pct}%</span>
+            <span className="text-ink-600">{pct}%</span>
           )}
         </div>
       </div>
 
-      {/* ── Progress shimmer bar ──────────────────────────────────────────── */}
-      <div className="h-[3px] flex-shrink-0 bg-surface-3">
+      {/* ── Progress bar — solid ink during scan, sage on completion ─────── */}
+      <div className="h-[3px] flex-shrink-0 bg-ink-800/5">
         <div
           className={cn(
             "h-full transition-[width] duration-700 ease-out",
-            done
-              ? "bg-severity-low-accent"
-              : "animate-shimmer bg-gradient-to-r from-accent via-accent-hover to-accent bg-[length:200%_100%]",
+            done ? "bg-[#3C7428]" : "bg-ink-800",
           )}
           style={{ width: `${done ? 100 : pct}%` }}
         />
@@ -284,11 +292,13 @@ export default function ContractPreview({
         ref={scrollRef}
         className="min-h-0 flex-1 overflow-y-auto px-6 py-6"
       >
-        {/* White paper page */}
+        {/* White paper page — stays white so it reads as a document,
+            but the page-hover glow flips from indigo to soft ink so
+            the whole frame reads editorial. */}
         <div
           className={cn(
             "relative mx-auto max-w-2xl rounded-sm bg-white shadow-[0_1px_8px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.08)] transition-shadow duration-1000",
-            inFlight && "shadow-[0_2px_24px_rgba(99,102,241,0.12),0_0_1px_rgba(0,0,0,0.08)]",
+            inFlight && "shadow-[0_2px_24px_rgba(26,26,26,0.12),0_0_1px_rgba(0,0,0,0.08)]",
           )}
           style={{ minHeight: "80vh" }}
         >
@@ -297,7 +307,11 @@ export default function ContractPreview({
             Page 1
           </div>
 
-          {/* Scan beam — inside the paper */}
+          {/* Scan beam — inside the paper. Retinted from indigo
+              (rgba(99,102,241,…)) to a soft ink that doesn't compete
+              with the beige page. Low alpha keeps the text legible
+              under the beam; the shadow-pulse gives it "life" without
+              the high-saturation purple glow. */}
           {inFlight && (
             <>
               {/* Soft glow */}
@@ -307,7 +321,7 @@ export default function ContractPreview({
                 style={{
                   top: `${beamPct}%`,
                   background:
-                    "linear-gradient(to bottom, rgba(99,102,241,0) 0%, rgba(99,102,241,0.06) 45%, rgba(99,102,241,0.1) 50%, rgba(99,102,241,0.06) 55%, rgba(99,102,241,0) 100%)",
+                    "linear-gradient(to bottom, rgba(26,26,26,0) 0%, rgba(26,26,26,0.06) 45%, rgba(26,26,26,0.12) 50%, rgba(26,26,26,0.06) 55%, rgba(26,26,26,0) 100%)",
                 }}
               />
               {/* Sharp beam line */}
@@ -317,8 +331,8 @@ export default function ContractPreview({
                 style={{
                   top: `${beamPct}%`,
                   background:
-                    "linear-gradient(to right, rgba(99,102,241,0) 0%, rgba(99,102,241,0.7) 20%, rgba(99,102,241,0.9) 50%, rgba(99,102,241,0.7) 80%, rgba(99,102,241,0) 100%)",
-                  boxShadow: "0 0 20px 2px rgba(99,102,241,0.4)",
+                    "linear-gradient(to right, rgba(26,26,26,0) 0%, rgba(26,26,26,0.22) 20%, rgba(26,26,26,0.35) 50%, rgba(26,26,26,0.22) 80%, rgba(26,26,26,0) 100%)",
+                  boxShadow: "0 0 20px 2px rgba(26,26,26,0.12)",
                 }}
               />
             </>
@@ -363,8 +377,8 @@ export default function ContractPreview({
 
             {/* Done overlay */}
             {done && (
-              <div className="mt-8 flex items-center justify-center gap-2 text-[11px] font-medium text-gray-400">
-                <Check className="h-3.5 w-3.5 text-green-500" />
+              <div className="mt-8 flex items-center justify-center gap-2 text-[11px] font-medium text-ink-600">
+                <Check className="h-3.5 w-3.5 text-[#3C7428]" />
                 <span>All clauses reviewed · generating report…</span>
               </div>
             )}
