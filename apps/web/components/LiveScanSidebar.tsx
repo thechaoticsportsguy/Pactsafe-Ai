@@ -110,7 +110,7 @@ export default function LiveScanSidebar({
   // ── Frozen compact mode (Phase 3 sticky banner) ──────────────────────────
   if (frozen) {
     return (
-      <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-md border border-severity-low-border bg-severity-low-bg">
+      <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-md border border-ink-800/10 bg-beige-50">
         <div className="flex items-center gap-3 px-4 py-3">
           <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-severity-low-bg text-severity-low-accent ring-1 ring-severity-low-border">
             <CheckCircle2 className="h-4 w-4" strokeWidth={2.25} />
@@ -119,17 +119,17 @@ export default function LiveScanSidebar({
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-severity-low-accent">
               Analysis complete
             </p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] tabular-nums text-zinc-400">
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] tabular-nums text-ink-600">
               <Clock className="h-3 w-3" />
               Scanned in {formatElapsed(elapsed)}
             </p>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-4 border-l border-white/10 pl-4 text-right">
+          <div className="flex flex-shrink-0 items-center gap-4 border-l border-ink-800/10 pl-4 text-right">
             <div>
-              <div className="text-sm font-semibold tabular-nums text-zinc-100">
+              <div className="text-sm font-semibold tabular-nums text-ink-800">
                 {clausesFound}
               </div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-ink-600">
                 Clauses
               </div>
             </div>
@@ -139,12 +139,12 @@ export default function LiveScanSidebar({
                   "text-sm font-semibold tabular-nums",
                   risksIdentified > 0
                     ? "text-severity-critical-accent"
-                    : "text-zinc-100",
+                    : "text-ink-800",
                 )}
               >
                 {risksIdentified}
               </div>
-              <div className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500">
+              <div className="text-[9px] font-semibold uppercase tracking-wider text-ink-600">
                 Risks
               </div>
             </div>

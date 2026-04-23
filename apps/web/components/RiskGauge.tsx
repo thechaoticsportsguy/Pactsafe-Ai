@@ -43,20 +43,20 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
   return (
     <div
       className={cn(
-        "relative rounded-lg border border-white/5 bg-surface-1 p-6 overflow-hidden",
+        "relative rounded-lg border border-ink-800/10 bg-beige-50 p-6 overflow-hidden",
         className,
       )}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-50"
+        className="pointer-events-none absolute inset-0 opacity-40"
         style={{
-          background: `radial-gradient(60% 80% at 0% 100%, ${band.color}22 0%, transparent 55%)`,
+          background: `radial-gradient(60% 80% at 0% 100%, ${band.color}1a 0%, transparent 55%)`,
         }}
       />
       <div className="relative">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-600">
             Overall risk score
           </p>
           <Badge variant="severity" level={tone}>
@@ -65,16 +65,16 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
         </div>
 
         <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-5xl font-semibold tracking-tightest tabular-nums text-zinc-100">
+          <span className="text-5xl font-semibold tracking-tightest tabular-nums text-ink-800">
             {displayed}
           </span>
-          <span className="text-lg text-zinc-400 tabular-nums">
+          <span className="text-lg text-ink-600 tabular-nums">
             / 100
           </span>
         </div>
 
         <div
-          className="mt-6 relative h-2.5 w-full overflow-hidden rounded-full bg-surface-3"
+          className="mt-6 relative h-2.5 w-full overflow-hidden rounded-full bg-ink-800/5"
           aria-label={`Risk score ${clamped} of 100`}
           role="progressbar"
           aria-valuenow={clamped}
@@ -95,12 +95,11 @@ export default function RiskGauge({ score, className }: RiskGaugeProps) {
             style={{
               width: `${displayed}%`,
               background: `linear-gradient(90deg, ${band.color}aa, ${band.color})`,
-              boxShadow: `0 0 20px ${band.color}80`,
             }}
           />
         </div>
 
-        <div className="mt-3 flex justify-between text-[10px] uppercase tracking-wider text-zinc-500 tabular-nums">
+        <div className="mt-3 flex justify-between text-[10px] uppercase tracking-wider text-ink-600 tabular-nums">
           <span>0 · Safe</span>
           <span>30</span>
           <span>60</span>

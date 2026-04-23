@@ -414,22 +414,22 @@ export default function AnalysisReport({
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="eyebrow-accent">
+            <span className="inline-flex items-center gap-1 border border-ink-800/20 bg-ink-800/10 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.12em] text-ink-800">
               <Sparkles className="h-3 w-3" />
               {getDocumentTypeLabel(result.metadata?.document_type)}
-            </Badge>
+            </span>
             {result.provider && (
-              <Badge variant="neutral">
+              <Badge variant="eyebrow">
                 {result.provider}
               </Badge>
             )}
             {result.truncated && <Badge variant="warning">Truncated</Badge>}
           </div>
-          <h1 className="mt-3 text-2xl md:text-[28px] font-semibold tracking-tight truncate max-w-2xl text-zinc-100">
+          <h1 className="mt-3 text-2xl md:text-[28px] font-semibold tracking-tight truncate max-w-2xl text-ink-800">
             {filename ?? "Pasted contract"}
           </h1>
           {createdAt && (
-            <p className="mt-1.5 text-xs text-zinc-400 flex items-center gap-1.5">
+            <p className="mt-1.5 text-xs text-ink-600 flex items-center gap-1.5">
               <Clock className="h-3 w-3" />
               Analyzed {new Date(createdAt).toLocaleString()}
             </p>
@@ -438,7 +438,7 @@ export default function AnalysisReport({
 
         <div className="flex flex-shrink-0 flex-wrap gap-2">
           <Button
-            palette="workspace"
+            palette="editorial"
             variant="secondary"
             size="sm"
             radius="md"
@@ -457,7 +457,7 @@ export default function AnalysisReport({
             )}
           </Button>
           <a href={exportPdfUrl(jobId)} target="_blank" rel="noreferrer">
-            <Button palette="workspace" variant="primary" size="sm" radius="md">
+            <Button palette="editorial" variant="primary" size="sm" radius="md">
               <Download className="h-3.5 w-3.5" />
               Export PDF
             </Button>
@@ -468,8 +468,8 @@ export default function AnalysisReport({
       {/* Top strip: Risk + key counts */}
       <div className="grid gap-4 lg:grid-cols-3">
         <RiskGauge score={displayScore} className="lg:col-span-2" />
-        <div className="rounded-lg border border-white/5 bg-surface-1 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="rounded-lg border border-ink-800/10 bg-beige-50 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-600">
             At a glance
           </p>
           <dl className="mt-4 space-y-3">
@@ -744,7 +744,7 @@ function StatRow({
   } as const;
   return (
     <div className="flex items-center justify-between">
-      <dt className="text-sm text-zinc-400">{label}</dt>
+      <dt className="text-sm text-ink-600">{label}</dt>
       <dd
         className={cn("text-base font-semibold tabular-nums", colorMap[tone])}
       >

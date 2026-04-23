@@ -204,18 +204,18 @@ export default function ContractPreview({
   if (frozen) {
     const pageCount = Math.max(1, Math.round(lines.length / 40));
     return (
-      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden rounded-md border border-white/10 bg-surface-1 px-4 py-3">
-        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 text-accent ring-1 ring-accent/30">
+      <div className="flex h-full min-h-0 items-center gap-4 overflow-hidden rounded-md border border-ink-800/10 bg-beige-50 px-4 py-3">
+        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-ink-800/15 bg-ink-800/10 text-ink-800">
           <FileText className="h-5 w-5" strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-zinc-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-600">
             Scanned document
           </p>
-          <p className="mt-0.5 truncate text-sm font-semibold text-zinc-100">
+          <p className="mt-0.5 truncate text-sm font-semibold text-ink-800">
             {filename ?? "Pasted contract"}
           </p>
-          <p className="mt-0.5 text-[11px] tabular-nums text-zinc-500">
+          <p className="mt-0.5 text-[11px] tabular-nums text-ink-600">
             {pageCount} page{pageCount !== 1 ? "s" : ""} · {lines.length} lines
             {elapsed > 0 && ` · analyzed in ${elapsed}s`}
           </p>
