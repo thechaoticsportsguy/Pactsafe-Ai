@@ -1,1 +1,36 @@
-TODO: paste real NDA here. See doc_type_sources.md for suggested sources.
+# Source: https://www.ycombinator.com/documents — Y Combinator Mutual NDA template, retrieved 2026-04-24
+
+MUTUAL NONDISCLOSURE AGREEMENT
+
+This Mutual Nondisclosure Agreement ("Agreement") is entered into as of ______________ (the "Effective Date") by and between ____________________, a ______________ corporation ("Company"), and ____________________, a ______________ corporation ("Recipient") (each a "Party" and collectively the "Parties").
+
+1. Purpose. The Parties wish to explore a potential business opportunity of mutual interest (the "Purpose"), and in connection with the Purpose, each Party may disclose to the other certain confidential technical and business information that the disclosing Party ("Discloser") desires the receiving Party ("Recipient") to treat as confidential.
+
+2. Confidential Information. "Confidential Information" means any information disclosed by Discloser to Recipient, either directly or indirectly, in writing, orally or by inspection of tangible objects, including without limitation documents, business plans, source code, software, documentation, financial analysis, marketing plans, customer names, customer list, customer data. Confidential Information may also include information disclosed to Discloser by third parties. Confidential Information shall not, however, include any information which Recipient can establish (i) was publicly known and made generally available in the public domain prior to the time of disclosure by Discloser; (ii) becomes publicly known and made generally available after disclosure by Discloser to Recipient through no action or inaction of Recipient; or (iii) is in the possession of Recipient, without confidentiality restrictions, at the time of disclosure by the Discloser as shown by Recipient's files and records prior to the time of disclosure.
+
+3. Non-use and Non-disclosure. Recipient agrees not to use any Confidential Information for any purpose except to evaluate and engage in discussions concerning the Purpose. Recipient agrees not to disclose any Confidential Information to third parties or to its employees, other than directors, officers, employees, consultants and agents of Recipient who are required to have the information in order to evaluate or engage in discussions concerning the Purpose and who have signed confidentiality agreements or are otherwise bound by confidentiality obligations at least as restrictive as those contained herein. Recipient shall not reverse engineer, disassemble or decompile any prototypes, software or other tangible objects which embody Discloser's Confidential Information and which are provided to Recipient hereunder.
+
+4. Maintenance of Confidentiality. Recipient agrees that it shall take reasonable measures to protect the secrecy of and avoid disclosure and unauthorized use of the Confidential Information. Without limiting the foregoing, Recipient shall take at least those measures that Recipient takes to protect its own most highly confidential information and shall ensure that its employees who have access to Confidential Information have signed a non-use and non-disclosure agreement in content at least as protective as the provisions hereof, prior to any disclosure of Confidential Information to such employees. Recipient shall not make any copies of Confidential Information except upon Discloser's prior written approval. Recipient shall reproduce Discloser's proprietary rights notices on any such approved copies, in the same manner in which such notices were set forth in or on the original.
+
+5. No Obligation. Nothing herein shall obligate either Party to proceed with any transaction between them, and each Party reserves the right, in its sole discretion, to terminate the discussions contemplated by this Agreement concerning the Purpose.
+
+6. No Warranty. ALL CONFIDENTIAL INFORMATION IS PROVIDED "AS IS". DISCLOSER MAKES NO WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY, COMPLETENESS OR PERFORMANCE.
+
+7. Return of Materials. All documents and other tangible objects containing or representing Confidential Information which have been disclosed by Discloser to Recipient, and all copies thereof which are in the possession of Recipient, shall be and remain the property of Discloser and shall be promptly returned to Discloser upon Discloser's written request.
+
+8. No License. Nothing in this Agreement is intended to grant any rights to Recipient under any patent, mask work right or copyright of Discloser, nor shall this Agreement grant Recipient any rights in or to Confidential Information except as expressly set forth herein.
+
+9. Term. This Agreement shall survive until such time as all Confidential Information disclosed hereunder becomes publicly known and made generally available through no action or inaction of Recipient.
+
+10. Remedies. Recipient agrees that any violation or threatened violation of this Agreement will cause irreparable injury to Discloser, entitling Discloser to obtain injunctive relief in addition to all legal remedies.
+
+11. Miscellaneous. This Agreement shall bind and inure to the benefit of the Parties' successors and assigns. This Agreement shall be governed by the laws of the State of California, without reference to conflict of laws principles. This document contains the entire agreement between the Parties with respect to the subject matter hereof. Any failure to enforce any provision of this Agreement shall not constitute a waiver thereof or of any other provision. This Agreement may not be amended, nor any obligation waived, except by a writing signed by both Parties hereto.
+
+IN WITNESS WHEREOF, the Parties have executed this Mutual Nondisclosure Agreement as of the Effective Date.
+
+COMPANY                                    RECIPIENT
+
+By: _____________________________         By: _____________________________
+Name: ___________________________         Name: ___________________________
+Title: __________________________         Title: __________________________
+Date: ___________________________         Date: ___________________________

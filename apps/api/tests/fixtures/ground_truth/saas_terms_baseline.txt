@@ -1,1 +1,48 @@
-TODO: paste real SaaS terms of service here. See doc_type_sources.md for suggested sources.
+# Source: https://vercel.com/legal/terms — retrieved 2026-04-24
+You certify that you are a person at least 16 years of age. Services may only be used or accessed through an electronic device controlled by you at all times. A valid Vercel account may only be created and maintained if you provide valid information in the signup process, and you regularly update such information to assure its accuracy. You shall be responsible for maintaining the confidentiality of login information associated with your account. Each user must have unique login credentials that must not be shared by multiple users. You are responsible for all activities that occur under your account.
+
+2. Temporary Use License
+During the period for which you are authorized to use the Services, and subject to your compliance with the terms of this Agreement, you are granted a personal, non-sublicensable, non-exclusive, non-transferable, limited license, to use the Services for your internal business or personal purposes according to the service capacity of your account. Any rights not expressly granted herein are reserved and no license or right to use any trademark of Vercel or any third-party is granted to you in connection with the Services.
+
+3. Your Content
+You are solely responsible for all software, code, data, information, feedback, suggestions, text, input, content and other materials that you upload, post, deliver, provide or otherwise transmit or store (hereafter "submit(ting)") in connection with or relating to the Services ("Your Content"). You are responsible for maintaining the confidentiality of usernames and passwords associated with your account and for all activities that occur under your account. Vercel reserves the right to access your account in order to respond to your requests for technical support.
+
+By submitting Your Content on or through the Services, you grant Vercel a worldwide, non-exclusive, royalty-free, fully paid, sublicensable and transferable license to use, copy, modify, adapt, reproduce, distribute, display, publish, store, perform, and create derivatives of Your Content to provide and improve the Services, develop new products and services, secure and protect the Services and third parties from fraud, abuse, malware, malicious files or content, viruses and the like.
+
+In addition, if you are on a Hobby plan or trial Pro plan, you agree that we may use Your Content to train our artificial intelligence ("AI") and machine learning models, and we may share Your Content with third parties for the purpose of developing and improving their products, including training and improving their AI and machine learning models (collectively, "Model Training"). If you are on a paid Pro plan, Model Training is not enabled by default and you may opt in to Model Training. You may opt-out of Model Training at any time by adjusting your Team account settings or by upgrading to an Enterprise plan.
+
+We may remove or disable any of Your Content at any time for any reason (including, but not limited to, upon receipt of claims or allegations from third-parties or authorities relating to Your Content), or for no reason at all; provided, that if you are a user of our Services in the European Economic Area (i) we will remove or disable Your Content or impose restrictions on your use of the Services in accordance with applicable laws including if it is illegal content, infringes the rights of third parties, or breaches this Agreement; (ii) if we remove, block or restrict your use of the Services or Your Content, you, and any third party that may have informed us about your use of the Services or Your Content, may contact us about our decision at https://vercel.com/help and we will review and consider your message with a view to promptly resolving any complaint and, if appropriate, we will explain any options you have to request another review.
+
+4. Hobby Plan
+We offer a free Hobby plan at our sole discretion. The Hobby plan is subject to all provisions of these Terms of Service, unless expressly stated otherwise. You shall only use the Services under a Hobby plan for your personal or non-commercial use. We may change the features, limitations, or other conditions applicable to the Hobby plan or discontinue offering the Hobby plan at any time. We reserve the right to disable or remove any Project or website deployment on the Hobby plan with or without notice at our sole discretion. We may shut down and terminate projects or deployments using the Hobby plan without notice for any reason or no reason. We may shut down affected projects or deployments on the Hobby plan in case of any delays or performance problems including, without limitation, those caused by a malicious attack on a project or deployment.
+
+5. Teams and Projects
+You are able to create or join a team consisting of one or more other Vercel users ("authorized users") of the Services (a "Team"). A Team owner may manage or enable authorized users to collaborate on a project (a "Project"). If you are invited to a Team or a Project, Your Content created in that Team or Project may be shared with that Team and may be accessed, modified, claimed ownership of, or deleted by the Team owner or administrator. If you sign up for Vercel with an email address provisioned by a Team (e.g., organizational email), other participants on the Team may be able to view information about any Project you create or for which you are an administrator, member, or guest, including the identities of Project members and guests, and Your Content. The owner or administrator of the Team will have the ability to manage your Project, including to claim control and ownership of any Project you create or for which you are an administrator or remove you from any Project for which you are a member.
+
+6. Acceptable Use
+Your use of the Services (which include, for the purposes of this Section 6, participation in the Vercel Community or similar discussion forums, if applicable) must comply with Vercel's Acceptable Use Policy, which is incorporated by reference.
+
+7. Etiquette
+Although Vercel has no obligation to monitor your use of the Services, Vercel may do so by using tools that detect patterns of abuse of Services, and investigating thereafter. Based on the outcome of these investigations, Vercel may prohibit any use of the Services it believes may be (or is alleged to be) in violation of the foregoing.
+
+8. Security and Compliance
+
+8.1 General
+You shall configure Your Content, including any of your projects or deployments, such that the transmission, storage, or use in any way will not expose personal data or personal information without proper consent from individuals as determined by applicable law. You shall configure the Services in accordance with the Documentation and properly implement encryption as set forth in the Documentation. Vercel implements regular backups of Your Content and you shall also maintain its own backups of Your Content. Vercel will have no liability to you for any unauthorized access or use of any of Your Content or any corruption, deletion, destruction or loss of any Your Content to the extent that is attributable, in whole or in part, to your misconfigurations or an insecurity in your website or project, malware or malicious content in your website, Your Content or project. If any actual or suspected security incident, vulnerabilities, violations of this Section 8, or issue related to the Services are identified, you shall immediately report it to security@vercel.com.
+
+
+8.2 PCI Compliance
+Vercel is not a payment processor. To the extent that Your Content or Account Information (as defined below) is subject to the Payment Card Industry Data Security Standards (PCI DSS), you acknowledge that you are responsible for maintaining and monitoring compliance with PCI DSS requirements as prescribed by the PCI Security Standards Council as may be amended from time to time. You agree to comply with Vercel's Documentation on appropriate implementation of the Services for processing payments.
+
+
+8.3 HIPAA Compliance
+You shall not use the Services to host any Protected Health Information or information that is subject to the Health Insurance Portability and Accountability Act (HIPAA), unless you first obtain Vercel's prior written approval.
+
+9. Data Protection
+
+9.1 Vercel's Role
+We will process the personal information in Your Content, Account Information, and System Data as a data controller or data processor in accordance with Vercel's Data Processing Addendum ("DPA"), which is incorporated by reference, and our Privacy Policy as applicable.
+
+
+9.2 Use of Your Account Information
+When signing up for and using Vercel, you provide personal data to Vercel in connection with creating and administering your account (collectively, "Account Information"). You own and retain all right, title and interest in and to Account Information. Vercel may use and disclose Account Information to provide and improve the Services to you, develop new products and services, secure and protect the Services and third parties from fraud, abuse, illegal activities, abuse, malware, malicious files or content, viruses and the like.
