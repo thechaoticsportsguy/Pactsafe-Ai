@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config import get_settings
-from app.routers import analyses, export, health, jobs
+from app.routers import analyses, demo, export, health, jobs
 from app.ws import jobs as ws_jobs
 
 logging.basicConfig(
@@ -56,6 +56,7 @@ app.include_router(health.router, prefix="/api")
 app.include_router(jobs.router, prefix="/api")
 app.include_router(analyses.router, prefix="/api")
 app.include_router(export.router, prefix="/api")
+app.include_router(demo.router, prefix="/api")
 
 # WebSocket (kept at root: /ws/jobs/{id})
 app.include_router(ws_jobs.router)

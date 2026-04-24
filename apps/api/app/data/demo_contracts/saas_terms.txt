@@ -1,0 +1,73 @@
+SAAS SUBSCRIPTION AGREEMENT
+
+These SaaS Subscription Terms ("Terms") govern your use of the cloud-based services (the "Service") provided by Nimbus Software, Inc. ("Nimbus", "we", "us" or "our"). By clicking "I Agree," creating an account, or accessing or using the Service, you ("Customer", "you" or "your") agree to be bound by these Terms. If you are entering into these Terms on behalf of a company or other legal entity, you represent that you have the authority to bind that entity to these Terms, in which case "Customer" or "you" shall refer to such entity.
+
+1. SERVICE ACCESS AND USE
+
+1.1 License Grant. Subject to Customer's compliance with these Terms and payment of all applicable fees, Nimbus grants Customer a limited, non-exclusive, non-transferable, non-sublicensable right to access and use the Service during the Subscription Term solely for Customer's internal business purposes.
+
+1.2 Restrictions. Customer shall not, and shall not permit any third party to: (a) copy, modify, distribute, sell, lease, rent, license, sublicense, or otherwise commercially exploit the Service; (b) reverse engineer, decompile, disassemble, or attempt to derive the source code of the Service, except to the extent such restriction is prohibited by applicable law; (c) use the Service to build a competitive product or service or copy any features, functions, or graphics of the Service; (d) circumvent any technical limitations of the Service or access any portion of the Service to which Customer has not been granted access; (e) use the Service in any manner that violates applicable law or regulation; or (f) upload or transmit any viruses, malware, or other malicious code through the Service.
+
+1.3 Users. Customer may permit its employees, contractors, and agents ("Authorized Users") to use the Service, provided that each Authorized User is subject to these Terms and Customer remains responsible for all acts and omissions of its Authorized Users. Customer shall ensure that each Authorized User keeps their login credentials confidential and promptly notify Nimbus of any unauthorized use or suspected breach of security.
+
+2. SUBSCRIPTION AND FEES
+
+2.1 Subscription Term. The Service is provided on a subscription basis for the term specified in the applicable order form or online checkout ("Order") or, if not specified, on a monthly basis commencing on the date Customer first accesses the Service (the "Subscription Term"). The Subscription Term shall automatically renew for successive periods of equal length unless either party provides written notice of non-renewal at least thirty (30) days prior to the end of the then-current Subscription Term.
+
+2.2 Fees. Customer shall pay all fees specified in the applicable Order ("Fees"). Unless otherwise stated in the Order, Fees are due in advance and non-refundable. Nimbus may increase Fees effective upon renewal of the Subscription Term by providing Customer with written notice at least thirty (30) days prior to the renewal date. All Fees are exclusive of taxes, which Customer is responsible for paying, except for taxes on Nimbus's net income.
+
+2.3 Payment. Customer shall provide Nimbus with valid and updated payment information and authorizes Nimbus to charge the payment method on file for all Fees incurred. If Customer fails to pay any Fees when due, Nimbus may, without limiting its other rights and remedies, (a) suspend Customer's access to the Service until all overdue amounts are paid in full, and (b) charge interest on the overdue amount at the lesser of 1.5% per month or the maximum rate permitted by applicable law, plus all reasonable costs of collection (including attorneys' fees).
+
+2.4 Auto-Renewal. CUSTOMER ACKNOWLEDGES AND AGREES THAT UNLESS CUSTOMER CANCELS THE SUBSCRIPTION IN ACCORDANCE WITH SECTION 2.1, THE SUBSCRIPTION WILL AUTOMATICALLY RENEW AND CUSTOMER'S PAYMENT METHOD WILL BE CHARGED FOR THE APPLICABLE RENEWAL FEES WITHOUT FURTHER NOTICE OR ACTION BY CUSTOMER.
+
+3. CUSTOMER DATA
+
+3.1 Ownership. As between the parties, Customer retains all right, title, and interest in and to Customer Data. "Customer Data" means all electronic data or information submitted by or on behalf of Customer to the Service. Customer grants Nimbus a worldwide, royalty-free, non-exclusive license to host, copy, transmit, display, and use Customer Data solely to provide and improve the Service and to comply with its obligations under these Terms.
+
+3.2 Data Security. Nimbus shall implement and maintain reasonable administrative, physical, and technical safeguards designed to protect the security, confidentiality, and integrity of Customer Data, including encryption in transit and at rest. Customer is responsible for maintaining the confidentiality of its account credentials and for all activities that occur under Customer's account.
+
+3.3 Data Portability. Upon Customer's request at any time during the Subscription Term, and for a period of thirty (30) days after expiration or termination of these Terms, Nimbus shall make Customer Data available to Customer for export in a commonly used electronic format. After such thirty (30) day period, Nimbus may, in its sole discretion, delete or destroy any Customer Data in its possession, except as otherwise required by applicable law.
+
+3.4 Aggregate Data. Customer agrees that Nimbus may collect, use, and retain aggregated and anonymized data derived from Customer's use of the Service ("Aggregate Data") for any lawful purpose, including to improve the Service, develop new products, and publish benchmarking reports, provided that such Aggregate Data does not identify Customer or any individual.
+
+4. INTELLECTUAL PROPERTY
+
+4.1 Nimbus IP. Nimbus and its licensors retain all right, title, and interest in and to the Service, including all software, technology, content, trademarks, trade names, logos, and all associated intellectual property rights. No rights or licenses are granted except as expressly set forth in these Terms.
+
+4.2 Feedback. If Customer provides Nimbus with any suggestions, enhancement requests, feedback, recommendations, or other information relating to the Service ("Feedback"), Customer grants Nimbus a perpetual, irrevocable, worldwide, royalty-free, fully paid-up, sublicensable, transferable license to use, reproduce, modify, distribute, and otherwise exploit such Feedback for any purpose, without attribution or compensation to Customer.
+
+5. WARRANTIES AND DISCLAIMERS
+
+5.1 Limited Warranty. Nimbus warrants that the Service will perform materially in accordance with its published documentation during the Subscription Term. Customer's exclusive remedy and Nimbus's sole liability for any breach of this warranty shall be, at Nimbus's option, (a) repair or replacement of the non-conforming Service, or (b) termination of the affected Order and a refund of any prepaid Fees for the remainder of the Subscription Term.
+
+5.2 DISCLAIMER. EXCEPT AS EXPRESSLY PROVIDED IN SECTION 5.1, THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTY OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY. NIMBUS DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. NIMBUS DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED.
+
+6. LIMITATION OF LIABILITY
+
+6.1 Exclusion of Damages. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL EITHER PARTY BE LIABLE TO THE OTHER PARTY FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, EXEMPLARY, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOST PROFITS, LOST REVENUE, LOSS OF GOODWILL, LOSS OF BUSINESS OPPORTUNITY, OR LOSS OF DATA, ARISING OUT OF OR RELATING TO THESE TERMS OR THE SERVICE, WHETHER BASED ON CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR OTHERWISE, EVEN IF SUCH PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+6.2 Cap on Liability. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THESE TERMS SHALL NOT EXCEED THE GREATER OF (A) THE TOTAL FEES PAID BY CUSTOMER TO NIMBUS UNDER THESE TERMS DURING THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR (B) ONE HUNDRED DOLLARS ($100). THE LIMITATIONS IN THIS SECTION 6 SHALL NOT APPLY TO (i) A PARTY'S INDEMNIFICATION OBLIGATIONS, (ii) CUSTOMER'S PAYMENT OBLIGATIONS, OR (iii) DAMAGES ARISING FROM FRAUD OR WILLFUL MISCONDUCT.
+
+7. INDEMNIFICATION
+
+7.1 By Nimbus. Nimbus shall defend, indemnify, and hold harmless Customer from any third-party claim alleging that the Service, as provided by Nimbus and used in accordance with these Terms, infringes such third party's valid and enforceable patent, copyright, trademark, or trade secret. Nimbus's obligations under this Section shall not apply to any claim arising from (a) Customer Data, (b) modifications to the Service not made by Nimbus, (c) combination of the Service with any product or service not provided by Nimbus, or (d) Customer's use of the Service in breach of these Terms.
+
+7.2 By Customer. Customer shall defend, indemnify, and hold harmless Nimbus from any third-party claim arising from (a) Customer Data, (b) Customer's breach of these Terms or applicable law, or (c) Customer's use of the Service in a manner not authorized by these Terms.
+
+8. TERM AND TERMINATION
+
+8.1 Term. These Terms commence on the Effective Date and continue for the duration of the Subscription Term, unless earlier terminated as provided herein.
+
+8.2 Termination for Cause. Either party may terminate these Terms upon written notice if the other party materially breaches these Terms and fails to cure such breach within thirty (30) days after receipt of written notice describing the breach. Nimbus may terminate these Terms immediately upon written notice if Customer breaches Section 1.2 (Restrictions).
+
+8.3 Effect of Termination. Upon termination or expiration of these Terms for any reason: (a) Customer's right to access and use the Service shall immediately cease; (b) Customer shall pay all Fees accrued as of the effective date of termination; and (c) each party shall return or destroy the other party's Confidential Information, subject to any data export rights set forth in Section 3.3.
+
+9. GENERAL
+
+9.1 Governing Law; Venue. These Terms shall be governed by the laws of the State of California, without regard to its conflict of laws principles. The parties consent to the exclusive jurisdiction and venue of the state and federal courts located in San Francisco County, California, for any disputes arising out of these Terms.
+
+9.2 Modification. Nimbus may modify these Terms from time to time by posting the updated Terms on its website. Continued use of the Service after the effective date of any such modification shall constitute Customer's acceptance of the modified Terms.
+
+9.3 Entire Agreement. These Terms, together with any Order, constitute the entire agreement between the parties with respect to the subject matter hereof and supersede all prior agreements, proposals, or representations, whether oral or written.
+
+9.4 Force Majeure. Neither party shall be liable for any failure or delay in performance under these Terms (other than payment obligations) due to causes beyond its reasonable control, including acts of God, war, terrorism, civil disturbance, epidemic, labor disputes, or failure of internet or telecommunications infrastructure.

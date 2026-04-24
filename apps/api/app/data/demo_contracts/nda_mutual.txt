@@ -1,0 +1,89 @@
+MUTUAL NONDISCLOSURE AGREEMENT
+
+This Mutual Nondisclosure Agreement ("Agreement") is entered into as of the date of last signature below ("Effective Date") by and between Acme Corporation, a Delaware corporation with its principal place of business at 100 Main Street, San Francisco, CA 94105 ("Acme"), and the undersigned counterparty ("Counterparty"). Acme and Counterparty are each a "Party" and collectively the "Parties."
+
+RECITALS
+
+WHEREAS, the Parties wish to explore a potential business relationship in connection with a proposed transaction, collaboration, or engagement (the "Purpose"); and
+
+WHEREAS, in connection with the Purpose, each Party may disclose to the other certain confidential and proprietary information;
+
+NOW, THEREFORE, in consideration of the mutual covenants and promises contained herein, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
+
+1. DEFINITION OF CONFIDENTIAL INFORMATION
+
+1.1 "Confidential Information" means any and all non-public information disclosed by one Party (the "Disclosing Party") to the other Party (the "Receiving Party"), whether orally, in writing, electronically, or in any other form, including but not limited to: (a) technical information, trade secrets, software, source code, object code, algorithms, know-how, processes, specifications, drawings, schematics, and inventions (whether patentable or not); (b) business information, including business plans, strategies, financial information, customer lists, supplier lists, pricing, marketing plans, product roadmaps, and employee information; (c) any information identified as confidential at the time of disclosure or that a reasonable person would understand to be confidential given the nature of the information and the circumstances of disclosure; and (d) any analyses, compilations, studies, notes, or other materials prepared by the Receiving Party that contain or reflect Confidential Information.
+
+1.2 Confidential Information does not include information that the Receiving Party can demonstrate: (a) was in the Receiving Party's possession without a duty of confidentiality prior to disclosure by the Disclosing Party; (b) is or becomes publicly known through no fault or breach of this Agreement by the Receiving Party; (c) is independently developed by the Receiving Party without use of or reference to the Disclosing Party's Confidential Information; or (d) is rightfully received from a third party without a duty of confidentiality.
+
+2. OBLIGATIONS OF THE RECEIVING PARTY
+
+2.1 Non-Disclosure. The Receiving Party shall hold the Confidential Information in strict confidence and shall not disclose, publish, or disseminate Confidential Information to any third party without the prior written consent of the Disclosing Party. The Receiving Party shall use the same degree of care to protect the Confidential Information as it uses to protect its own confidential information of similar importance, but in no event less than a reasonable degree of care.
+
+2.2 Limited Use. The Receiving Party shall use the Confidential Information solely for the Purpose and for no other purpose. The Receiving Party shall not use the Confidential Information for its own benefit or for the benefit of any third party, including for competitive purposes.
+
+2.3 Permitted Disclosures. The Receiving Party may disclose Confidential Information to its employees, officers, directors, agents, attorneys, accountants, advisors, and contractors (collectively, "Representatives") who have a legitimate need to know for the Purpose and who are bound by written or professional obligations of confidentiality no less restrictive than those contained herein. The Receiving Party shall be responsible for any breach of this Agreement by its Representatives.
+
+2.4 Required Disclosures. If the Receiving Party is compelled by law, subpoena, court order, or governmental authority to disclose Confidential Information, the Receiving Party shall, to the extent legally permissible, promptly notify the Disclosing Party in writing prior to disclosure so that the Disclosing Party may seek a protective order or other appropriate remedy. The Receiving Party shall cooperate with the Disclosing Party's efforts to obtain such protective order and shall disclose only that portion of the Confidential Information that is legally required to be disclosed.
+
+3. TERM AND TERMINATION
+
+3.1 Term. This Agreement shall commence on the Effective Date and continue for a period of two (2) years thereafter, unless earlier terminated by either Party upon thirty (30) days' prior written notice to the other Party.
+
+3.2 Survival of Obligations. Notwithstanding the expiration or termination of this Agreement, the Receiving Party's obligations with respect to Confidential Information disclosed during the term shall survive for a period of five (5) years from the date of disclosure, except that obligations with respect to trade secrets shall survive for as long as such information continues to qualify as a trade secret under applicable law.
+
+4. RETURN OR DESTRUCTION OF CONFIDENTIAL INFORMATION
+
+Upon the Disclosing Party's written request at any time, or upon expiration or termination of this Agreement, the Receiving Party shall promptly, at the Disclosing Party's option, (a) return to the Disclosing Party all Confidential Information and any copies, extracts, or reproductions thereof, or (b) destroy all such Confidential Information and certify such destruction in writing to the Disclosing Party. The Receiving Party may retain one (1) archival copy of Confidential Information solely for purposes of complying with legal or regulatory obligations, provided that such retained copy shall remain subject to the confidentiality obligations of this Agreement for as long as it is retained.
+
+5. NO LICENSE OR OWNERSHIP
+
+5.1 Ownership. All Confidential Information disclosed under this Agreement shall remain the sole and exclusive property of the Disclosing Party. Nothing in this Agreement shall be construed as granting the Receiving Party any license, right, title, or interest in or to any Confidential Information, patent, copyright, trademark, trade secret, or other intellectual property right of the Disclosing Party, whether by implication, estoppel, or otherwise, except for the limited right to use the Confidential Information for the Purpose as expressly set forth herein.
+
+5.2 No Obligation to Proceed. Neither this Agreement nor the disclosure or receipt of Confidential Information shall constitute or imply any commitment, promise, or obligation by either Party to enter into any further agreement, relationship, or transaction. Each Party reserves the right, in its sole discretion, to decline to proceed with the Purpose or any related transaction for any reason.
+
+6. NO WARRANTY
+
+6.1 Disclaimer. ALL CONFIDENTIAL INFORMATION IS PROVIDED "AS IS" AND WITHOUT ANY WARRANTY OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF ACCURACY, COMPLETENESS, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+6.2 No Liability for Decisions. Neither Party shall be liable to the other Party for any damages arising from or in connection with the use of Confidential Information or any decisions made in reliance on Confidential Information, except for damages arising from a Party's breach of this Agreement.
+
+7. REMEDIES
+
+7.1 Injunctive Relief. The Parties acknowledge that any breach of this Agreement may cause the Disclosing Party irreparable harm for which monetary damages would be inadequate. Accordingly, in the event of any actual or threatened breach, the Disclosing Party shall be entitled to seek injunctive relief and other equitable remedies in any court of competent jurisdiction, without the necessity of posting bond or other security, in addition to any other rights and remedies available at law or in equity.
+
+7.2 Cumulative Remedies. All rights and remedies under this Agreement are cumulative and not exclusive. The exercise of any right or remedy shall not preclude the exercise of any other right or remedy.
+
+8. GENERAL PROVISIONS
+
+8.1 No Solicitation. During the term of this Agreement and for a period of twelve (12) months thereafter, neither Party shall directly or indirectly solicit for employment any employee, officer, or contractor of the other Party with whom such Party had contact in connection with the Purpose, without the prior written consent of the other Party; provided, however, that general solicitations or advertisements not specifically targeted at such individuals shall not be deemed a violation of this Section.
+
+8.2 Governing Law. This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of laws principles. The Parties hereby consent to the exclusive jurisdiction and venue of the state and federal courts located in New Castle County, Delaware, for any disputes arising out of or relating to this Agreement.
+
+8.3 Entire Agreement. This Agreement constitutes the entire agreement between the Parties with respect to the subject matter hereof and supersedes all prior and contemporaneous agreements, understandings, negotiations, and discussions, whether oral or written. This Agreement may be amended or modified only by a written instrument signed by both Parties.
+
+8.4 Severability. If any provision of this Agreement is held to be invalid or unenforceable by a court of competent jurisdiction, such provision shall be severed from this Agreement and the remaining provisions shall remain in full force and effect. The Parties shall negotiate in good faith to replace the invalid provision with a valid provision that reflects the Parties' original intent as closely as possible.
+
+8.5 No Assignment. Neither Party may assign this Agreement, whether by operation of law or otherwise, without the prior written consent of the other Party, except that either Party may assign this Agreement without consent in connection with a merger, acquisition, or sale of all or substantially all of its assets, provided that the assignee agrees in writing to be bound by the terms of this Agreement.
+
+8.6 Notices. All notices under this Agreement shall be in writing and shall be deemed given when delivered personally, sent by confirmed email, sent by certified or registered mail (postage prepaid, return receipt requested), or delivered by recognized overnight courier service, to the addresses set forth in the signature block below, or to such other address as either Party may designate by written notice to the other.
+
+8.7 Waiver. No waiver of any provision of this Agreement shall be effective unless in writing and signed by the waiving Party. The failure of either Party to enforce any right or provision of this Agreement shall not be deemed a waiver of such right or provision.
+
+8.8 Counterparts; Electronic Signatures. This Agreement may be executed in one or more counterparts, each of which shall be deemed an original and all of which together shall constitute one and the same instrument. Electronic signatures, including signatures delivered via DocuSign or similar services, shall be deemed original signatures for all purposes.
+
+8.9 No Agency. Nothing in this Agreement shall be construed to create any partnership, joint venture, agency, employment, or fiduciary relationship between the Parties. Neither Party shall have the authority to bind the other or to incur any obligation on behalf of the other without the other Party's prior written consent.
+
+IN WITNESS WHEREOF, the Parties have executed this Mutual Nondisclosure Agreement as of the dates set forth below.
+
+ACME CORPORATION
+By: _______________________________
+Name:
+Title:
+Date:
+
+COUNTERPARTY
+By: _______________________________
+Name:
+Title:
+Date:
