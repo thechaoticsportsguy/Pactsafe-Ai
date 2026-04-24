@@ -107,3 +107,40 @@ numberings. Kept here as a record of why the scorer changed.
   the original document text using v2's `section_number` + `quote`
   fields. Requires character-offset mapping from quote back to source
   document. 4–8 hour frontend task, design needed before build.
+
+## Ground-truth runner cache poisoning (HIGH)
+
+**Severity**: HIGH — blocks meaningful N=5 stability testing
+
+**Symptom**: `run_ground_truth.py --runs 5` returns identical results on runs 2-5 because `run_v2_pipeline` consults the 24h `result_cache` keyed on document text. The `reliable_flags_3of5` and `unstable_flags_1or2of5` metrics become meaningless (just "1 real run repeated 5 times").
+
+**Verified**: saas_terms run on 2026-04-24 logged `cache_hit=false` on Run 1 and `cache_hit=true` on Runs 2-5 (hit rate 50%→66%→75%→80%). Same on nda.
+
+**Fix**: Add `bypass_cache: bool = False` parameter to `run_v2_pipeline` in `apps/api/app/services/v2_pipeline.py`. Guard both the cache-lookup and cache-write sites with `if not bypass_cache:`. Update `run_ground_truth.py` to pass `bypass_cache=True`. No production behavior change (API endpoints, demo, background worker all continue to use cache as-is).
+
+**Priority**: Fix before testing remaining 3 types (employment, service_agreement, freelance_sow). Without this, no real stability data is possible.
+
+**Estimated time**: 15-20 min of focused work.
+
+---
+
+## Pass 1 max_output_tokens crashes on long contracts (HIGH)
+
+**Severity**: HIGH — silent correctness bug affecting any contract >~15K words
+
+**Symptom**: Running v2 pipeline against Stripe Services Agreement (~15K words) on 2026-04-24 caused Pass 1 `extract_clauses` to return `finish=MAX_TOKENS` with truncated JSON. Pydantic raised `ValidationError: 1 validation error for ClauseExtraction — Invalid JSON: EOF while parsing a string at line 45 column 580`. Full pipeline aborted.
+
+**Reproducer**: Paste full Stripe SSA (https://stripe.com/legal/ssa, all sections including regional terms ~15K words) into a saas_terms fixture and run through v2. Crashes reliably.
+
+**Diagnosis**: `apps/api/app/services/clause_extractor.py` calls `structured_call` with a `max_output_tokens` limit that's too low for ~80+ structured clauses with verbatim text. Flash truncates the JSON response mid-string.
+
+**Fix options** (pick one):
+1. Raise `max_output_tokens` on Pass 1 to 32K or 64K (simple, works until contracts get longer still)
+2. Chunk documents into ~5K-word windows and run Pass 1 per chunk, merging results (correct long-term fix; more work)
+3. Add a pre-check: if document_text exceeds N chars, either warn the user or route through a chunked pipeline
+
+**Impact in production**: Any user uploading a full SaaS ToS, enterprise MSA, or long services contract today gets a crash — not a report. Silent failure mode in the current API path. Core product claim that we support SaaS terms is partially broken.
+
+**Priority**: Fix after cache-bypass. Separate focused commit.
+
+**Estimated time**: 30-45 min (Option 1 simpler, Option 2 more work).

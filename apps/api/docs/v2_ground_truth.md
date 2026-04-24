@@ -145,131 +145,95 @@ Unstable (1–2/5):
 
 ## NDA
 
-**Source**: _(URL + date)_
+**Fixture**: `apps/api/tests/fixtures/ground_truth/nda_baseline.txt`
+**Source**: Y Combinator Mutual NDA template (https://www.ycombinator.com/documents) — retrieved 2026-04-24
+**Word count**: ~800 words
+**Date run**: 2026-04-24
+**Runs completed**: 5 (1 real, 4 cache hits due to bypass_cache bug)
 
-**Word count**: _N_
+### Detected type
+All 5 runs: `nda` (Pass 0 and Pass 1 agreed).
 
-**Date run**: _YYYY-MM-DD_
+### Reliable flags (graded)
 
-**Detected doc_type across 5 runs**:
+| # | Severity | §  | Flag title                                     | Grade | Notes |
+|---|----------|----|------------------------------------------------|-------|-------|
+| 1 | CRITICAL | 9  | Perpetual confidentiality term                 | ✅ core finding / ⚠️ severity | Real finding — perpetual term is worth flagging. But CRITICAL is too high for a template NDA. HIGH is the correct severity. CRITICAL should be reserved for jury-trial waivers, self-indemnity, etc. |
+| 2 | HIGH     | 2  | Incomplete exclusions from confidentiality     | ⚠️    | Structurally a missing-protection argument (no independent-development exclusion), but expressed as a red flag attached to the present exclusions clause. Already correctly listed in missing_protections. Double-counting. |
+| 3 | HIGH     | 10 | Automatic irreparable harm / injunctive relief | ⚠️    | Quote verbatim and interpretation accurate, but this is boilerplate NDA language. On a MUTUAL NDA where the clause cuts both ways, HIGH is overstated — should be MEDIUM. Pass 2 isn't accounting for reciprocity when calibrating severity. |
+| 4 | MEDIUM   | 2  | Overly broad "Confidential Information" definition | ✅ | True positive. Oral disclosure without written confirmation is a real gotcha. MEDIUM correctly calibrated. |
+| 5 | MEDIUM   | 7  | No right to retain archival copies             | ✅    | True positive. Compliance/audit use cases require retention. MEDIUM correct. |
 
-| Detected label | Runs |
-|----------------|------|
-|                |      |
+### Missing protections (graded)
 
-- Correct detection? ☐ yes ☐ no
+All 5 grounded and real: Fixed term, Independently developed info exclusion, Legally required disclosure safe harbor, Residuals clause, Destruction option.
 
-**Run stats**:
+### Green flags
 
-- `risk_score_per_run`: [_, _, _, _, _]
-- `red_flag_count_per_run`: [_, _, _, _, _]
-- `missing_protection_count_per_run`: [_, _, _, _, _]
+0 returned. This is a MUTUAL NDA — reciprocal clauses (Section 5 No Obligation, Section 10 Remedies applying to both parties equally) could legitimately be surfaced as green flags for the Recipient. Confirms the green-flag recall concern from SaaS test.
 
-### Reliable flags (≥3/5 runs)
+### Scorecard
 
-| # | Section | Severity | Clause snippet | Verdict | Notes |
-|---|---------|----------|----------------|---------|-------|
-| 1 |         |          |                |         |       |
-
-### Unstable flags (1–2/5 runs)
-
-| # | Section | Severity | Clause snippet | Runs | Keep / Suppress / Tune |
-|---|---------|----------|----------------|------|------------------------|
-| 1 |         |          |                |      |                        |
-
-### Missing flags
-
-- [ ] _e.g. no residual-knowledge carveout_
-
-Expected-risk checklist for NDA:
-
-- [ ] Mutual vs one-way
-- [ ] Term (typically 2–5 years)
-- [ ] Survival tail beyond term
-- [ ] Permitted-use definition (narrow? or "business purpose"?)
-- [ ] Residual-knowledge carveout
-- [ ] Non-solicit rider (some NDAs smuggle this in)
-- [ ] Return-or-destroy-on-termination obligation
-- [ ] Injunctive relief waiver
-
-### Missing protections
-
-Reliable (≥3/5): _(list)_
-
-Unstable (1–2/5):
-
-| Protection | Runs | Real gap? |
-|------------|------|-----------|
-|            |      |           |
+- Red flags: 3 ✅ / 2 ⚠️ / 0 ❌
+- Citation grounding: 5/5 verbatim
+- Missing protections: 5/5 grounded
+- Severity calibration: 3/5 correct (Flag 1 and Flag 3 inflated)
+- Summary accuracy: ✅
 
 ### Follow-ups
 
-- [ ] _..._
+- [ ] Pass 2 severity rubric: cap severity at HIGH (not CRITICAL) for term-length concerns
+- [ ] Pass 2 severity rubric: account for reciprocity on mutual NDAs — irreparable-harm and similar symmetric clauses should be MEDIUM on mutual agreements
+- [ ] Pass 2 structural fix: prevent double-counting where a red flag and a missing protection express the same underlying concern
 
 ---
 
 ## SaaS Terms
 
-**Source**: _(URL + date)_
+**Fixture**: `apps/api/tests/fixtures/ground_truth/saas_terms_baseline.txt`
+**Source**: Vercel Terms of Service (https://vercel.com/legal/terms) — retrieved 2026-04-24
+**Word count**: ~4,500 words (trimmed excerpt of sections 1-9)
+**Date run**: 2026-04-24
+**Runs completed**: 5 (1 real, 4 cache hits due to bypass_cache bug — see v2_followups.md)
 
-**Word count**: _N_
+### Detected type
+All 5 runs: `saas_terms` (via Pass 1). Pass 0 initially classified as `terms_of_service` — coarse-vs-refined classification split is expected behavior.
 
-**Date run**: _YYYY-MM-DD_
+### Reliable flags (graded)
 
-**Detected doc_type across 5 runs**:
+| # | Severity | §   | Flag title                                                     | Grade | Notes |
+|---|----------|-----|----------------------------------------------------------------|-------|-------|
+| 1 | CRITICAL | 3   | Content used for AI training on Hobby/trial Pro plans          | ✅    | True positive. Severity correct. |
+| 2 | HIGH     | 3   | Provider can delete content for no reason                      | ✅    | True positive. |
+| 3 | HIGH     | 3   | Broad, sublicensable, transferable content license             | ✅    | True positive. "Create derivatives" and "sublicensable" are unusually expansive. |
+| 4 | HIGH     | 5   | Team owners can claim ownership of Your Content                | ⚠️    | Quote verbatim but rationale overreads "ownership of the Project" as "legal IP ownership." Tuning note: distinguish administrative ownership from IP ownership. |
+| 5 | MEDIUM   | 8.1 | Provider disclaims liability for data loss on misconfiguration | ✅    | True positive. MEDIUM correctly calibrated — narrow scope (user misconfig only). |
+| 6 | MEDIUM   | 4   | Hobby plan terminable without notice                           | ✅    | True positive. MEDIUM correct — narrowly scoped to free tier. |
 
-| Detected label | Runs |
-|----------------|------|
-|                |      |
+### Missing protections (graded)
 
-- Correct detection? ☐ yes ☐ no
+All 5 grounded and real: Data export/return on termination, Limitation of liability cap, Provider IP indemnity, Security breach notification, Uptime SLA.
 
-**Run stats**:
+### Unstable flags
 
-- `risk_score_per_run`: [_, _, _, _, _]
-- `red_flag_count_per_run`: [_, _, _, _, _]
-- `missing_protection_count_per_run`: [_, _, _, _, _]
+N/A — bypass_cache bug means runs 2-5 were cache hits. Cannot measure stability until the cache-bypass fix lands.
 
-### Reliable flags (≥3/5 runs)
+### Green flags
 
-| # | Section | Severity | Clause snippet | Verdict | Notes |
-|---|---------|----------|----------------|---------|-------|
-| 1 |         |          |                |         |       |
+0 returned. Vercel terms do have some pro-user elements (EEA-specific content removal review rights in §3, user retention of Account Information in §9.2) that were not surfaced. Possible recall issue in Pass 2 green-flag prompt — watch across other types.
 
-### Unstable flags (1–2/5 runs)
+### Scorecard
 
-| # | Section | Severity | Clause snippet | Runs | Keep / Suppress / Tune |
-|---|---------|----------|----------------|------|------------------------|
-| 1 |         |          |                |      |                        |
-
-### Missing flags
-
-- [ ] _..._
-
-Expected-risk checklist for SaaS terms:
-
-- [ ] Auto-renewal + notice window for opt-out
-- [ ] Early-termination fee / commitment term
-- [ ] Data portability on termination (export window, format)
-- [ ] Liability cap (amount, carve-outs)
-- [ ] Uptime SLA + remedy (service credits vs true refund)
-- [ ] SCC / DPA references if personal data is processed
-- [ ] Unilateral price-change rights
-- [ ] Suspension-for-breach grounds
-
-### Missing protections
-
-Reliable (≥3/5): _(list)_
-
-Unstable (1–2/5):
-
-| Protection | Runs | Real gap? |
-|------------|------|-----------|
-|            |      |           |
+- Red flags: 5 ✅ / 1 ⚠️ / 0 ❌ (83% clean true positives)
+- Citation grounding: 6/6 verbatim
+- Missing protections: 5/5 grounded
+- Summary accuracy: ✅
+- Severity calibration: 5/6 correct (Flag 4 minor over-read)
 
 ### Follow-ups
 
-- [ ] _..._
+- [ ] Pass 2 prompt tuning: distinguish "ownership of the Project/resource" from "IP ownership of the content" in team/organizational contexts
+- [ ] Watch for green-flag recall issue across remaining types
 
 ---
 
@@ -408,37 +372,22 @@ Unstable (1–2/5):
 
 ## Cross-type observations
 
-Use this section for patterns that span types — systematic prompt bugs,
-consistent severity miscalibrations, gaps in `UNIVERSAL_EXCLUSIONS` that
-show up in multiple fixtures, etc.
+*Based on 2 of 6 contract types graded (saas_terms, nda). Patterns below are **hypotheses**, not confirmed findings. Do not tune prompts until at least 3-4 types have been tested and the patterns repeat with real cache-bypassed N=5 data.*
 
-### Systematic false positives
+### Pattern A: Severity inflation on aggressive-but-common clauses
+Evidence: SaaS Flag 4 (HIGH on "ownership" language, over-read), NDA Flag 1 (CRITICAL on perpetual term — should be HIGH), NDA Flag 3 (HIGH on mutual irreparable-harm — should be MEDIUM).
+Hypothesis: Pass 2's severity rubric rewards finding issues but doesn't ground severity in actual contractual risk magnitude. Boilerplate language that's aggressive-but-common gets inflated.
+Confirmation criteria: If employment, service_agreement, and/or freelance_sow show the same pattern on ≥2 flags, tune severity rubric in `risk_analyzer.py`.
 
-- [ ] _e.g. "governing law = Delaware" flagged as risk in 3/5 types —
-      either suppress via exclusion or re-tune the governing-law prompt
-      guidance_
+### Pattern B: Double-counting missing protections as red flags
+Evidence: NDA Flag 2 duplicates missing-protection #2 (both describe "missing independent-development exclusion"). Not observed on SaaS.
+Hypothesis: Pass 2 converts missing-protection findings into red flags attached to the closest present clause.
+Confirmation criteria: If any other type shows duplicate red-flag / missing-protection pairs, add de-duplication step to Pass 2 post-processing.
 
-### Systematic recall gaps
-
-- [ ] _e.g. survival clauses rarely flagged even when overbroad_
-
-### UNIVERSAL_EXCLUSIONS candidates
-
-(Add entries here only after they appear as false positives in **2+**
-fixtures. Single-type false positives are prompt-level issues, not
-universal ones.)
-
-- [ ] _..._
-
-### Severity-calibration findings
-
-- [ ] _e.g. $500 liability caps consistently labelled `medium` — should
-      be `critical` when cap is < 1% of expected contract value_
-
-### Detection / routing
-
-- [ ] _e.g. MSA fixture detected as contractor_platform in 2/5 runs —
-      add MSA disambiguation to Pass 0_
+### Pattern C: Zero green-flag recall
+Evidence: Both SaaS and NDA returned `green_flags: []` despite genuine user-favorable elements being present (EEA review rights, mutual NDA reciprocity).
+Hypothesis: Pass 2 green-flag prompt is either too conservative, or the rubric is biased toward flagging risk over protection.
+Confirmation criteria: If any remaining type returns green flags, the prompt may be working and SaaS/NDA were genuinely one-sided. If all types return zero, tune the green-flag prompt specifically.
 
 ---
 
