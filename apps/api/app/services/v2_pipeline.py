@@ -242,7 +242,10 @@ def _to_public_result(
     )
 
 
-async def run_v2_pipeline(document_text: str) -> AnalysisResult:
+async def run_v2_pipeline(
+    document_text: str,
+    bypass_cache: bool = False,
+) -> AnalysisResult:
     """Full v2 pipeline → public ``AnalysisResult``.
 
     Pipeline order:
@@ -289,16 +292,17 @@ async def run_v2_pipeline(document_text: str) -> AnalysisResult:
         # different text should always go through Pass 0 again.
         return _build_rejection_result(validation)
 
-    cached = await get_cached_result(document_text)
-    if cached is not None:
-        stats = cache_stats()
-        logger.info(
-            "[v2_pipeline] cache_hit=true hits=%d misses=%d hit_rate=%.2f%%",
-            stats["hits"],
-            stats["misses"],
-            100.0 * float(stats["hit_rate"]),
-        )
-        return cached
+    if not bypass_cache:
+        cached = await get_cached_result(document_text)
+        if cached is not None:
+            stats = cache_stats()
+            logger.info(
+                "[v2_pipeline] cache_hit=true hits=%d misses=%d hit_rate=%.2f%%",
+                stats["hits"],
+                stats["misses"],
+                100.0 * float(stats["hit_rate"]),
+            )
+            return cached
 
     extraction = await extract_clauses(document_text)
 
@@ -330,5 +334,6 @@ async def run_v2_pipeline(document_text: str) -> AnalysisResult:
     )
 
     result = _to_public_result(extraction, analysis)
-    await cache_result(document_text, result)
+    if not bypass_cache:
+        await cache_result(document_text, result)
     return result

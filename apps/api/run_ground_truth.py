@@ -11,6 +11,14 @@ dispute-resolution clause out) — a single run is misleading. N=5 lets us
 tell "reliably covered" (>=3/5 runs) apart from "sometimes covered"
 (1–2/5) apart from "never covered" (0/5, the recall gap).
 
+IMPORTANT: uses bypass_cache=True so every run re-executes Pass 0 + Pass 1 + Pass 2
+against Gemini. Required for meaningful N=5 stability testing — without the bypass,
+runs 2-N return the same cached result as run 1 and the "reliable_flags_3of5" metric
+is measuring cache determinism, not pipeline determinism.
+
+Cost implication: N=5 runs against a 5K-word contract costs ~$0.15-0.25 in Gemini
+API calls (vs. effectively free with cache hits). Budget accordingly.
+
 Usage (from `apps/api/`):
 
     # All types, 5 runs each
@@ -160,10 +168,11 @@ async def run_one(doc_type: str, runs: int) -> dict[str, Any]:
     raw_results: list[dict[str, Any]] = []
     for i in range(runs):
         print(f"  Run {i + 1}/{runs} for {doc_type}...", flush=True)
-        # run_v2_pipeline takes exactly one positional arg (document_text).
-        # There is no `source=` kwarg — any telemetry about where the call
-        # originated belongs in logging, not the public pipeline signature.
-        result = await run_v2_pipeline(text)
+        # run_v2_pipeline takes one positional arg (document_text) plus the
+        # bypass_cache kwarg (added alongside this runner). There is no
+        # `source=` kwarg — any telemetry about where the call originated
+        # belongs in logging, not the public pipeline signature.
+        result = await run_v2_pipeline(text, bypass_cache=True)
         raw_results.append(_result_to_plain_dict(result))
 
     # ---- Pass 0 rejection check -------------------------------------------
