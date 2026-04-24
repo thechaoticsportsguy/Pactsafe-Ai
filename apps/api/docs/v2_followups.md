@@ -144,3 +144,60 @@ numberings. Kept here as a record of why the scorer changed.
 **Priority**: Fix after cache-bypass. Separate focused commit.
 
 **Estimated time**: 30-45 min (Option 1 simpler, Option 2 more work).
+
+---
+
+## Missing-protections output is non-deterministic (HIGH)
+
+**Severity**: HIGH — core product feature produces different results on identical input
+
+**Symptom**: Running the v2 pipeline N=5 times against the same fixture with `bypass_cache=True`:
+- saas_terms (Vercel ToS, 4,500 words): 5-6 missing protections per run, but **0 that appeared in ≥3/5 runs**. 27 unique findings across the 5 runs.
+- nda (YC mutual NDA, 800 words): 4-5 missing protections per run, but **0 reliable**. 21 unique findings across 5 runs.
+
+**Reproducer**:
+```
+cd apps/api
+python run_ground_truth.py --type saas_terms --runs 5
+python run_ground_truth.py --type nda --runs 5
+```
+Inspect `reliable_missing_protections_3of5` vs `unstable_missing_protections_1or2of5`
+in `tests/fixtures/ground_truth/latest_results.json`.
+
+**Diagnosis**: Pass 2's missing-protections prompt in `apps/api/app/services/risk_analyzer.py` is likely open-ended generation ("identify important missing protections"). At temperature 0.2 the model returns a plausible subset of 4-6 findings sampled from a latent pool of ~20-30 valid findings. Each run samples a different subset.
+
+Each individual finding IS grounded, accurate, and well-explained. The structural problem is that users never see the same "missing protections" list twice for the same contract. This undermines:
+- Trust ("why did you show me different findings this time?")
+- Comparison ("diff between two contracts" is meaningless when each is nondeterministic)
+- Audit ("which findings did we flag last time?" has no answer)
+- User-facing claims about consistent analysis
+
+**Fix direction (structural, not prompt-polish)**:
+Replace open-ended generation with evaluative checklist. For each document type (nda, saas_terms, employment, service_agreement, freelance_sow, contractor_platform):
+
+1. Define a canonical checklist of 8-15 protections that competent counsel would check for in that contract type. Examples:
+   - NDA: fixed term, independent-development exclusion, legally-compelled disclosure safe harbor, residuals clause, destruction alternative, notice of breach, governing law, assignment restriction, third-party NDA binding, marking requirements
+   - SaaS: SLA/uptime, data export rights on termination, liability cap, IP infringement indemnity, security breach notification timeline, data portability format, price-increase notice period, privacy rights (GDPR/CCPA accommodation), service credits, audit rights
+
+2. Pass 2 evaluates each checklist item explicitly: `{protection: "fixed_term", present: false, supporting_quote: null, recommendation: "Add a clause limiting confidentiality obligations to 3-5 years except for trade secrets."}` — structured presence/absence, not free-form generation.
+
+3. Each run processes the same checklist → same output space → stability.
+
+**Scope estimate**:
+- Day 1: Design checklist schema + migrate NDA as proof-of-concept + verify N=5 stability improves
+- Day 2-3: Build checklists for remaining 5 types, per-type N=5 testing
+- Day 4: Update UI rendering if schema changes the AnalysisResult shape; database migration if cached results need backfill
+
+**Not a quick fix.** This is a multi-day restructure. Logged for planning; do not attempt as a one-commit patch.
+
+**Dependency ordering**:
+1. This fix (checklist restructure) ← current item
+2. Severity rubric refinement (caps severity on term-length, accounts for reciprocity on mutual agreements)
+3. Green-flag prompt recall tuning
+
+**Interim mitigation options (if we want something shippable before the full fix)**:
+- Increase temperature to 0.0 in Pass 2 — may improve determinism but will reduce finding diversity; needs measurement.
+- Cap output at 3 missing protections; ranks harder to fake stability but reduces user-visible variance.
+- Add a disclaimer in the UI: "Additional missing protections may be identified on re-analysis. This list highlights the most impactful gaps."
+
+None of the interim options solve the underlying structural issue.
